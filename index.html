@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NovaCore – 3 minutės judėjimo su draugais</title>
+<style>
+:root{--bg:#0b0f1a;--card:#141a2b;--acc:#7cf5a6;--acc2:#6aa8ff;--txt:#f2f4f8;--mut:#8b93a7}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--txt);font:16px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;overflow:hidden}
+#stage{position:fixed;inset:0;display:grid;place-items:center;background:#000}
+video{display:none}
+canvas{width:100%;height:100%;object-fit:contain}
+.hud{position:fixed;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;padding:12px 16px;pointer-events:none;gap:8px}
+.score{background:rgba(11,15,26,.78);backdrop-filter:blur(6px);border-radius:14px;padding:10px 16px;min-width:110px;text-align:center}
+.score b{display:block;font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
+.score small{color:var(--mut);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.score.p1 b{color:var(--acc)}.score.p2 b{color:var(--acc2)}
+.mid{text-align:center;background:rgba(11,15,26,.78);backdrop-filter:blur(6px);border-radius:14px;padding:8px 14px}
+.mid .t{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.mid .ex{font-size:14px;color:var(--acc);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.mid .x{font-size:12px;color:var(--mut)}
+.overlay{position:fixed;inset:0;display:grid;place-items:center;background:rgba(11,15,26,.92);padding:24px;text-align:center;z-index:5}
+.overlay.hide{display:none}
+.card{max-width:420px;width:100%;background:var(--card);border-radius:20px;padding:28px 24px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+h1{font-size:30px;letter-spacing:-.02em}h1 span{color:var(--acc)}
+.sub{color:var(--mut);margin:6px 0 20px}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:16px;font-size:18px;font-weight:800;background:var(--acc);color:#06130b;cursor:pointer;margin-top:10px}
+.btn.sec{background:transparent;color:var(--txt);border:1px solid #2a3350;font-weight:600}
+.row{display:flex;gap:8px;margin:12px 0}
+.row button{flex:1;border:1px solid #2a3350;background:transparent;color:var(--txt);border-radius:12px;padding:12px;font-size:16px;cursor:pointer}
+.row button.on{border-color:var(--acc);color:var(--acc)}
+ol{text-align:left;color:var(--mut);font-size:14px;padding-left:20px;margin:0 0 14px}
+.big{font-size:120px;font-weight:900;line-height:1;color:var(--acc)}
+.res{display:flex;gap:12px;justify-content:center;margin:16px 0}
+.res div{flex:1;background:#0b0f1a;border-radius:14px;padding:14px}
+.res b{display:block;font-size:44px}
+.res .p1 b{color:var(--acc)}.res .p2 b{color:var(--acc2)}
+.win{font-size:22px;font-weight:800;margin:6px 0 2px}
+.foot{position:fixed;bottom:10px;left:0;right:0;text-align:center;color:var(--mut);font-size:12px;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="stage"><video id="cam" playsinline muted autoplay></video><canvas id="cv"></canvas></div>
+
+<div class="hud" id="hud" style="display:none">
+  <div class="score p1"><small>Žaidėjas 1</small><b id="s1">0</b></div>
+  <div class="mid"><div class="ex" id="exName">Pritūpimai</div><div class="t" id="timer">3:00</div><div class="x" id="mult">×1</div></div>
+  <div class="score p2"><small>Žaidėjas 2</small><b id="s2">0</b></div>
+</div>
+
+<div class="overlay" id="start">
+  <div class="card">
+    <h1>Nova<span>Core</span></h1>
+    <p class="sub">3 minutės judėjimo su draugais</p>
+    <ol>
+      <li>Padėk telefoną ant stalo arba atremk, kad matytų visą kūną.</li>
+      <li>Stokite 2 žaidėjai: vienas kairėje, kitas dešinėje.</li>
+      <li>Kas 30 s tempas greitėja – taškai dauginasi.</li>
+    </ol>
+    <div class="row"><button class="on" data-p="2">2 žaidėjai</button><button data-p="1">1 žaidėjas</button></div>
+    <div class="row"><button class="on" data-d="180">3 min</button><button data-d="60">1 min (testas)</button></div>
+    <button class="btn" id="go">Pradėti</button>
+    <p class="sub" style="margin:14px 0 0;font-size:12px">Vaizdas apdorojamas tik tavo telefone ir niekur nesiunčiamas.</p>
+  </div>
+</div>
+
+<div class="overlay hide" id="count"><div class="big" id="cnum">3</div></div>
+
+<div class="overlay hide" id="end">
+  <div class="card">
+    <div class="win" id="winner">Lygiosios!</div>
+    <p class="sub" id="endsub">Puikus žaidimas</p>
+    <div class="res"><div class="p1"><small>Žaidėjas 1</small><b id="r1">0</b></div><div class="p2"><small>Žaidėjas 2</small><b id="r2">0</b></div></div>
+    <a class="btn" id="dl" download="novacore-klipas.webm" style="text-decoration:none;display:none">Atsisiųsti klipą</a>
+    <button class="btn sec" onclick="location.reload()">Žaisti dar kartą</button>
+  </div>
+</div>
+<div class="foot">NovaCore prototipas · pozos atpažinimas veikia įrenginyje (MediaPipe)</div>
+
+<script type="module">
+import {PoseLandmarker, FilesetResolver} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+
+const $=s=>document.querySelector(s);
+const cam=$("#cam"), cv=$("#cv"), ctx=cv.getContext("2d");
+let players=2, duration=180;
+document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{players=+b.dataset.p;sel(b)});
+document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{duration=+b.dataset.d;sel(b)});
+function sel(b){[...b.parentNode.children].forEach(x=>x.classList.toggle("on",x===b))}
+
+// ponytail: 2 pratimai, 30 s rundai; sąrašą plėsti čia
+const EX=[
+ {id:"squat",name:"Pritūpimai"},
+ {id:"jack",name:"Pašokimai"},
+];
+const score=[0,0];
+// per-player state machine
+const st=[{down:false,open:false},{down:false,open:false}];
+let landmarker, running=false, t0=0, raf, rec, chunks=[];
+
+function ang(a,b,c){const v1=[a.x-b.x,a.y-b.y],v2=[c.x-b.x,c.y-b.y];const d=v1[0]*v2[0]+v1[1]*v2[1];const m=Math.hypot(...v1)*Math.hypot(...v2)||1;return Math.acos(Math.max(-1,Math.min(1,d/m)))*180/Math.PI}
+
+function detect(lm,i,ex,mult){
+  const s=st[i];
+  if(ex==="squat"){
+    // knee angle: hip(23/24) knee(25/26) ankle(27/28); use visible side avg
+    const k=(ang(lm[23],lm[25],lm[27])+ang(lm[24],lm[26],lm[28]))/2;
+    if(k<110&&!s.down) s.down=true;
+    else if(k>160&&s.down){s.down=false;score[i]+=mult;flash(i)}
+  }else{
+    // jumping jack: wrists above nose + ankles apart (> shoulder width*1.5)
+    const up=lm[15].y<lm[0].y&&lm[16].y<lm[0].y;
+    const sw=Math.abs(lm[11].x-lm[12].x), aw=Math.abs(lm[27].x-lm[28].x);
+    const open=up&&aw>sw*1.4;
+    const closed=!up&&aw<sw*1.1;
+    if(open&&!s.open) s.open=true;
+    else if(closed&&s.open){s.open=false;score[i]+=mult;flash(i)}
+  }
+}
+let fl=[0,0];function flash(i){fl[i]=performance.now()}
+
+$("#go").onclick=async()=>{
+  $("#go").textContent="Kraunama…";
+  const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:false});
+  cam.srcObject=stream; await new Promise(r=>cam.onloadedmetadata=r); await cam.play();
+  cv.width=cam.videoWidth; cv.height=cam.videoHeight;
+  const fs=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+  landmarker=await PoseLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float/1/pose_landmarker_lite.task",delegate:"GPU"},runningMode:"VIDEO",numPoses:players});
+  $("#start").classList.add("hide");
+  await countdown();
+  startRec();
+  running=true;t0=performance.now();$("#hud").style.display="flex";loop();
+};
+
+async function countdown(){const o=$("#count"),n=$("#cnum");o.classList.remove("hide");for(const v of ["3","2","1","START"]){n.textContent=v;await new Promise(r=>setTimeout(r,800))}o.classList.add("hide")}
+
+function startRec(){
+  try{const s=cv.captureStream(30);rec=new MediaRecorder(s,{mimeType:"video/webm"});rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);rec.start(1000)}catch(e){rec=null}
+}
+
+function loop(){
+  if(!running)return;
+  const el=(performance.now()-t0)/1000, left=Math.max(0,duration-el);
+  const round=Math.floor(el/30), mult=1+round, ex=EX[round%EX.length];
+  $("#timer").textContent=`${Math.floor(left/60)}:${String(Math.floor(left%60)).padStart(2,"0")}`;
+  $("#mult").textContent=`×${mult}`;$("#exName").textContent=ex.name;
+
+  ctx.save();ctx.translate(cv.width,0);ctx.scale(-1,1);ctx.drawImage(cam,0,0);ctx.restore();
+  const res=landmarker.detectForVideo(cam,performance.now());
+  // assign by x: leftmost on screen (mirrored) = player 1
+  const poses=(res.landmarks||[]).map(lm=>({lm,x:1-lm[0].x})).sort((a,b)=>a.x-b.x).slice(0,players);
+  poses.forEach((p,i)=>{detect(p.lm,i,ex.id,mult);draw(p.lm,i)});
+  $("#s1").textContent=score[0];$("#s2").textContent=score[1];
+  if(left<=0){finish();return}
+  raf=requestAnimationFrame(loop);
+}
+
+const COL=["#7cf5a6","#6aa8ff"];
+const EDGES=[[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28]];
+function draw(lm,i){
+  const W=cv.width,H=cv.height,c=COL[i];const hot=performance.now()-fl[i]<250;
+  ctx.lineWidth=hot?8:4;ctx.strokeStyle=c;ctx.fillStyle=c;
+  for(const[a,b]of EDGES){ctx.beginPath();ctx.moveTo((1-lm[a].x)*W,lm[a].y*H);ctx.lineTo((1-lm[b].x)*W,lm[b].y*H);ctx.stroke()}
+  ctx.font="bold 28px system-ui";ctx.fillText(`P${i+1}`,(1-lm[0].x)*W-18,lm[0].y*H-30);
+}
+
+function finish(){
+  running=false;cancelAnimationFrame(raf);
+  if(players===1)score[1]=0;
+  $("#r1").textContent=score[0];$("#r2").textContent=score[1];
+  const w=$("#winner");
+  w.textContent=players===1?`Rezultatas: ${score[0]}`:score[0]===score[1]?"Lygiosios!":`Laimėjo žaidėjas ${score[0]>score[1]?1:2}!`;
+  $("#endsub").textContent=`Iš viso judesių: ${score[0]+score[1]} taškų per ${duration/60} min`;
+  if(rec){rec.onstop=()=>{const b=new Blob(chunks,{type:"video/webm"});const a=$("#dl");a.href=URL.createObjectURL(b);a.style.display="block"};rec.stop()}
+  $("#hud").style.display="none";$("#end").classList.remove("hide");
+  cam.srcObject?.getTracks().forEach(t=>t.stop());
+}
+</script>
+</body>
+</html>
