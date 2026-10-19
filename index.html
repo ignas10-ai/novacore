@@ -3,80 +3,307 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07081a">
 <title>NovaCore – 3 minutės judėjimo su draugais</title>
+<meta name="description" content="Judesio žaidimas 1–2 žaidėjams: telefono kamera skaičiuoja pritūpimus ir pašokimus. 3 minutės, taškai, daugiklis, klipas pabaigoje.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2307081a'/%3E%3Cpath d='M6 26 13 6h5l-7 20z' fill='%23ff2e7e'/%3E%3Cpath d='M15 26 22 6h5l-7 20z' fill='%231fd8ff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,800;1,900&family=Barlow:wght@500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b0f1a;--card:#141a2b;--acc:#7cf5a6;--acc2:#6aa8ff;--txt:#f2f4f8;--mut:#8b93a7}
+:root{
+  --ink:#07081a;--ink2:#11132e;--line:rgba(245,246,255,.14);
+  --white:#f5f6ff;--mute:rgba(245,246,255,.62);
+  --p1:#ff2e7e;--p2:#1fd8ff;
+  --disp:"Barlow Condensed",Impact,"Arial Narrow",sans-serif;
+  --body:"Barlow",system-ui,sans-serif;
+  --skew:-10deg;
+  /* transitions.dev motion tokens */
+  --duration-fast:250ms;--duration-slow:400ms;--duration-very-slow:500ms;
+  --ease-smooth-out:cubic-bezier(.22,1,.36,1);
+  --digit-dur:500ms;--digit-distance:14px;--digit-blur:3px;--digit-ease:cubic-bezier(.34,1.45,.64,1);
+  --check-ease-out:cubic-bezier(.22,1,.36,1);--check-ease-bob:cubic-bezier(.34,1.35,.64,1);
+}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);color:var(--txt);font:16px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;overflow:hidden}
+html,body{height:100%;background:var(--ink);color:var(--white);font:500 15px/1.4 var(--body);overflow:hidden;-webkit-font-smoothing:antialiased}
+button,a{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--white);outline-offset:3px}
+.d{font-family:var(--disp);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-.01em;line-height:.86;font-variant-numeric:tabular-nums}
+.lbl{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.14em;font-size:12px;color:var(--mute)}
+
 #stage{position:fixed;inset:0;display:grid;place-items:center;background:#000}
 video{display:none}
 canvas{width:100%;height:100%;object-fit:contain}
-.hud{position:fixed;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;padding:12px 16px;pointer-events:none;gap:8px}
-.score{background:rgba(11,15,26,.78);backdrop-filter:blur(6px);border-radius:14px;padding:10px 16px;min-width:110px;text-align:center}
-.score b{display:block;font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
-.score small{color:var(--mut);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-.score.p1 b{color:var(--acc)}.score.p2 b{color:var(--acc2)}
-.mid{text-align:center;background:rgba(11,15,26,.78);backdrop-filter:blur(6px);border-radius:14px;padding:8px 14px}
-.mid .t{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
-.mid .ex{font-size:14px;color:var(--acc);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
-.mid .x{font-size:12px;color:var(--mut)}
-.overlay{position:fixed;inset:0;display:grid;place-items:center;background:rgba(11,15,26,.92);padding:24px;text-align:center;z-index:5}
-.overlay.hide{display:none}
-.card{max-width:420px;width:100%;background:var(--card);border-radius:20px;padding:28px 24px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-h1{font-size:30px;letter-spacing:-.02em}h1 span{color:var(--acc)}
-.sub{color:var(--mut);margin:6px 0 20px}
-.btn{display:block;width:100%;border:0;border-radius:14px;padding:16px;font-size:18px;font-weight:800;background:var(--acc);color:#06130b;cursor:pointer;margin-top:10px}
-.btn.sec{background:transparent;color:var(--txt);border:1px solid #2a3350;font-weight:600}
-.row{display:flex;gap:8px;margin:12px 0}
-.row button{flex:1;border:1px solid #2a3350;background:transparent;color:var(--txt);border-radius:12px;padding:12px;font-size:16px;cursor:pointer}
-.row button.on{border-color:var(--acc);color:var(--acc)}
-ol{text-align:left;color:var(--mut);font-size:14px;padding-left:20px;margin:0 0 14px}
-.big{font-size:120px;font-weight:900;line-height:1;color:var(--acc)}
-.res{display:flex;gap:12px;justify-content:center;margin:16px 0}
-.res div{flex:1;background:#0b0f1a;border-radius:14px;padding:14px}
-.res b{display:block;font-size:44px}
-.res .p1 b{color:var(--acc)}.res .p2 b{color:var(--acc2)}
-.win{font-size:22px;font-weight:800;margin:6px 0 2px}
-.foot{position:fixed;bottom:10px;left:0;right:0;text-align:center;color:var(--mut);font-size:12px;pointer-events:none}
+
+/* ---------- overlays (screens) ---------- */
+.screen{position:fixed;inset:0;z-index:5;overflow:auto;background:var(--ink);
+  padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));
+  transition:opacity var(--duration-slow) var(--ease-smooth-out)}
+.screen.hide{display:none}
+/* diagonal player stripes, signature */
+.screen::before{content:"";position:fixed;inset:-20% -40% auto auto;width:120%;height:50%;pointer-events:none;
+  background:linear-gradient(115deg,transparent 0 46%,var(--p1) 46% 52%,transparent 52% 56%,var(--p2) 56% 62%,transparent 62%);opacity:.9}
+.wrap{position:relative;max-width:460px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:22px}
+
+/* start */
+.brand{padding-top:4vh}
+.brand .tag{display:inline-block;font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.16em;text-transform:uppercase;background:var(--white);color:var(--ink);padding:4px 10px;transform:skewX(var(--skew))}
+.brand h1{font-size:clamp(84px,27vw,124px);margin-top:12px}
+.brand h1 span{display:block}
+.brand h1 .c{color:transparent;-webkit-text-stroke:2px var(--white)}
+.brand p{font-family:var(--disp);font-weight:800;font-style:italic;font-size:22px;text-transform:uppercase;margin-top:10px;letter-spacing:.01em}
+.brand p i{color:var(--p1);font-style:inherit}.brand p b{color:var(--p2)}
+
+.setup{border-top:1px solid var(--line);padding-top:16px}
+.setup svg{display:block;width:100%;height:auto;margin:6px 0 4px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;list-style:none}
+.steps li{font-size:13px;line-height:1.25;color:var(--mute)}
+.steps li b{display:block;font-family:var(--disp);font-style:italic;font-weight:900;font-size:26px;color:var(--white);line-height:1}
+
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.seg button{border:0;background:var(--ink2);box-shadow:inset 0 0 0 1px var(--line);transform:skewX(var(--skew));cursor:pointer;padding:10px 0 8px;
+  transition:background var(--duration-fast) var(--ease-smooth-out),color var(--duration-fast) var(--ease-smooth-out)}
+.seg button>span{display:block;transform:skewX(calc(var(--skew)*-1))}
+.seg button .d{font-size:34px}
+.seg button small{display:block;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-top:2px}
+.seg button.on{background:var(--white);color:var(--ink);box-shadow:4px 4px 0 var(--p1)}
+.seg.dur button.on{box-shadow:4px 4px 0 var(--p2)}
+.seg button.on small{color:rgba(7,8,26,.6)}
+
+.cta{margin-top:auto;display:flex;flex-direction:column;gap:12px;padding-top:6px}
+.go{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;border:0;cursor:pointer;text-decoration:none;
+  background:var(--white);color:var(--ink);padding:16px 0 14px;transform:skewX(var(--skew));box-shadow:6px 6px 0 var(--p1),12px 12px 0 var(--p2);
+  font-family:var(--disp);font-style:italic;font-weight:900;font-size:30px;text-transform:uppercase;letter-spacing:.02em;
+  transition:transform var(--duration-fast) var(--ease-smooth-out),box-shadow var(--duration-fast) var(--ease-smooth-out)}
+.go:active{transform:skewX(var(--skew)) translate(4px,4px);box-shadow:2px 2px 0 var(--p1),6px 6px 0 var(--p2)}
+.go svg{width:26px;height:26px}
+.go.alt{background:transparent;color:var(--white);box-shadow:inset 0 0 0 2px var(--white);font-size:24px;padding:12px 0 10px}
+.go[aria-busy="true"]{opacity:.75;pointer-events:none}
+.fine{font-size:12px;color:var(--mute);text-align:center}
+
+/* countdown */
+#count{display:grid;place-items:center;text-align:center;background:rgba(7,8,26,.86)}
+#count.hide{display:none}
+#cnum{font-size:min(56vh,62vw);color:var(--white);will-change:transform,opacity,filter}
+#cnum.word{font-size:min(24vh,24vw);color:var(--p2)}
+#cnum[data-v="3"]{color:var(--p1)}#cnum[data-v="2"]{color:var(--white)}#cnum[data-v="1"]{color:var(--p2)}
+#cnum.pop{animation:cd-pop 780ms var(--digit-ease) both}
+@keyframes cd-pop{0%{transform:scale(1.9) skewX(var(--skew));opacity:0;filter:blur(12px)}35%{transform:scale(1) skewX(var(--skew));opacity:1;filter:blur(0)}85%{opacity:1}100%{transform:scale(.92) skewX(var(--skew));opacity:0}}
+.cdl{position:absolute;bottom:max(28px,env(safe-area-inset-bottom));left:0;right:0}
+
+/* ---------- HUD ---------- */
+.hud{position:fixed;inset:0;pointer-events:none;z-index:3;display:none}
+.hud.on{display:block}
+.scrim{position:absolute;left:0;right:0;top:0;height:150px;background:linear-gradient(rgba(7,8,26,.82),rgba(7,8,26,.45) 60%,transparent)}
+.tbar{position:absolute;top:0;left:0;right:0;height:6px;background:rgba(245,246,255,.18)}
+.tbar i{display:block;height:100%;width:100%;background:var(--white);transform-origin:left;transition:transform 200ms linear}
+.top{position:absolute;top:calc(6px + env(safe-area-inset-top));left:0;right:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:start;padding:8px 14px 0}
+.pl{display:flex;flex-direction:column;align-items:flex-start;position:relative}
+.pl.p2{align-items:flex-end}
+.pl .chip{font-family:var(--disp);font-weight:900;font-style:italic;font-size:15px;letter-spacing:.06em;color:var(--ink);padding:2px 10px 1px;transform:skewX(var(--skew))}
+.pl.p1 .chip{background:var(--p1)}.pl.p2 .chip{background:var(--p2)}
+.pl .sc{font-size:clamp(64px,19vw,96px);margin-top:4px;text-shadow:0 2px 18px rgba(7,8,26,.6)}
+.pl.p1 .sc{color:var(--p1)}.pl.p2 .sc{color:var(--p2)}
+.mid{text-align:center;padding-top:2px}
+.mid .ex{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
+.mid .t{font-size:44px;margin-top:3px}
+.mid .x{display:inline-block;margin-top:6px;background:var(--white);color:var(--ink);padding:2px 10px 0;transform:skewX(var(--skew));font-size:22px}
+.rec{display:inline-flex;align-items:center;gap:5px;margin-left:6px;font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.14em;color:var(--white);vertical-align:2px}
+.rec::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--p1);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+body.solo .pl.p2{visibility:hidden}
+
+/* number pop-in (transitions.dev #02) */
+@keyframes t-digit-pop-in{0%{transform:translate(0,var(--digit-distance));opacity:0;filter:blur(var(--digit-blur))}100%{transform:none;opacity:1;filter:blur(0)}}
+.t-digit-group{display:inline-flex}
+.t-digit{display:inline-block;will-change:transform,opacity,filter}
+.t-digit-group.is-animating .t-digit{animation:t-digit-pop-in var(--digit-dur) var(--digit-ease) both}
+.t-digit-group.is-animating .t-digit[data-stagger="1"]{animation-delay:70ms}
+
+/* +N pop beside player */
+.plus{position:absolute;top:100%;font-size:56px;opacity:0;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill}
+.p1 .plus{left:4px;color:var(--p1)}.p2 .plus{right:4px;color:var(--p2)}
+.plus.go-pop{animation:plus-pop 760ms var(--ease-smooth-out) both}
+@keyframes plus-pop{0%{opacity:0;transform:translateY(18px) scale(.4) skewX(var(--skew))}22%{opacity:1;transform:translateY(0) scale(1.18) skewX(var(--skew))}40%{transform:translateY(-4px) scale(1) skewX(var(--skew))}100%{opacity:0;transform:translateY(-30px) scale(.96) skewX(var(--skew))}}
+/* side edge flash = the player's half of the screen lights up */
+.edge{position:absolute;top:0;bottom:0;width:22px;opacity:0}
+.edge.p1{left:0;background:linear-gradient(90deg,var(--p1),transparent)}
+.edge.p2{right:0;background:linear-gradient(-90deg,var(--p2),transparent)}
+.edge.go-pop{animation:edge 520ms ease-out}
+@keyframes edge{0%{opacity:.95}100%{opacity:0}}
+
+/* round banner, sits under HUD strip */
+.round{position:absolute;left:50%;top:calc(170px + env(safe-area-inset-top));transform:translateX(-50%) skewX(var(--skew));background:var(--white);color:var(--ink);
+  padding:8px 18px 6px;white-space:nowrap;font-size:28px;opacity:0;box-shadow:5px 5px 0 var(--p1),10px 10px 0 var(--p2)}
+.round.go-pop{animation:round 1700ms var(--ease-smooth-out) both}
+@keyframes round{0%{opacity:0;translate:-40px 0}14%{opacity:1;translate:0 0}82%{opacity:1;translate:0 0}100%{opacity:0;translate:40px 0}}
+
+/* ---------- results ---------- */
+#end .wrap{gap:18px}
+#end::before{height:30%}
+.res-head{padding-top:5vh}
+.res-head .wl{display:inline-block;font-family:var(--disp);font-weight:900;font-style:italic;font-size:18px;letter-spacing:.12em;text-transform:uppercase;background:var(--white);color:var(--ink);padding:3px 12px 1px;transform:skewX(var(--skew))}
+#winner{font-size:clamp(76px,22vw,112px);margin-top:12px}
+#end[data-w="1"] #winner{color:var(--p1)}#end[data-w="2"] #winner{color:var(--p2)}
+#endsub{color:var(--mute);margin-top:10px}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px}
+.bar .chip{font-family:var(--disp);font-weight:900;font-style:italic;font-size:16px;color:var(--ink);padding:3px 10px 1px;transform:skewX(var(--skew))}
+.bar.p1 .chip{background:var(--p1)}.bar.p2 .chip{background:var(--p2)}
+.bar .track{height:22px;background:var(--ink2);transform:skewX(var(--skew));overflow:hidden}
+.bar .track i{display:block;height:100%;width:0;transition:width 900ms var(--ease-smooth-out) 200ms}
+.bar.p1 .track i{background:var(--p1)}.bar.p2 .track i{background:var(--p2)}
+.bar b{font-size:56px;min-width:2.2ch;text-align:right}
+.bar.p1 b{color:var(--p1)}.bar.p2 b{color:var(--p2)}
+body.solo .bar.p2{display:none}
+.clip{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0}
+.clip p{font-family:var(--disp);font-weight:800;font-size:18px;text-transform:uppercase;letter-spacing:.04em}
+.clip small{display:block;font-family:var(--body);font-weight:500;font-size:13px;text-transform:none;letter-spacing:0;color:var(--mute)}
+.clip .spin{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--white);border-radius:50%;animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.clip.ready .spin{display:none}
+.clip:not(.ready) .t-success-check{display:none}
+.clip.none .spin{display:none}
+
+/* success check (transitions.dev #10) */
+.t-success-check{display:inline-block;flex:none;opacity:0;will-change:transform,opacity,filter}
+.t-success-check svg{display:block;overflow:visible;width:28px;height:28px}
+.t-success-check svg path{stroke-dasharray:40;stroke-dashoffset:40}
+.t-success-check[data-state="in"]{animation:t-check-fade 500ms var(--check-ease-out) forwards,t-check-rotate 500ms var(--check-ease-out) forwards,t-check-blur 500ms var(--check-ease-out) forwards,t-check-bob 500ms var(--check-ease-bob) forwards}
+.t-success-check[data-state="in"] svg path{animation:t-check-draw 500ms var(--check-ease-out) 80ms forwards}
+@keyframes t-check-fade{from{opacity:0}to{opacity:1}}
+@keyframes t-check-rotate{from{transform:rotate(80deg)}to{transform:rotate(0)}}
+@keyframes t-check-blur{from{filter:blur(10px)}to{filter:blur(0)}}
+@keyframes t-check-bob{from{translate:0 40px}to{translate:0 0}}
+@keyframes t-check-draw{to{stroke-dashoffset:0}}
+#dl[hidden]{display:none}
+
+/* ---------- landscape ---------- */
+@media (orientation:landscape) and (max-height:560px){
+  .wrap{max-width:820px;display:grid;grid-template-columns:1.05fr 1fr;column-gap:32px;row-gap:14px;align-content:center}
+  .brand{padding-top:0;grid-row:span 2}
+  .screen::before{display:none}
+  .brand h1{font-size:min(15vh,80px);margin-top:8px}
+  .brand p{font-size:17px;margin-top:6px}
+  .setup{grid-column:1;padding-top:8px}
+  .setup svg{height:76px;margin:2px 0}
+  .steps li{font-size:12px}.steps li b{font-size:18px}
+  .pick{grid-column:2;grid-row:1}
+  .cta{grid-column:2;grid-row:2 / span 2;margin-top:0}
+  .scrim{height:110px}
+  .pl .sc{font-size:min(19vh,80px)}
+  .mid .t{font-size:38px}
+  .round{top:calc(118px + env(safe-area-inset-top))}
+  #end .wrap{grid-template-columns:1fr 1fr}
+  .res-head{padding-top:0;grid-row:span 3}
+  #winner{font-size:min(22vh,96px)}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:1ms !important;animation-iteration-count:1 !important;transition-duration:1ms !important}
+  .t-success-check{opacity:1}.t-success-check svg path{stroke-dashoffset:0}
+}
 </style>
 </head>
 <body>
-<div id="stage"><video id="cam" playsinline muted autoplay></video><canvas id="cv"></canvas></div>
+<div id="stage"><video id="cam" playsinline muted autoplay></video><canvas id="cv" aria-label="Kameros vaizdas su žaidėjų skeletais"></canvas></div>
 
-<div class="hud" id="hud" style="display:none">
-  <div class="score p1"><small>Žaidėjas 1</small><b id="s1">0</b></div>
-  <div class="mid"><div class="ex" id="exName">Pritūpimai</div><div class="t" id="timer">3:00</div><div class="x" id="mult">×1</div></div>
-  <div class="score p2"><small>Žaidėjas 2</small><b id="s2">0</b></div>
-</div>
-
-<div class="overlay" id="start">
-  <div class="card">
-    <h1>Nova<span>Core</span></h1>
-    <p class="sub">3 minutės judėjimo su draugais</p>
-    <ol>
-      <li>Padėk telefoną ant stalo arba atremk, kad matytų visą kūną.</li>
-      <li>Stokite 2 žaidėjai: vienas kairėje, kitas dešinėje.</li>
-      <li>Kas 30 s tempas greitėja – taškai dauginasi.</li>
-    </ol>
-    <div class="row"><button class="on" data-p="2">2 žaidėjai</button><button data-p="1">1 žaidėjas</button></div>
-    <div class="row"><button class="on" data-d="180">3 min</button><button data-d="60">1 min (testas)</button></div>
-    <button class="btn" id="go">Pradėti</button>
-    <p class="sub" style="margin:14px 0 0;font-size:12px">Vaizdas apdorojamas tik tavo telefone ir niekur nesiunčiamas.</p>
+<div class="hud" id="hud" aria-live="off">
+  <div class="scrim"></div>
+  <div class="edge p1" id="e1"></div><div class="edge p2" id="e2"></div>
+  <div class="tbar"><i id="tbar"></i></div>
+  <div class="top">
+    <div class="pl p1"><span class="chip">P1</span><span class="sc d t-digit-group" id="s1">0</span><span class="plus d" id="f1">+1</span></div>
+    <div class="mid"><div class="ex" id="exName">Pritūpimai</div><div class="t d" id="timer">3:00</div><div><span class="x d" id="mult">×1</span><span class="rec" id="recInd" hidden>REC</span></div></div>
+    <div class="pl p2"><span class="chip">P2</span><span class="sc d t-digit-group" id="s2">0</span><span class="plus d" id="f2">+1</span></div>
   </div>
+  <div class="round d" id="round">Raundas 2 · ×2</div>
 </div>
 
-<div class="overlay hide" id="count"><div class="big" id="cnum">3</div></div>
+<main class="screen" id="start">
+  <div class="wrap">
+    <header class="brand">
+      <span class="tag">Judesio žaidimas</span>
+      <h1 class="d"><span>Nova</span><span class="c">Core</span></h1>
+      <p><i>3 minutės.</i> <b>2 žaidėjai.</b> Visas kūnas.</p>
+    </header>
 
-<div class="overlay hide" id="end">
-  <div class="card">
-    <div class="win" id="winner">Lygiosios!</div>
-    <p class="sub" id="endsub">Puikus žaidimas</p>
-    <div class="res"><div class="p1"><small>Žaidėjas 1</small><b id="r1">0</b></div><div class="p2"><small>Žaidėjas 2</small><b id="r2">0</b></div></div>
-    <a class="btn" id="dl" download="novacore-klipas.webm" style="text-decoration:none;display:none">Atsisiųsti klipą</a>
-    <button class="btn sec" onclick="location.reload()">Žaisti dar kartą</button>
+    <section class="pick" aria-label="Nustatymai">
+      <div>
+        <div class="lbl">Žaidėjai</div>
+        <div class="seg" role="group" aria-label="Žaidėjų skaičius">
+          <button class="on" data-p="2" aria-pressed="true"><span><b class="d">2</b><small>dvikova</small></span></button>
+          <button data-p="1" aria-pressed="false"><span><b class="d">1</b><small>solo</small></span></button>
+        </div>
+      </div>
+      <div>
+        <div class="lbl">Trukmė</div>
+        <div class="seg dur" role="group" aria-label="Trukmė">
+          <button class="on" data-d="180" aria-pressed="true"><span><b class="d">3:00</b><small>pilnas</small></span></button>
+          <button data-d="60" aria-pressed="false"><span><b class="d">1:00</b><small>testas</small></span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="setup" aria-label="Kaip pastatyti telefoną">
+      <div class="lbl">Pasiruošimas</div>
+      <svg viewBox="0 0 360 120" role="img" aria-label="Telefonas atremtas ant žemės, du žaidėjai stovi 2–3 metrų atstumu: P1 kairėje, P2 dešinėje">
+        <line x1="0" y1="108" x2="360" y2="108" stroke="rgba(245,246,255,.25)" stroke-width="2"/>
+        <!-- view cone -->
+        <path d="M46 70 L220 18 L220 108 L46 82 Z" fill="rgba(245,246,255,.06)"/>
+        <path d="M46 70 L220 18 M46 82 L220 108" stroke="rgba(245,246,255,.35)" stroke-width="1.5" stroke-dasharray="4 5"/>
+        <!-- phone leaning on bottle -->
+        <rect x="18" y="56" width="10" height="52" fill="#3a3d63"/>
+        <rect x="18" y="50" width="10" height="8" fill="#3a3d63"/>
+        <g transform="rotate(-12 40 108)"><rect x="32" y="52" width="16" height="56" fill="#f5f6ff"/><rect x="35" y="56" width="10" height="44" fill="#07081a"/><circle cx="40" cy="59" r="1.6" fill="#f5f6ff"/></g>
+        <!-- distance -->
+        <path d="M60 116 H210" stroke="#f5f6ff" stroke-width="1.5"/><path d="M60 112 V120 M210 112 V120" stroke="#f5f6ff" stroke-width="1.5"/>
+        <text x="135" y="104" fill="#f5f6ff" font-family="Barlow Condensed,sans-serif" font-style="italic" font-weight="900" font-size="18" text-anchor="middle">2–3 m</text>
+        <!-- P1 -->
+        <g stroke="#ff2e7e" stroke-width="5" stroke-linecap="round" fill="none"><circle cx="240" cy="32" r="7" fill="#ff2e7e"/><path d="M240 42 V72 M240 50 L226 36 M240 50 L254 36 M240 72 L230 104 M240 72 L250 104"/></g>
+        <!-- P2 -->
+        <g stroke="#1fd8ff" stroke-width="5" stroke-linecap="round" fill="none"><circle cx="300" cy="32" r="7" fill="#1fd8ff"/><path d="M300 42 V72 M300 50 L288 64 M300 50 L312 64 M300 72 L290 88 L296 104 M300 72 L310 88 L304 104"/></g>
+        <text x="240" y="16" fill="#ff2e7e" font-family="Barlow Condensed,sans-serif" font-style="italic" font-weight="900" font-size="15" text-anchor="middle">P1</text>
+        <text x="300" y="16" fill="#1fd8ff" font-family="Barlow Condensed,sans-serif" font-style="italic" font-weight="900" font-size="15" text-anchor="middle">P2</text>
+      </svg>
+      <ol class="steps">
+        <li><b>01</b>Atremk telefoną stačiai ant žemės</li>
+        <li><b>02</b>Atsitraukite, kad matytų visą kūną</li>
+        <li><b>03</b>P1 kairėje, P2 dešinėje</li>
+      </ol>
+    </section>
+
+    <div class="cta">
+      <button class="go" id="go"><span id="goTxt">Pradėti</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square"/></svg></button>
+      <p class="fine">Kas 30 s keičiasi pratimas, daugiklis auga. Vaizdas apdorojamas tik telefone ir niekur nesiunčiamas.</p>
+    </div>
   </div>
-</div>
-<div class="foot">NovaCore prototipas · pozos atpažinimas veikia įrenginyje (MediaPipe)</div>
+</main>
+
+<div class="screen hide" id="count" aria-live="assertive"><div class="d" id="cnum">3</div><div class="lbl cdl">Pirmas pratimas: pritūpimai</div></div>
+
+<section class="screen hide" id="end" aria-labelledby="winner">
+  <div class="wrap">
+    <header class="res-head">
+      <span class="wl" id="wl">Laimėjo</span>
+      <h2 class="d" id="winner">P1</h2>
+      <p id="endsub">Puikus žaidimas</p>
+    </header>
+    <div class="bars">
+      <div class="bar p1"><span class="chip">P1</span><span class="track"><i id="b1"></i></span><b class="d t-digit-group" id="r1">0</b></div>
+      <div class="bar p2"><span class="chip">P2</span><span class="track"><i id="b2"></i></span><b class="d t-digit-group" id="r2">0</b></div>
+    </div>
+    <div class="clip" id="clip">
+      <span class="spin" aria-hidden="true"></span>
+      <span class="t-success-check" id="chk" data-state="out" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" fill="#1fd8ff"/><path d="M8 14.5l4 4 8-9" stroke="#07081a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <p id="clipTxt">Ruošiamas klipas…<small>Įrašas su skeletais, tinka pasidalinti</small></p>
+    </div>
+    <div class="cta">
+      <a class="go" id="dl" download="novacore-klipas.webm" hidden>Atsisiųsti klipą<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12M6 11l6 6 6-6M5 20h14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square"/></svg></a>
+      <button class="go alt" onclick="location.reload()">Žaisti dar kartą</button>
+    </div>
+  </div>
+</section>
 
 <script type="module">
 import {PoseLandmarker, FilesetResolver} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
@@ -84,9 +311,9 @@ import {PoseLandmarker, FilesetResolver} from "https://cdn.jsdelivr.net/npm/@med
 const $=s=>document.querySelector(s);
 const cam=$("#cam"), cv=$("#cv"), ctx=cv.getContext("2d");
 let players=2, duration=180;
-document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{players=+b.dataset.p;sel(b)});
+document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{players=+b.dataset.p;sel(b);document.body.classList.toggle("solo",players===1)});
 document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{duration=+b.dataset.d;sel(b)});
-function sel(b){[...b.parentNode.children].forEach(x=>x.classList.toggle("on",x===b))}
+function sel(b){[...b.parentNode.children].forEach(x=>{x.classList.toggle("on",x===b);x.setAttribute("aria-pressed",x===b)})}
 
 // ponytail: 2 pratimai, 30 s rundai; sąrašą plėsti čia
 const EX=[
@@ -117,10 +344,19 @@ function detect(lm,i,ex,mult){
     else if(closed&&s.open){s.open=false;score[i]+=mult;flash(i)}
   }
 }
-let fl=[0,0];function flash(i){fl[i]=performance.now()}
+// --- DOM helpers (UI only) ---
+let curMult=1, lastRound=0;
+const shown=["0","0"];
+function replay(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
+function setDigits(el,str){ // transitions.dev number pop-in
+  el.classList.remove("is-animating");
+  el.replaceChildren(...[...str].map((ch,k,a)=>{const s=document.createElement("span");s.className="t-digit";s.textContent=ch;if(k===a.length-1&&a.length>1)s.dataset.stagger="1";return s}));
+  void el.offsetWidth;el.classList.add("is-animating");
+}
+let fl=[0,0];function flash(i){fl[i]=performance.now();const f=$(`#f${i+1}`);f.textContent=`+${curMult}`;replay(f,"go-pop");replay($(`#e${i+1}`),"go-pop")}
 
 $("#go").onclick=async()=>{
-  $("#go").textContent="Kraunama…";
+  $("#goTxt").textContent="Kraunama…";$("#go").setAttribute("aria-busy","true");
   const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:false});
   cam.srcObject=stream; await new Promise(r=>cam.onloadedmetadata=r); await cam.play();
   cv.width=cam.videoWidth; cv.height=cam.videoHeight;
@@ -129,10 +365,10 @@ $("#go").onclick=async()=>{
   $("#start").classList.add("hide");
   await countdown();
   startRec();
-  running=true;t0=performance.now();$("#hud").style.display="flex";loop();
+  running=true;t0=performance.now();$("#hud").classList.add("on");$("#recInd").hidden=!rec;loop();
 };
 
-async function countdown(){const o=$("#count"),n=$("#cnum");o.classList.remove("hide");for(const v of ["3","2","1","START"]){n.textContent=v;await new Promise(r=>setTimeout(r,800))}o.classList.add("hide")}
+async function countdown(){const o=$("#count"),n=$("#cnum");o.classList.remove("hide");for(const v of ["3","2","1","Pirmyn!"]){n.textContent=v;n.dataset.v=v;n.classList.toggle("word",v.length>1);replay(n,"pop");await new Promise(r=>setTimeout(r,800))}o.classList.add("hide")}
 
 function startRec(){
   try{const s=cv.captureStream(30);rec=new MediaRecorder(s,{mimeType:"video/webm"});rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);rec.start(1000)}catch(e){rec=null}
@@ -143,36 +379,45 @@ function loop(){
   const el=(performance.now()-t0)/1000, left=Math.max(0,duration-el);
   const round=Math.floor(el/30), mult=1+round, ex=EX[round%EX.length];
   $("#timer").textContent=`${Math.floor(left/60)}:${String(Math.floor(left%60)).padStart(2,"0")}`;
-  $("#mult").textContent=`×${mult}`;$("#exName").textContent=ex.name;
+  $("#tbar").style.transform=`scaleX(${left/duration})`;
+  curMult=mult;
+  if(round!==lastRound){lastRound=round;$("#mult").textContent=`×${mult}`;$("#exName").textContent=ex.name;$("#round").textContent=`${ex.name} · ×${mult}`;replay($("#round"),"go-pop")}
 
   ctx.save();ctx.translate(cv.width,0);ctx.scale(-1,1);ctx.drawImage(cam,0,0);ctx.restore();
   const res=landmarker.detectForVideo(cam,performance.now());
   // assign by x: leftmost on screen (mirrored) = player 1
   const poses=(res.landmarks||[]).map(lm=>({lm,x:1-lm[0].x})).sort((a,b)=>a.x-b.x).slice(0,players);
   poses.forEach((p,i)=>{detect(p.lm,i,ex.id,mult);draw(p.lm,i)});
-  $("#s1").textContent=score[0];$("#s2").textContent=score[1];
+  [0,1].forEach(i=>{const v=String(score[i]);if(v!==shown[i]){shown[i]=v;setDigits($(`#s${i+1}`),v)}});
   if(left<=0){finish();return}
   raf=requestAnimationFrame(loop);
 }
 
-const COL=["#7cf5a6","#6aa8ff"];
+const COL=["#ff2e7e","#1fd8ff"];
 const EDGES=[[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28]];
 function draw(lm,i){
   const W=cv.width,H=cv.height,c=COL[i];const hot=performance.now()-fl[i]<250;
-  ctx.lineWidth=hot?8:4;ctx.strokeStyle=c;ctx.fillStyle=c;
+  ctx.lineWidth=hot?10:5;ctx.lineCap="round";ctx.strokeStyle=c;ctx.fillStyle=c;
   for(const[a,b]of EDGES){ctx.beginPath();ctx.moveTo((1-lm[a].x)*W,lm[a].y*H);ctx.lineTo((1-lm[b].x)*W,lm[b].y*H);ctx.stroke()}
-  ctx.font="bold 28px system-ui";ctx.fillText(`P${i+1}`,(1-lm[0].x)*W-18,lm[0].y*H-30);
+  ctx.font="italic 900 34px 'Barlow Condensed',system-ui";ctx.fillText(`P${i+1}`,(1-lm[0].x)*W-18,lm[0].y*H-30);
 }
 
 function finish(){
   running=false;cancelAnimationFrame(raf);
   if(players===1)score[1]=0;
-  $("#r1").textContent=score[0];$("#r2").textContent=score[1];
-  const w=$("#winner");
-  w.textContent=players===1?`Rezultatas: ${score[0]}`:score[0]===score[1]?"Lygiosios!":`Laimėjo žaidėjas ${score[0]>score[1]?1:2}!`;
+  setDigits($("#r1"),String(score[0]));setDigits($("#r2"),String(score[1]));
+  const top=Math.max(score[0],score[1],1);
+  requestAnimationFrame(()=>{$("#b1").style.width=`${score[0]/top*100}%`;$("#b2").style.width=`${score[1]/top*100}%`});
+  const w=$("#winner"),end=$("#end");
+  if(players===1){$("#wl").textContent="Tavo rezultatas";w.textContent=`${score[0]} tšk.`;end.dataset.w="1"}
+  else if(score[0]===score[1]){$("#wl").textContent="Rezultatas";w.textContent="Lygiosios!";end.dataset.w="0"}
+  else{const k=score[0]>score[1]?1:2;$("#wl").textContent="Laimėjo";w.textContent=`Žaidėjas ${k}`;end.dataset.w=k}
   $("#endsub").textContent=`Iš viso judesių: ${score[0]+score[1]} taškų per ${duration/60} min`;
-  if(rec){rec.onstop=()=>{const b=new Blob(chunks,{type:"video/webm"});const a=$("#dl");a.href=URL.createObjectURL(b);a.style.display="block"};rec.stop()}
-  $("#hud").style.display="none";$("#end").classList.remove("hide");
+  const clip=$("#clip");
+  if(rec){rec.onstop=()=>{const b=new Blob(chunks,{type:"video/webm"});const a=$("#dl");a.href=URL.createObjectURL(b);a.hidden=false;
+    clip.classList.add("ready");$("#chk").dataset.state="in";$("#clipTxt").innerHTML="Klipas paruoštas<small>Atsisiųsk ir pasidalink su draugais</small>"};rec.stop()}
+  else{clip.classList.add("none");$("#clipTxt").innerHTML="Klipas neįrašytas<small>Ši naršyklė nepalaiko įrašymo</small>"}
+  $("#hud").classList.remove("on");end.classList.remove("hide");
   cam.srcObject?.getTracks().forEach(t=>t.stop());
 }
 </script>
