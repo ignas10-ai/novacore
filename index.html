@@ -137,6 +137,9 @@ body.solo .pl.p2{visibility:hidden}
 .round{position:absolute;left:50%;top:calc(170px + env(safe-area-inset-top));transform:translateX(-50%) skewX(var(--skew));background:var(--white);color:var(--ink);
   padding:8px 18px 6px;white-space:nowrap;font-size:28px;opacity:0;box-shadow:5px 5px 0 var(--p1),10px 10px 0 var(--p2)}
 .round.go-pop{animation:round 1700ms var(--ease-smooth-out) both}
+.hint{position:absolute;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));transform:translateX(-50%) skewX(var(--skew));background:#ffd500;color:var(--ink);
+  padding:6px 16px 4px;white-space:nowrap;font-size:22px;opacity:0;transition:opacity 200ms}
+.hint.on{opacity:1}
 @keyframes round{0%{opacity:0;translate:-40px 0}14%{opacity:1;translate:0 0}82%{opacity:1;translate:0 0}100%{opacity:0;translate:40px 0}}
 
 /* ---------- results ---------- */
@@ -218,6 +221,7 @@ body.solo .bar.p2{display:none}
     <div class="pl p2"><span class="chip">P2</span><span class="sc d t-digit-group" id="s2">0</span><span class="plus d" id="f2">+1</span></div>
   </div>
   <div class="round d" id="round">Raundas 2 · ×2</div>
+  <div class="hint d" id="hint"></div>
 </div>
 
 <main class="screen" id="start">
@@ -315,35 +319,57 @@ document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{players=+b.datas
 document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{duration=+b.dataset.d;sel(b)});
 function sel(b){[...b.parentNode.children].forEach(x=>{x.classList.toggle("on",x===b);x.setAttribute("aria-pressed",x===b)})}
 
-// ponytail: 2 pratimai, 30 s rundai; sąrašą plėsti čia
+// ponytail: 3 pratimai, 30 s rundai; sąrašą plėsti čia
 const EX=[
  {id:"squat",name:"Pritūpimai"},
  {id:"jack",name:"Pašokimai"},
+ {id:"knees",name:"Aukšti keliai"},
 ];
 const score=[0,0];
 // per-player state machine
-const st=[{down:false,open:false},{down:false,open:false}];
+const st=[{},{}];
 let landmarker, running=false, t0=0, raf, rec, chunks=[];
 
 function ang(a,b,c){const v1=[a.x-b.x,a.y-b.y],v2=[c.x-b.x,c.y-b.y];const d=v1[0]*v2[0]+v1[1]*v2[1];const m=Math.hypot(...v1)*Math.hypot(...v2)||1;return Math.acos(Math.max(-1,Math.min(1,d/m)))*180/Math.PI}
 
-function detect(lm,i,ex,mult){
-  const s=st[i];
+// landmarks that MUST be visible per exercise (else: no counting + hint "atsitrauk")
+const NEED={squat:[23,24,25,26,27,28],jack:[0,11,12,15,16,27,28],knees:[23,24,25,26]};
+const VIS=0.5, MIN_GAP=350; // ms between reps – kills jitter double-counts
+function visible(lm,ex){return NEED[ex].every(j=>(lm[j].visibility??1)>VIS)}
+// pure: mutates s, returns true when one rep completes
+function step(s,lm,ex,now){
+  if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.last=0}
+  if(!visible(lm,ex)){s.lost=true;return false}
+  s.lost=false;
+  let rep=false;
   if(ex==="squat"){
-    // knee angle: hip(23/24) knee(25/26) ankle(27/28); use visible side avg
-    const k=(ang(lm[23],lm[25],lm[27])+ang(lm[24],lm[26],lm[28]))/2;
+    // knee angle: hip(23/24) knee(25/26) ankle(27/28); EMA-smoothed avg of both legs
+    const raw=(ang(lm[23],lm[25],lm[27])+ang(lm[24],lm[26],lm[28]))/2;
+    const k=s.k=s.k==null?raw:s.k*0.6+raw*0.4;
     if(k<110&&!s.down) s.down=true;
-    else if(k>160&&s.down){s.down=false;score[i]+=mult;flash(i)}
-  }else{
-    // jumping jack: wrists above nose + ankles apart (> shoulder width*1.5)
+    else if(k>160&&s.down){s.down=false;rep=true}
+  }else if(ex==="jack"){
+    // jumping jack: wrists above nose + ankles apart (> shoulder width*1.4)
     const up=lm[15].y<lm[0].y&&lm[16].y<lm[0].y;
     const sw=Math.abs(lm[11].x-lm[12].x), aw=Math.abs(lm[27].x-lm[28].x);
-    const open=up&&aw>sw*1.4;
-    const closed=!up&&aw<sw*1.1;
+    const open=up&&aw>sw*1.4, closed=!up&&aw<sw*1.1;
     if(open&&!s.open) s.open=true;
-    else if(closed&&s.open){s.open=false;score[i]+=mult;flash(i)}
+    else if(closed&&s.open){s.open=false;rep=true}
+  }else{
+    // high knees: knee rises above hip line (y grows downward), each leg separately
+    const h=Math.abs(lm[23].y-lm[11].y)||0.3; // torso length = scale
+    [[23,25],[24,26]].forEach(([hip,knee],j)=>{
+      const lift=(lm[hip].y-lm[knee].y)/h;
+      if(lift>0.05&&!s.leg[j]){s.leg[j]=true;rep=true}
+      else if(lift<-0.25&&s.leg[j]) s.leg[j]=false;
+    });
   }
+  if(rep&&now-s.last<MIN_GAP) rep=false;
+  if(rep) s.last=now;
+  return rep;
 }
+function detect(lm,i,ex,mult){ if(step(st[i],lm,ex,performance.now())){score[i]+=mult;flash(i)} }
+if(typeof module!=="undefined") module.exports={step,ang}; // node self-check
 // --- DOM helpers (UI only) ---
 let curMult=1, lastRound=0;
 const shown=["0","0"];
@@ -388,6 +414,9 @@ function loop(){
   // assign by x: leftmost on screen (mirrored) = player 1
   const poses=(res.landmarks||[]).map(lm=>({lm,x:1-lm[0].x})).sort((a,b)=>a.x-b.x).slice(0,players);
   poses.forEach((p,i)=>{detect(p.lm,i,ex.id,mult);draw(p.lm,i)});
+  const lost=poses.map((p,i)=>st[i].lost?i+1:0).filter(Boolean);
+  const missing=poses.length<players?`Nematau ${players-poses.length===2?"žaidėjų":"žaidėjo "+(poses.length+1)}`:lost.length?`P${lost.join(" ir P")}: atsitrauk, nesimato viso kūno`:"";
+  $("#hint").textContent=missing;$("#hint").classList.toggle("on",!!missing);
   [0,1].forEach(i=>{const v=String(score[i]);if(v!==shown[i]){shown[i]=v;setDigits($(`#s${i+1}`),v)}});
   if(left<=0){finish();return}
   raf=requestAnimationFrame(loop);
