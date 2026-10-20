@@ -22,7 +22,7 @@
   --duration-fast:250ms;--duration-slow:400ms;--duration-very-slow:500ms;
   --ease-smooth-out:cubic-bezier(.22,1,.36,1);
   --digit-dur:500ms;--digit-distance:14px;--digit-blur:3px;--digit-ease:cubic-bezier(.34,1.45,.64,1);
-  --check-ease-out:cubic-bezier(.22,1,.36,1);--check-ease-bob:cubic-bezier(.34,1.35,.64,1);
+  --ease-bounce:cubic-bezier(.34,1.56,.64,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--ink);color:var(--white);font:500 15px/1.4 var(--body);overflow:hidden;-webkit-font-smoothing:antialiased}
@@ -44,10 +44,12 @@ canvas{width:100%;height:100%;object-fit:contain}
 .screen::before{content:"";position:fixed;inset:-20% -40% auto auto;width:120%;height:50%;pointer-events:none;
   background:linear-gradient(115deg,transparent 0 46%,var(--p1) 46% 52%,transparent 52% 56%,var(--p2) 56% 62%,transparent 62%);opacity:.9}
 .wrap{position:relative;max-width:460px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:22px}
+.screen:not(.hide) .wrap{animation:zen-rise 560ms var(--ease-bounce) both}
+@keyframes zen-rise{0%{opacity:0;translate:0 22px;scale:.985}60%{opacity:1;translate:0 -4px;scale:1.003}100%{opacity:1;translate:0 0;scale:1}}
 
 /* start */
 .brand{padding-top:4vh}
-.brand .tag{display:inline-block;font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.16em;text-transform:uppercase;background:var(--white);color:var(--ink);padding:4px 10px;transform:skewX(var(--skew))}
+.brand .tag,.ready-head .tag,.load-wrap .tag{display:inline-block;font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.16em;text-transform:uppercase;background:var(--white);color:var(--ink);padding:4px 10px;transform:skewX(var(--skew))}
 .brand h1{font-size:clamp(84px,27vw,124px);margin-top:12px}
 .brand h1 span{display:block}
 .brand h1 .c{color:transparent;-webkit-text-stroke:2px var(--white)}
@@ -62,8 +64,10 @@ canvas{width:100%;height:100%;object-fit:contain}
 
 .pick{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
-.seg button{border:0;background:var(--ink2);box-shadow:inset 0 0 0 1px var(--line);transform:skewX(var(--skew));cursor:pointer;padding:10px 0 8px;
-  transition:background var(--duration-fast) var(--ease-smooth-out),color var(--duration-fast) var(--ease-smooth-out)}
+.seg button{border:0;background:var(--ink2);box-shadow:inset 0 0 0 1px var(--line);transform:skewX(var(--skew));cursor:pointer;padding:10px 0 8px;scale:1;translate:0 0;
+  transition:background var(--duration-fast) var(--ease-smooth-out),color var(--duration-fast) var(--ease-smooth-out),scale 420ms var(--ease-bounce),translate 420ms var(--ease-bounce)}
+.seg button:active{scale:.94;translate:0 1px}
+@media (hover:hover) and (pointer:fine){.seg button:hover:not(:active){translate:0 -2px}}
 .seg button>span{display:block;transform:skewX(calc(var(--skew)*-1))}
 .seg button .d{font-size:34px}
 .seg button small{display:block;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-top:2px}
@@ -73,24 +77,78 @@ canvas{width:100%;height:100%;object-fit:contain}
 
 .cta{margin-top:auto;display:flex;flex-direction:column;gap:12px;padding-top:6px}
 .go{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;border:0;cursor:pointer;text-decoration:none;
-  background:var(--white);color:var(--ink);padding:16px 0 14px;transform:skewX(var(--skew));box-shadow:6px 6px 0 var(--p1),12px 12px 0 var(--p2);
+  background:var(--white);color:var(--ink);padding:16px 0 14px;transform:skewX(var(--skew));box-shadow:6px 6px 0 var(--p1),12px 12px 0 var(--p2);scale:1;translate:0 0;
   font-family:var(--disp);font-style:italic;font-weight:900;font-size:30px;text-transform:uppercase;letter-spacing:.02em;
-  transition:transform var(--duration-fast) var(--ease-smooth-out),box-shadow var(--duration-fast) var(--ease-smooth-out)}
-.go:active{transform:skewX(var(--skew)) translate(4px,4px);box-shadow:2px 2px 0 var(--p1),6px 6px 0 var(--p2)}
+  transition:transform var(--duration-fast) var(--ease-smooth-out),box-shadow var(--duration-fast) var(--ease-smooth-out),scale 420ms var(--ease-bounce),translate 420ms var(--ease-bounce)}
+.go:active{transform:skewX(var(--skew)) translate(4px,4px);box-shadow:2px 2px 0 var(--p1),6px 6px 0 var(--p2);scale:.96}
+@media (hover:hover) and (pointer:fine){.go:hover:not(:active){translate:0 -3px}}
 .go svg{width:26px;height:26px}
 .go.alt{background:transparent;color:var(--white);box-shadow:inset 0 0 0 2px var(--white);font-size:24px;padding:12px 0 10px}
 .go[aria-busy="true"]{opacity:.75;pointer-events:none}
 .fine{font-size:12px;color:var(--mute);text-align:center}
 
-/* countdown */
-#count{display:grid;place-items:center;text-align:center;background:rgba(7,8,26,.86)}
-#count.hide{display:none}
-#cnum{font-size:min(56vh,62vw);color:var(--white);will-change:transform,opacity,filter}
-#cnum.word{font-size:min(24vh,24vw);color:var(--p2)}
-#cnum[data-v="3"]{color:var(--p1)}#cnum[data-v="2"]{color:var(--white)}#cnum[data-v="1"]{color:var(--p2)}
-#cnum.pop{animation:cd-pop 780ms var(--digit-ease) both}
-@keyframes cd-pop{0%{transform:scale(1.9) skewX(var(--skew));opacity:0;filter:blur(12px)}35%{transform:scale(1) skewX(var(--skew));opacity:1;filter:blur(0)}85%{opacity:1}100%{transform:scale(.92) skewX(var(--skew));opacity:0}}
-.cdl{position:absolute;bottom:max(28px,env(safe-area-inset-bottom));left:0;right:0}
+/* ---------- fullscreen toggle ---------- */
+.fs{position:fixed;z-index:20;top:calc(10px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));
+  width:44px;height:44px;display:grid;place-items:center;border:0;cursor:pointer;color:var(--white);
+  background:rgba(7,8,26,.62);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:inset 0 0 0 1.5px rgba(245,246,255,.38),4px 4px 0 rgba(31,216,255,.42);
+  transform:skewX(-8deg);scale:1;translate:0 0;
+  transition:background var(--duration-fast) var(--ease-smooth-out),color var(--duration-fast) var(--ease-smooth-out),box-shadow var(--duration-fast) var(--ease-smooth-out),scale 420ms var(--ease-bounce),translate 420ms var(--ease-bounce)}
+.fs svg{width:20px;height:20px;transform:skewX(8deg)}
+.fs .fs-out{display:none}
+.fs[data-on="1"] .fs-in{display:none}.fs[data-on="1"] .fs-out{display:block}
+.fs:active{scale:.92}
+.fs[hidden]{display:none}
+body.playing .fs{top:auto;bottom:calc(12px + env(safe-area-inset-bottom))}
+@media (hover:hover) and (pointer:fine){
+  .fs:hover{background:var(--white);color:var(--ink);translate:0 -2px;box-shadow:inset 0 0 0 1.5px var(--white),4px 4px 0 var(--p1)}
+}
+
+/* ---------- arm-hold ready gate ---------- */
+#ready{background:radial-gradient(circle at 50% 44%,rgba(7,8,26,.24) 0%,rgba(7,8,26,.78) 58%,rgba(7,8,26,.96) 100%)}
+#ready::before{opacity:.35}
+.ready-wrap{max-width:540px;align-items:center;justify-content:center;text-align:center;gap:16px}
+.ready-head h2{font-size:clamp(58px,16vw,96px);margin-top:12px;text-shadow:0 3px 24px rgba(7,8,26,.65)}
+.ready-head h2 span{color:transparent;-webkit-text-stroke:2px var(--p2)}
+.ready-head p{color:var(--mute);margin-top:10px;font-size:14px}
+.ready-dial{position:relative;width:min(44vw,184px);aspect-ratio:1;display:grid;place-items:center;margin:2px 0}
+.ready-dial svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.rd-bg,.rd-fill{fill:none;stroke-width:6}
+.rd-bg{stroke:rgba(245,246,255,.16)}
+.rd-fill{stroke:var(--p2);stroke-dasharray:100;stroke-dashoffset:100;stroke-linecap:square;transition:stroke-dashoffset 120ms linear,stroke var(--duration-slow) var(--ease-smooth-out);filter:drop-shadow(0 0 9px rgba(31,216,255,.4))}
+#ready.done .rd-fill{stroke:var(--white);filter:drop-shadow(0 0 12px rgba(245,246,255,.45))}
+.rd-core{position:relative;display:flex;flex-direction:column;align-items:center}
+.rd-core .d{font-size:clamp(56px,15vw,78px);font-variant-numeric:tabular-nums}
+.rd-core .lbl{font-size:11px;margin-top:2px}
+.rd-core .d.word{font-size:26px;color:var(--p2);white-space:nowrap}
+.rd-core .d.word + .lbl{display:none}
+.rd-core .d.pop{animation:ready-pop 420ms var(--ease-bounce) both}
+@keyframes ready-pop{0%{scale:.72;opacity:0}60%{scale:1.1;opacity:1}100%{scale:1}}
+.ready-players{display:flex;gap:12px;justify-content:center}
+.rpl{display:inline-flex;align-items:center;gap:8px;padding:5px 13px 4px;background:var(--ink2);box-shadow:inset 0 0 0 1px var(--line);transform:skewX(var(--skew));opacity:.5;scale:1;
+  transition:background var(--duration-fast) var(--ease-smooth-out),color var(--duration-fast) var(--ease-smooth-out),box-shadow var(--duration-fast) var(--ease-smooth-out),opacity 220ms,scale 420ms var(--ease-bounce)}
+.rpl .d{font-size:20px}
+.rpl i{width:8px;height:8px;border-radius:50%;background:var(--mute);transition:background var(--duration-fast)}
+.rpl[data-ok="1"]{opacity:1;color:var(--ink);scale:1.04}
+.rpl.p1[data-ok="1"]{background:var(--p1);box-shadow:4px 4px 0 rgba(255,46,126,.28)}
+.rpl.p2[data-ok="1"]{background:var(--p2);box-shadow:4px 4px 0 rgba(31,216,255,.28)}
+.rpl[data-ok="1"] i{background:var(--ink)}
+body.solo .rpl.p2{display:none}
+.ready-back{width:min(100%,300px);margin-top:8px;font-size:20px;padding:11px 0 9px}
+
+/* ---------- loading ---------- */
+#loading{z-index:7;background:rgba(7,8,26,.86);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#loading::before{opacity:.45}
+.load-wrap{align-items:center;justify-content:center;text-align:center;gap:16px}
+.load-title{font-size:clamp(64px,20vw,108px);text-shadow:5px 5px 0 rgba(255,46,126,.28),10px 10px 0 rgba(31,216,255,.18)}
+.load-title .dots{color:var(--p2)}
+.loader{display:flex;align-items:center;gap:10px;height:48px}
+.loader i{display:block;width:14px;height:38px;background:var(--white);transform:skewX(var(--skew));animation:load-bounce 1.1s var(--ease-bounce) infinite}
+.loader i:nth-child(1){background:var(--p1);animation-delay:-.18s}
+.loader i:nth-child(2){animation-delay:-.06s}
+.loader i:nth-child(3){background:var(--p2);animation-delay:.06s}
+@keyframes load-bounce{0%,100%{scale:1 .45;translate:0 12px}45%{scale:1 1.15;translate:0 -10px}70%{scale:1 .92;translate:0 2px}}
+.load-msg{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
 
 /* ---------- HUD ---------- */
 .hud{position:fixed;inset:0;pointer-events:none;z-index:3;display:none}
@@ -99,6 +157,8 @@ canvas{width:100%;height:100%;object-fit:contain}
 .tbar{position:absolute;top:0;left:0;right:0;height:6px;background:rgba(245,246,255,.18)}
 .tbar i{display:block;height:100%;width:100%;background:var(--white);transform-origin:left;transition:transform 200ms linear}
 .top{position:absolute;top:calc(6px + env(safe-area-inset-top));left:0;right:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:start;padding:8px 14px 0}
+.hud.on .top{animation:hud-in 520ms var(--ease-bounce) both}
+@keyframes hud-in{0%{opacity:0;translate:0 -14px}100%{opacity:1;translate:0 0}}
 .pl{display:flex;flex-direction:column;align-items:flex-start;position:relative}
 .pl.p2{align-items:flex-end}
 .pl .chip{font-family:var(--disp);font-weight:900;font-style:italic;font-size:15px;letter-spacing:.06em;color:var(--ink);padding:2px 10px 1px;transform:skewX(var(--skew))}
@@ -137,10 +197,71 @@ body.solo .pl.p2{visibility:hidden}
 .round{position:absolute;left:50%;top:calc(170px + env(safe-area-inset-top));transform:translateX(-50%) skewX(var(--skew));background:var(--white);color:var(--ink);
   padding:8px 18px 6px;white-space:nowrap;font-size:28px;opacity:0;box-shadow:5px 5px 0 var(--p1),10px 10px 0 var(--p2)}
 .round.go-pop{animation:round 1700ms var(--ease-smooth-out) both}
-.hint{position:absolute;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));transform:translateX(-50%) skewX(var(--skew));background:#ffd500;color:var(--ink);
-  padding:6px 16px 4px;white-space:nowrap;font-size:22px;opacity:0;transition:opacity 200ms}
-.hint.on{opacity:1}
 @keyframes round{0%{opacity:0;translate:-40px 0}14%{opacity:1;translate:0 0}82%{opacity:1;translate:0 0}100%{opacity:0;translate:40px 0}}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+
+/* large animated movement cues */
+.cue{display:none;flex-direction:column;align-items:center;gap:8px;pointer-events:none;text-align:center}
+.cue.on{display:flex;animation:cue-in .45s var(--ease-bounce) both}
+@keyframes cue-in{0%{opacity:0;scale:.78;translate:0 12px}70%{opacity:1;scale:1.05}100%{opacity:1;scale:1;translate:0 0}}
+.cue-arrow{width:74px;height:74px;overflow:visible;fill:none;stroke:var(--white);stroke-width:5;stroke-linecap:square;filter:drop-shadow(0 0 10px rgba(31,216,255,.5))}
+.cue-arrow .cue-trail{stroke:var(--p2);stroke-width:3;opacity:.75}
+.cue.on .cue-arrow-main{animation:cue-bob .95s var(--ease-bounce) infinite}
+.cue[data-cue="arms"] .cue-arrow{rotate:180deg}
+.cue[data-cue="right"] .cue-arrow{rotate:-90deg}
+.cue[data-cue="left"] .cue-arrow{rotate:90deg}
+@keyframes cue-bob{0%,100%{translate:0 -4px}50%{translate:0 7px}}
+.cue-label{font-family:var(--disp);font-weight:800;font-size:18px;letter-spacing:.1em;text-transform:uppercase;color:var(--white);background:rgba(7,8,26,.8);padding:4px 12px 3px;transform:skewX(var(--skew));box-shadow:4px 4px 0 rgba(31,216,255,.3);white-space:nowrap}
+.hint-cue{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);z-index:5}
+.ready-cue{margin-top:2px}
+
+/* exercise demo card */
+.demo{position:absolute;left:50%;bottom:calc(128px + env(safe-area-inset-bottom));transform:translateX(-50%);opacity:0;pointer-events:none;z-index:4;will-change:opacity,translate,scale}
+.demo.on{animation:demo-show 5s var(--ease-smooth-out) both}
+@keyframes demo-show{0%{opacity:0;translate:0 18px;scale:.94}8%{opacity:1;translate:0 0;scale:1}82%{opacity:1;translate:0 0;scale:1}100%{opacity:0;translate:0 -8px;scale:.99}}
+.demo-card{display:flex;align-items:center;gap:12px;width:min(88vw,360px);padding:10px 14px;background:rgba(7,8,26,.86);border:1px solid var(--line);box-shadow:5px 5px 0 rgba(31,216,255,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transform:skewX(var(--skew))}
+.demo-card>*{transform:skewX(calc(var(--skew)*-1))}
+.demo-art{flex:none;display:grid;place-items:center;width:96px}
+.demo-svg{display:none;width:96px;height:110px;fill:none;stroke:var(--white);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.demo[data-ex="squat"] .demo-svg[data-ex="squat"],.demo[data-ex="jack"] .demo-svg[data-ex="jack"],.demo[data-ex="knees"] .demo-svg[data-ex="knees"]{display:block}
+.demo-svg .floor-plane{fill:rgba(245,246,255,.13);stroke:rgba(245,246,255,.38);stroke-width:2;stroke-linejoin:round}
+.demo-svg .floor-line{fill:none;stroke:rgba(245,246,255,.55);stroke-width:2.5;stroke-linecap:round}
+.demo-svg .floor-hatch{fill:none;stroke:rgba(245,246,255,.3);stroke-width:1.5;stroke-linecap:round}
+.demo-svg .floor-shadow{fill:rgba(7,8,26,.35);stroke:none}
+.demo-svg .motion{stroke:var(--p2);stroke-width:2.5;stroke-dasharray:4 7;opacity:.7;animation:motion-dash 1.2s linear infinite}
+@keyframes motion-dash{to{stroke-dashoffset:-22}}
+.sq-root,.sq-torso,.sq-thigh,.sq-shin,.sq-arm,.jj-root,.jj-arm-l,.jj-arm-r,.jj-legs,.rn-thigh,.rn-shin,.rn-arm{transform-box:view-box}
+.sq-root{transform-origin:60px 78px;animation:sq-drop 1.6s var(--ease-bounce) infinite}
+.sq-torso{transform-origin:60px 78px;animation:sq-lean 1.6s var(--ease-bounce) infinite}
+.sq-thigh{transform-origin:60px 78px;animation:sq-thigh 1.6s var(--ease-bounce) infinite}
+.sq-shin{transform-origin:60px 104px;animation:sq-shin 1.6s var(--ease-bounce) infinite}
+.sq-arm{transform-origin:60px 46px;animation:sq-arm 1.6s var(--ease-bounce) infinite}
+.sq-leg-back{opacity:.42}
+.sq-leg-back .sq-shin{transform-origin:64px 104px}
+@keyframes sq-drop{0%,100%{transform:translateY(0)}50%{transform:translateY(16px)}}
+@keyframes sq-lean{0%,100%{transform:rotate(0)}50%{transform:rotate(15deg)}}
+@keyframes sq-thigh{0%,100%{transform:rotate(0)}50%{transform:rotate(-45deg)}}
+@keyframes sq-shin{0%,100%{transform:rotate(0)}50%{transform:rotate(90deg)}}
+@keyframes sq-arm{0%,100%{transform:rotate(0)}50%{transform:rotate(-55deg)}}
+.jj-arm-l{transform-origin:60px 46px;animation:jj-arm-l 1.2s var(--ease-bounce) infinite}
+.jj-arm-r{transform-origin:60px 46px;animation:jj-arm-r 1.2s var(--ease-bounce) infinite}
+.jj-legs{transform-origin:60px 132px;animation:jj-legs 1.2s var(--ease-bounce) infinite}
+.jj-legs path{vector-effect:non-scaling-stroke}
+@keyframes jj-arm-l{0%,100%{transform:rotate(0)}50%{transform:rotate(105deg)}}
+@keyframes jj-arm-r{0%,100%{transform:rotate(0)}50%{transform:rotate(-105deg)}}
+@keyframes jj-legs{0%,100%{transform:scaleX(1)}50%{transform:scaleX(2.6)}}
+.rn-thigh{transform-origin:60px 78px;animation:rn-thigh 1.2s var(--ease-bounce) infinite}
+.rn-shin{transform-origin:60px 104px;animation:rn-shin 1.2s var(--ease-bounce) infinite}
+.rn-arm{transform-origin:60px 46px;animation:rn-arm 1.2s var(--ease-bounce) infinite}
+.rn-leg-b,.rn-arm-b{opacity:.42}
+.rn-leg-b .rn-thigh,.rn-leg-b .rn-shin,.rn-arm-b{animation-delay:-.6s}
+@keyframes rn-thigh{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-48deg)}}
+@keyframes rn-shin{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(82deg)}}
+@keyframes rn-arm{0%,100%{transform:rotate(-22deg)}50%{transform:rotate(26deg)}}
+.demo-copy{min-width:0}
+.demo-copy .lbl{font-size:10px;letter-spacing:.16em}
+.demo-copy b{display:block;font-size:24px;margin-top:2px}
+.demo-copy small{display:block;font-family:var(--body);font-weight:500;font-size:12px;line-height:1.25;color:var(--mute);margin-top:4px}
 
 /* ---------- results ---------- */
 #end .wrap{gap:18px}
@@ -160,27 +281,41 @@ body.solo .pl.p2{visibility:hidden}
 .bar b{font-size:56px;min-width:2.2ch;text-align:right}
 .bar.p1 b{color:var(--p1)}.bar.p2 b{color:var(--p2)}
 body.solo .bar.p2{display:none}
-.clip{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0}
-.clip p{font-family:var(--disp);font-weight:800;font-size:18px;text-transform:uppercase;letter-spacing:.04em}
-.clip small{display:block;font-family:var(--body);font-weight:500;font-size:13px;text-transform:none;letter-spacing:0;color:var(--mute)}
-.clip .spin{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--white);border-radius:50%;animation:spin .8s linear infinite;flex:none}
+/* ---------- highlight clip page ---------- */
+#clips .clips-wrap{max-width:560px;gap:18px}
+#clipsTitle{font-size:clamp(56px,16vw,96px);margin-top:12px}
+#clipsTitle span{color:transparent;-webkit-text-stroke:2px var(--p2)}
+#clipsSub{color:var(--mute);margin-top:10px}
+#clips:not(.hide) .wrap{animation:page-shift 520ms var(--ease-bounce) both}
+@keyframes page-shift{0%{opacity:0;translate:38px 0}100%{opacity:1;translate:0 0}}
+.preview{position:relative;aspect-ratio:16/9;background:#000;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;box-shadow:5px 5px 0 rgba(31,216,255,.22)}
+#preview.portrait{width:min(100%,280px);aspect-ratio:9/16;margin:0 auto}
+#previewVid{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+#previewVid[hidden]{display:none}
+.preview-load{display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px;text-align:center}
+.preview-load[hidden]{display:none}
+.preview-load .spin{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--p2);border-radius:50%;animation:spin .8s linear infinite}
+.preview-load p{font-family:var(--disp);font-weight:800;font-size:18px;text-transform:uppercase;letter-spacing:.04em}
+.preview-load small{display:block;font-family:var(--body);font-weight:500;font-size:13px;text-transform:none;letter-spacing:0;color:var(--mute);margin-top:4px}
+#previewSpin[hidden]{display:none}
+.go[hidden]{display:none}
+.dl-wrap{position:relative;width:100%}
+.dl-menu{position:absolute;left:0;right:0;bottom:calc(100% + 10px);display:flex;flex-direction:column;gap:8px;padding:10px;background:rgba(7,8,26,.94);border:1px solid var(--line);box-shadow:6px 6px 0 rgba(31,216,255,.28);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:6}
+.dl-menu[hidden]{display:none}
+.dl-menu:not([hidden]){animation:menu-pop 360ms var(--ease-bounce) both}
+@keyframes menu-pop{0%{opacity:0;translate:0 16px;scale:.95}60%{opacity:1;translate:0 -3px;scale:1.01}100%{opacity:1;translate:0 0;scale:1}}
+.dl-option{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--ink2);border:1px solid var(--line);color:var(--white);text-decoration:none;transform:skewX(var(--skew));scale:1;transition:background var(--duration-fast) var(--ease-smooth-out),color var(--duration-fast) var(--ease-smooth-out),scale 360ms var(--ease-bounce)}
+.dl-option>span{min-width:0;transform:skewX(calc(var(--skew)*-1))}
+.dl-option .d{display:block;font-size:20px;line-height:1}
+.dl-option small{display:block;font-family:var(--body);font-weight:500;font-size:12px;color:var(--mute);margin-top:3px;text-transform:none;letter-spacing:0}
+.dl-option svg{width:22px;height:22px;margin-left:auto;flex:none}
+.dl-option:hover{background:var(--white);color:var(--ink)}
+.dl-option:hover small{color:rgba(7,8,26,.65)}
+.dl-option:active{scale:.97}
+.dl-option[hidden]{display:none}
+#dlToggle .chev{transition:rotate 320ms var(--ease-bounce)}
+#dlToggle[aria-expanded="true"] .chev{rotate:180deg}
 @keyframes spin{to{transform:rotate(360deg)}}
-.clip.ready .spin{display:none}
-.clip:not(.ready) .t-success-check{display:none}
-.clip.none .spin{display:none}
-
-/* success check (transitions.dev #10) */
-.t-success-check{display:inline-block;flex:none;opacity:0;will-change:transform,opacity,filter}
-.t-success-check svg{display:block;overflow:visible;width:28px;height:28px}
-.t-success-check svg path{stroke-dasharray:40;stroke-dashoffset:40}
-.t-success-check[data-state="in"]{animation:t-check-fade 500ms var(--check-ease-out) forwards,t-check-rotate 500ms var(--check-ease-out) forwards,t-check-blur 500ms var(--check-ease-out) forwards,t-check-bob 500ms var(--check-ease-bob) forwards}
-.t-success-check[data-state="in"] svg path{animation:t-check-draw 500ms var(--check-ease-out) 80ms forwards}
-@keyframes t-check-fade{from{opacity:0}to{opacity:1}}
-@keyframes t-check-rotate{from{transform:rotate(80deg)}to{transform:rotate(0)}}
-@keyframes t-check-blur{from{filter:blur(10px)}to{filter:blur(0)}}
-@keyframes t-check-bob{from{translate:0 40px}to{translate:0 0}}
-@keyframes t-check-draw{to{stroke-dashoffset:0}}
-#dl[hidden]{display:none}
 
 /* ---------- landscape ---------- */
 @media (orientation:landscape) and (max-height:560px){
@@ -201,14 +336,41 @@ body.solo .bar.p2{display:none}
   #end .wrap{grid-template-columns:1fr 1fr}
   .res-head{padding-top:0;grid-row:span 3}
   #winner{font-size:min(22vh,96px)}
+  .ready-wrap{max-width:820px;grid-template-columns:1fr auto;justify-items:center;align-items:center;text-align:left;column-gap:28px;row-gap:8px}
+  .ready-head{grid-column:1}
+  .ready-head h2{font-size:min(12vh,64px);margin-top:6px}
+  .ready-head p{margin-top:6px}
+  .ready-dial{grid-column:2;grid-row:1 / span 3;width:min(34vh,160px);margin:0}
+  .ready-players,.ready-cue,.ready-back{grid-column:1;justify-self:center}
+  #clips .clips-wrap{max-width:820px}
+  #clips .wrap{grid-template-columns:1.08fr .92fr;align-content:center;column-gap:26px}
+  #clips .res-head{grid-column:2;grid-row:1;padding-top:0}
+  #clips .preview{grid-column:1;grid-row:1 / span 2}
+  #clips .cta{grid-column:2;grid-row:2;margin-top:0}
+  #clips .cta .go{font-size:24px;padding:10px 0 8px}
+  #clips .preview.portrait{width:min(100%,190px)}
+  #clipsTitle{font-size:min(13vh,64px)}
+  #clipsSub{font-size:13px}
+  .hint-cue{top:56%}
+  .demo{bottom:calc(120px + env(safe-area-inset-bottom))}
+  .demo-card{padding:8px 12px;gap:10px}
+  .demo-art{width:72px}
+  .demo-svg{width:72px;height:84px}
+  .demo-copy b{font-size:20px}
+  .demo-copy small{font-size:11px}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:1ms !important;animation-iteration-count:1 !important;transition-duration:1ms !important}
-  .t-success-check{opacity:1}.t-success-check svg path{stroke-dashoffset:0}
 }
 </style>
 </head>
 <body>
+<button class="fs" id="fs" type="button" aria-label="Visas ekranas" title="Visas ekranas" aria-pressed="false">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" aria-hidden="true">
+    <path class="fs-in" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>
+    <path class="fs-out" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>
+  </svg>
+</button>
 <div id="stage"><video id="cam" playsinline muted autoplay></video><canvas id="cv" aria-label="Kameros vaizdas su žaidėjų skeletais"></canvas></div>
 
 <div class="hud" id="hud" aria-live="off">
@@ -221,7 +383,81 @@ body.solo .bar.p2{display:none}
     <div class="pl p2"><span class="chip">P2</span><span class="sc d t-digit-group" id="s2">0</span><span class="plus d" id="f2">+1</span></div>
   </div>
   <div class="round d" id="round">Raundas 2 · ×2</div>
-  <div class="hint d" id="hint"></div>
+  <div class="sr-only" id="hint" aria-live="polite"></div>
+  <div class="cue hint-cue" id="hintCue" data-cue="none" aria-hidden="true">
+    <svg class="cue-arrow" viewBox="0 0 60 60"><path class="cue-arrow-main" d="M30 10v28M16 26l14 14 14-14"/><path class="cue-trail" d="M20 4l10 8 10-8"/></svg>
+    <span class="cue-label" id="hintCueText"></span>
+  </div>
+  <div class="demo" id="demo" data-ex="squat" aria-live="polite" aria-atomic="true">
+    <div class="demo-card">
+      <div class="demo-art" aria-hidden="true">
+        <svg class="demo-svg" data-ex="squat" viewBox="0 0 120 140">
+          <g class="floor">
+            <path class="floor-plane" d="M16 129h88l14 9H2Z"/>
+            <path class="floor-line" d="M16 130h88"/>
+            <path class="floor-hatch" d="M28 133l-5 5M42 133l-5 5M56 133l-5 5M70 133l-5 5M84 133l-5 5M98 133l-5 5"/>
+            <ellipse class="floor-shadow" cx="60" cy="133" rx="25" ry="3"/>
+          </g>
+          <g class="sq-root">
+            <g class="sq-leg sq-leg-back">
+              <g class="sq-thigh"><path d="M60 78l4 26"/><g class="sq-shin"><path d="M64 104v28"/></g></g>
+            </g>
+            <g class="sq-leg">
+              <g class="sq-thigh"><path d="M60 78v26"/><g class="sq-shin"><path d="M60 104v28"/></g></g>
+            </g>
+            <g class="sq-torso">
+              <circle cx="60" cy="22" r="10"/>
+              <path d="M60 33v45"/>
+              <g class="sq-arm"><path d="M60 46 44 66"/></g>
+            </g>
+          </g>
+          <path class="motion" d="M84 62q14 10 8 30"/>
+        </svg>
+        <svg class="demo-svg" data-ex="jack" viewBox="0 0 120 140">
+          <g class="floor">
+            <path class="floor-plane" d="M16 129h88l14 9H2Z"/>
+            <path class="floor-line" d="M16 130h88"/>
+            <path class="floor-hatch" d="M28 133l-5 5M42 133l-5 5M56 133l-5 5M70 133l-5 5M84 133l-5 5M98 133l-5 5"/>
+            <ellipse class="floor-shadow" cx="60" cy="133" rx="25" ry="3"/>
+          </g>
+          <g class="jj-root">
+            <g class="jj-arm-l"><path d="M60 46 44 68"/></g>
+            <g class="jj-arm-r"><path d="M60 46 76 68"/></g>
+            <g class="jj-legs"><path d="M60 78 54 132"/><path d="M60 78l6 54"/></g>
+            <circle cx="60" cy="22" r="10"/>
+            <path d="M60 33v45"/>
+          </g>
+          <path class="motion" d="M30 18q-8 10-2 24M90 18q8 10 2 24"/>
+        </svg>
+        <svg class="demo-svg" data-ex="knees" viewBox="0 0 120 140">
+          <g class="floor">
+            <path class="floor-plane" d="M16 129h88l14 9H2Z"/>
+            <path class="floor-line" d="M16 130h88"/>
+            <path class="floor-hatch" d="M28 133l-5 5M42 133l-5 5M56 133l-5 5M70 133l-5 5M84 133l-5 5M98 133l-5 5"/>
+            <ellipse class="floor-shadow" cx="60" cy="133" rx="25" ry="3"/>
+          </g>
+          <g class="rn-root">
+            <g class="rn-leg rn-leg-b">
+              <g class="rn-thigh"><path d="M60 78v26"/><g class="rn-shin"><path d="M60 104v28"/></g></g>
+            </g>
+            <g class="rn-leg">
+              <g class="rn-thigh"><path d="M60 78v26"/><g class="rn-shin"><path d="M60 104v28"/></g></g>
+            </g>
+            <g class="rn-arm rn-arm-b"><path d="M60 46 46 66"/></g>
+            <g class="rn-arm rn-arm-a"><path d="M60 46 74 66"/></g>
+            <circle cx="60" cy="22" r="10"/>
+            <path d="M60 33v45"/>
+          </g>
+          <path class="motion" d="M82 82q12 8 14 22M38 82q-12 8-14 22"/>
+        </svg>
+      </div>
+      <div class="demo-copy">
+        <span class="lbl">Kaip daryti</span>
+        <b class="d" id="demoName">Pritūpimai</b>
+        <small id="demoCue">Sulenk kelius ir vėl atsistok</small>
+      </div>
+    </div>
+  </div>
 </div>
 
 <main class="screen" id="start">
@@ -284,7 +520,41 @@ body.solo .bar.p2{display:none}
   </div>
 </main>
 
-<div class="screen hide" id="count" aria-live="assertive"><div class="d" id="cnum">3</div><div class="lbl cdl">Pirmas pratimas: pritūpimai</div></div>
+<section class="screen hide" id="ready" aria-labelledby="readyTitle">
+  <div class="wrap ready-wrap">
+    <header class="ready-head">
+      <span class="tag">Pasiruošimas</span>
+      <h2 class="d" id="readyTitle">Rankas <span>aukštyn</span></h2>
+      <p>Laikykite abi rankas virš galvos 3 sekundes.</p>
+    </header>
+    <div class="ready-dial" id="readyDial">
+      <svg viewBox="0 0 140 140" aria-hidden="true">
+        <circle class="rd-bg" cx="70" cy="70" r="60"/>
+        <circle class="rd-fill" id="rdRing" cx="70" cy="70" r="60" pathLength="100"/>
+      </svg>
+      <div class="rd-core"><span class="d" id="rdCount">3</span><span class="lbl">sek.</span></div>
+    </div>
+    <div class="ready-players" aria-label="Žaidėjų būsena">
+      <span class="rpl p1" id="rd1" data-ok="0"><b class="d">P1</b><i></i></span>
+      <span class="rpl p2" id="rd2" data-ok="0"><b class="d">P2</b><i></i></span>
+    </div>
+    <div class="cue ready-cue" id="readyCue" data-cue="none" aria-hidden="true">
+      <svg class="cue-arrow" viewBox="0 0 60 60"><path class="cue-arrow-main" d="M30 10v28M16 26l14 14 14-14"/><path class="cue-trail" d="M20 4l10 8 10-8"/></svg>
+      <span class="cue-label" id="readyCueText"></span>
+    </div>
+    <p class="sr-only" id="readyHint" aria-live="polite">Atsistokite taip, kad matytųsi visas kūnas</p>
+    <button class="go alt ready-back" id="readyBack" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H6M11 6l-6 6 6 6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square"/></svg>Atgal į nustatymus</button>
+  </div>
+</section>
+
+<div class="screen hide" id="loading" role="status" aria-live="polite">
+  <div class="wrap load-wrap">
+    <span class="tag">Judesio žaidimas</span>
+    <h2 class="d load-title">Kraunama<span class="dots">…</span></h2>
+    <div class="loader" aria-hidden="true"><i></i><i></i><i></i></div>
+    <p class="load-msg">Ruošiama kamera ir judesio modelis</p>
+  </div>
+</div>
 
 <section class="screen hide" id="end" aria-labelledby="winner">
   <div class="wrap">
@@ -297,14 +567,37 @@ body.solo .bar.p2{display:none}
       <div class="bar p1"><span class="chip">P1</span><span class="track"><i id="b1"></i></span><b class="d t-digit-group" id="r1">0</b></div>
       <div class="bar p2"><span class="chip">P2</span><span class="track"><i id="b2"></i></span><b class="d t-digit-group" id="r2">0</b></div>
     </div>
-    <div class="clip" id="clip">
-      <span class="spin" aria-hidden="true"></span>
-      <span class="t-success-check" id="chk" data-state="out" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" fill="#1fd8ff"/><path d="M8 14.5l4 4 8-9" stroke="#07081a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      <p id="clipTxt">Ruošiamas klipas…<small>Įrašas su skeletais, tinka pasidalinti</small></p>
+    <div class="cta">
+      <button class="go" id="toClips"><span>Toliau</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square"/></svg></button>
+      <p class="fine">Toliau – geriausios žaidimo akimirkos</p>
+    </div>
+  </div>
+</section>
+
+<section class="screen hide" id="clips" aria-labelledby="clipsTitle">
+  <div class="wrap clips-wrap">
+    <header class="res-head">
+      <span class="wl">Jūsų klipas</span>
+      <h2 class="d" id="clipsTitle">Geriausios <span>akimirkos</span></h2>
+      <p id="clipsSub">Ištrauka iš taškų karščiausių akimirkų</p>
+    </header>
+    <div class="preview" id="preview">
+      <video id="previewVid" playsinline muted loop controls hidden aria-label="Geriausių akimirkų peržiūra"></video>
+      <div class="preview-load" id="previewLoad" aria-live="polite">
+        <span class="spin" id="previewSpin" aria-hidden="true"></span>
+        <p id="previewMsg">Kerpamos geriausios akimirkos…<small>15–20 s iš taškų karščiausių vietų</small></p>
+      </div>
     </div>
     <div class="cta">
-      <a class="go" id="dl" download="novacore-klipas.webm" hidden>Atsisiųsti klipą<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12M6 11l6 6 6-6M5 20h14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square"/></svg></a>
-      <button class="go alt" onclick="location.reload()">Žaisti dar kartą</button>
+      <div class="dl-wrap" id="dlWrap">
+        <button class="go" id="dlToggle" type="button" aria-expanded="false" aria-controls="dlMenu" aria-haspopup="true" hidden>Atsisiųsti klipą<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square"/></svg></button>
+        <div class="dl-menu" id="dlMenu" hidden>
+          <a class="dl-option" id="dlPrev" download="novacore-highlights.webm" hidden><span><b class="d">Geriausios akimirkos</b><small>15–20 s peržiūra</small></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12M6 11l6 6 6-6M5 20h14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square"/></svg></a>
+          <a class="dl-option" id="dlFull" download="novacore-full.webm" hidden><span><b class="d">Pilnas klipas</b><small>Visas žaidimas</small></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12M6 11l6 6 6-6M5 20h14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square"/></svg></a>
+        </div>
+      </div>
+      <button class="go alt" id="sharePrev" type="button" hidden>Bendrinti peržiūrą<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="6" cy="12" r="2.5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="18" cy="19" r="2.5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
+      <button class="go alt" onclick="location.reload()">Grįžti į pradžią</button>
     </div>
   </div>
 </section>
@@ -314,6 +607,11 @@ import {PoseLandmarker, FilesetResolver} from "https://cdn.jsdelivr.net/npm/@med
 
 const $=s=>document.querySelector(s);
 const cam=$("#cam"), cv=$("#cv"), ctx=cv.getContext("2d");
+// offscreen canvas -> clips contain the raw camera only, no skeleton overlay
+const recCv=document.createElement("canvas"), recCtx=recCv.getContext("2d");
+// prefer MP4 (universal playback); webm only as a last-resort fallback
+const REC_MIME=(()=>{if(typeof MediaRecorder==="undefined")return "";for(const t of ["video/mp4;codecs=avc1.42E01E","video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp8","video/webm"]){try{if(MediaRecorder.isTypeSupported(t))return t}catch(e){}}return ""})();
+const REC_EXT=REC_MIME.includes("mp4")?"mp4":"webm";
 let players=2, duration=180;
 document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{players=+b.dataset.p;sel(b);document.body.classList.toggle("solo",players===1)});
 document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{duration=+b.dataset.d;sel(b)});
@@ -325,17 +623,98 @@ const EX=[
  {id:"jack",name:"Pašokimai"},
  {id:"knees",name:"Aukšti keliai"},
 ];
+const ROUND_SECS=30;
+const DEMO={
+ squat:{name:"Pritūpimai",cue:"Sulenk kelius ir vėl atsistok"},
+ jack:{name:"Pašokimai",cue:"Rankos aukštyn, kojos plačiau"},
+ knees:{name:"Aukšti keliai",cue:"Bėk vietoje ir kelk kelius aukštyn"},
+};
 const score=[0,0];
+const scoreEvents=[];
+const lastPointAt=[0,0];
 // per-player state machine
 const st=[{},{}];
 let landmarker, running=false, t0=0, raf, rec, chunks=[];
+const READY_MS=3000, READY_GRACE=300; // hold arms up this long before the game starts
+let readying=false, readyRaf=0, holdStart=0, lastReady=0, lastReadyDigit="";
 
 function ang(a,b,c){const v1=[a.x-b.x,a.y-b.y],v2=[c.x-b.x,c.y-b.y];const d=v1[0]*v2[0]+v1[1]*v2[1];const m=Math.hypot(...v1)*Math.hypot(...v2)||1;return Math.acos(Math.max(-1,Math.min(1,d/m)))*180/Math.PI}
 
 // landmarks that MUST be visible per exercise (else: no counting + hint "atsitrauk")
-const NEED={squat:[23,24,25,26,27,28],jack:[0,11,12,15,16,27,28],knees:[23,24,25,26]};
+const NEED={squat:[23,24,25,26,27,28],jack:[0,11,12,15,16,23,24,27,28],knees:[23,24,25,26]};
 const VIS=0.5, MIN_GAP=350; // ms between reps – kills jitter double-counts
 function visible(lm,ex){return NEED[ex].every(j=>(lm[j].visibility??1)>VIS)}
+// ready gate: both wrists above the nose, all key points visible
+function armsUp(lm){return [0,11,12,15,16].every(j=>(lm[j].visibility??1)>VIS)&&lm[15].y<lm[0].y&&lm[16].y<lm[0].y}
+// core body too close to a side of the camera frame? return the direction to move
+function sideCue(lm){
+  const xs=[];
+  for(const j of [0,11,12,23,24]){
+    const p=lm[j];
+    if((p.visibility??1)>VIS)xs.push(1-p.x);
+  }
+  if(xs.length<2)return "";
+  const min=Math.min(...xs),max=Math.max(...xs);
+  if(min<.07)return "right";
+  if(max>.93)return "left";
+  return "";
+}
+// pick 4 s bins with the most points, but guarantee coverage of every exercise played
+function highlightSegments(events,total,binSecs=4,targetSecs=16){
+  total=Math.max(0,total);
+  if(!total)return [];
+  const count=Math.max(1,Math.ceil(total/binSecs));
+  const bins=Array.from({length:count},()=>0);
+  for(const e of events||[]){
+    const t=+e.t;
+    if(!Number.isFinite(t)||t<0||t>=total)continue;
+    bins[Math.min(count-1,Math.floor(t/binSecs))]+=e.points||1;
+  }
+  const rounds=Math.ceil(total/ROUND_SECS);
+  const present=[...new Set(Array.from({length:rounds},(_,r)=>r%EX.length))];
+  const wanted=Math.min(count,Math.max(present.length,Math.ceil(targetSecs/binSecs)));
+  const chosen=[];
+  const pickBest=predicate=>{
+    let best=-1,bestScore=-1;
+    for(let i=0;i<count;i++){
+      if(chosen.includes(i)||!predicate(i))continue;
+      if(bins[i]>bestScore){bestScore=bins[i];best=i}
+    }
+    if(best>=0)chosen.push(best);
+  };
+  for(const exIndex of present){
+    pickBest(i=>Math.floor(((i+0.5)*binSecs)/ROUND_SECS)%EX.length===exIndex);
+  }
+  const ranked=bins.map((score,i)=>({score,i})).sort((a,b)=>b.score-a.score||a.i-b.i);
+  for(const b of ranked){
+    if(chosen.length>=wanted)break;
+    if(!chosen.includes(b.i)&&b.score>0)chosen.push(b.i);
+  }
+  if(chosen.length<wanted){
+    const pool=bins.map((_,i)=>i).filter(i=>!chosen.includes(i));
+    if(chosen.length){
+      pool.sort((a,b)=>{
+        const da=Math.min(...chosen.map(i=>Math.abs(i-a)));
+        const db=Math.min(...chosen.map(i=>Math.abs(i-b)));
+        return da-db||a-b;
+      });
+    }
+    for(const i of pool){
+      if(chosen.length>=wanted)break;
+      chosen.push(i);
+    }
+  }
+  chosen.sort((a,b)=>a-b);
+  const segments=[];
+  for(const i of chosen){
+    const start=Math.max(0,i*binSecs-0.5);
+    const end=Math.min(total,(i+1)*binSecs+0.5);
+    const prev=segments[segments.length-1];
+    if(prev&&start<=prev.end+0.15)prev.end=Math.max(prev.end,end);
+    else segments.push({start,end});
+  }
+  return segments;
+}
 // pure: mutates s, returns true when one rep completes
 function step(s,lm,ex,now){
   if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.last=0}
@@ -349,10 +728,15 @@ function step(s,lm,ex,now){
     if(k<110&&!s.down) s.down=true;
     else if(k>160&&s.down){s.down=false;rep=true}
   }else if(ex==="jack"){
-    // jumping jack: wrists above nose + ankles apart (> shoulder width*1.4)
+    // require both arms to swing out/up and both legs to spread, not just total width
+    const sw=Math.abs(lm[11].x-lm[12].x)||0.1, aw=Math.abs(lm[27].x-lm[28].x);
     const up=lm[15].y<lm[0].y&&lm[16].y<lm[0].y;
-    const sw=Math.abs(lm[11].x-lm[12].x), aw=Math.abs(lm[27].x-lm[28].x);
-    const open=up&&aw>sw*1.4, closed=!up&&aw<sw*1.1;
+    const down=lm[15].y>lm[11].y&&lm[16].y>lm[12].y;
+    const armsOut=Math.abs(lm[15].x-lm[11].x)>sw*.35&&Math.abs(lm[16].x-lm[12].x)>sw*.35;
+    const armsIn=Math.abs(lm[15].x-lm[11].x)<sw*.55&&Math.abs(lm[16].x-lm[12].x)<sw*.55;
+    const legsOut=aw>sw*1.4&&Math.abs(lm[27].x-lm[23].x)>sw*.35&&Math.abs(lm[28].x-lm[24].x)>sw*.35;
+    const legsIn=aw<sw*1.1&&Math.abs(lm[27].x-lm[23].x)<sw*.45&&Math.abs(lm[28].x-lm[24].x)<sw*.45;
+    const open=up&&armsOut&&legsOut, closed=down&&armsIn&&legsIn;
     if(open&&!s.open) s.open=true;
     else if(closed&&s.open){s.open=false;rep=true}
   }else{
@@ -368,8 +752,17 @@ function step(s,lm,ex,now){
   if(rep) s.last=now;
   return rep;
 }
-function detect(lm,i,ex,mult){ if(step(st[i],lm,ex,performance.now())){score[i]+=mult;flash(i)} }
-if(typeof module!=="undefined") module.exports={step,ang}; // node self-check
+function detect(lm,i,ex,mult){
+  const now=performance.now();
+  if(step(st[i],lm,ex,now)){
+    const t=(now-t0)/1000;
+    score[i]+=mult;
+    scoreEvents.push({t,points:mult,player:i});
+    lastPointAt[i]=t;
+    flash(i);
+  }
+}
+if(typeof module!=="undefined") module.exports={step,ang,armsUp,sideCue,highlightSegments}; // node self-check
 // --- DOM helpers (UI only) ---
 let curMult=1, lastRound=0;
 const shown=["0","0"];
@@ -380,44 +773,250 @@ function setDigits(el,str){ // transitions.dev number pop-in
   void el.offsetWidth;el.classList.add("is-animating");
 }
 let fl=[0,0];function flash(i){fl[i]=performance.now();const f=$(`#f${i+1}`);f.textContent=`+${curMult}`;replay(f,"go-pop");replay($(`#e${i+1}`),"go-pop")}
+function showDemo(ex){
+  if(hintCue.classList.contains("on"))return;
+  const info=DEMO[ex.id];
+  if(!info){clearTimeout(demoTimer);demoRoot.classList.remove("on");return}
+  demoRoot.dataset.ex=ex.id;
+  demoName.textContent=info.name;
+  demoCue.textContent=info.cue;
+  replay(demoRoot,"on");
+  clearTimeout(demoTimer);
+  demoTimer=setTimeout(()=>demoRoot.classList.remove("on"),5100);
+}
+function setCue(root,label,kind,text){
+  kind=kind||"none";
+  if(root===hintCue&&kind!=="none"){clearTimeout(demoTimer);demoRoot.classList.remove("on")}
+  if(root.dataset.cue!==kind)root.dataset.cue=kind;
+  root.classList.toggle("on",kind!=="none");
+  if(label.textContent!==text)label.textContent=text;
+}
+
+// fullscreen: use vendor-prefixed fallback, hide the control when unsupported
+const fsBtn=$("#fs"), fsRoot=document.documentElement;
+const fsApi=fsRoot.requestFullscreen||fsRoot.webkitRequestFullscreen;
+if(!fsApi) fsBtn.hidden=true;
+const fsElement=()=>document.fullscreenElement||document.webkitFullscreenElement||null;
+function updateFs(){
+  const on=!!fsElement();
+  fsBtn.dataset.on=on?"1":"0";
+  fsBtn.setAttribute("aria-pressed",on?"true":"false");
+  const label=on?"Išeiti iš viso ekrano":"Visas ekranas";
+  fsBtn.setAttribute("aria-label",label);fsBtn.title=label;
+}
+async function toggleFs(){
+  try{
+    if(fsElement()){
+      if(document.exitFullscreen) await document.exitFullscreen();
+      else document.webkitExitFullscreen?.();
+    }else if(fsRoot.requestFullscreen) await fsRoot.requestFullscreen({navigationUI:"hide"});
+    else await fsRoot.webkitRequestFullscreen?.();
+  }catch(e){/* browser may reject if the gesture was lost */}
+  updateFs();
+}
+fsBtn.onclick=toggleFs;
+["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,updateFs));
+updateFs();
+
+const readyRoot=$("#ready"), rdRing=$("#rdRing"), rdCount=$("#rdCount"), readyHint=$("#readyHint"), rdChips=[$("#rd1"),$("#rd2")];
+const loadingRoot=$("#loading"), clipsRoot=$("#clips"), previewBox=$("#preview"), previewVid=$("#previewVid"), previewLoad=$("#previewLoad"), previewSpin=$("#previewSpin"), previewMsg=$("#previewMsg"), dlPrev=$("#dlPrev"), dlFull=$("#dlFull"), dlToggle=$("#dlToggle"), dlMenu=$("#dlMenu"), sharePrev=$("#sharePrev");
+const demoRoot=$("#demo"), demoName=$("#demoName"), demoCue=$("#demoCue");
+const readyCue=$("#readyCue"), readyCueText=$("#readyCueText"), hintCue=$("#hintCue"), hintCueText=$("#hintCueText");
+dlPrev.download=`novacore-highlights.${REC_EXT}`;dlFull.download=`novacore-full.${REC_EXT}`;
+let fullBlob=null, fullURL=null, previewBlob=null, previewURL=null, clipState="idle", highlightPlan=[], highlightTotal=0, clipPortrait=false, demoTimer=0, startTimer=0, nudgedRound=-1;
+function drawMirrored(target,targetCanvas){
+  target.save();target.translate(targetCanvas.width,0);target.scale(-1,1);target.drawImage(cam,0,0);target.restore();
+}
+function drawCamera(){drawMirrored(ctx,cv)}
+function drawRecordFrame(){
+  const sw=cam.videoWidth,sh=cam.videoHeight;
+  if(!recCv.width||!recCv.height||!sw||!sh)return;
+  const scale=Math.max(recCv.width/sw,recCv.height/sh);
+  const dw=sw*scale,dh=sh*scale;
+  recCtx.save();
+  recCtx.translate(recCv.width,0);recCtx.scale(-1,1);
+  recCtx.drawImage(cam,(recCv.width-dw)/2,(recCv.height-dh)/2,dw,dh);
+  recCtx.restore();
+}
+function detectPoses(now){
+  const res=landmarker.detectForVideo(cam,now);
+  return (res.landmarks||[]).map(lm=>({lm,x:1-lm[0].x})).sort((a,b)=>a.x-b.x).slice(0,players);
+}
 
 $("#go").onclick=async()=>{
   $("#goTxt").textContent="Kraunama…";$("#go").setAttribute("aria-busy","true");
-  const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:false});
-  cam.srcObject=stream; await new Promise(r=>cam.onloadedmetadata=r); await cam.play();
-  cv.width=cam.videoWidth; cv.height=cam.videoHeight;
-  const fs=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
-  landmarker=await PoseLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",delegate:"GPU"},runningMode:"VIDEO",numPoses:players});
-  $("#start").classList.add("hide");
-  await countdown();
-  startRec();
-  running=true;t0=performance.now();$("#hud").classList.add("on");$("#recInd").hidden=!rec;loop();
+  loadingRoot.classList.remove("hide");
+  const loadingSince=performance.now();
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:false});
+    cam.srcObject=stream; await new Promise(r=>cam.onloadedmetadata=r); await cam.play();
+    cv.width=cam.videoWidth; cv.height=cam.videoHeight;
+    const fs=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+    landmarker=await PoseLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",delegate:"GPU"},runningMode:"VIDEO",numPoses:players});
+    const wait=700-(performance.now()-loadingSince);
+    if(wait>0)await new Promise(r=>setTimeout(r,wait));
+    $("#start").classList.add("hide");
+    document.body.classList.toggle("solo",players===1);
+    readyRoot.classList.remove("hide");
+    loadingRoot.classList.add("hide");
+    readying=true;
+    readyLoop();
+  }catch(e){
+    console.error("Nepavyko paleisti žaidimo:",e);
+    cam.srcObject?.getTracks().forEach(t=>t.stop());
+    cam.srcObject=null;
+    readying=false;
+    readyRoot.classList.add("hide");
+    loadingRoot.classList.add("hide");
+    $("#go").removeAttribute("aria-busy");
+    $("#goTxt").textContent="Bandykite dar kartą";
+  }
 };
 
-async function countdown(){const o=$("#count"),n=$("#cnum");o.classList.remove("hide");for(const v of ["3","2","1","Pirmyn!"]){n.textContent=v;n.dataset.v=v;n.classList.toggle("word",v.length>1);replay(n,"pop");await new Promise(r=>setTimeout(r,800))}o.classList.add("hide")}
+function startGame(){
+  if(running)return;
+  clearTimeout(startTimer);startTimer=0;
+  nudgedRound=-1;lastPointAt[0]=lastPointAt[1]=0;
+  readyRoot.classList.add("hide");
+  readyRoot.classList.remove("done","holding");
+  setCue(readyCue,readyCueText,"","");setCue(hintCue,hintCueText,"","");
+  $("#hud").classList.add("on");
+  document.body.classList.add("playing");
+  lastRound=-1;
+  startRec();
+  $("#recInd").hidden=!rec;
+  running=true;t0=performance.now();
+  loop();
+}
+
+function finishReady(){
+  rdCount.textContent="Pirmyn!";
+  rdCount.classList.add("word");
+  replay(rdCount,"pop");
+  readyHint.textContent="Puiku!";
+  readyRoot.classList.add("done");
+  startTimer=setTimeout(startGame,520);
+}
+
+function backToSettings(){
+  readying=false;
+  clearTimeout(startTimer);startTimer=0;
+  clearTimeout(demoTimer);demoRoot.classList.remove("on");
+  cancelAnimationFrame(readyRaf);
+  holdStart=0;lastReady=0;lastReadyDigit="";
+  readyRoot.classList.add("hide");
+  readyRoot.classList.remove("holding","done");
+  setCue(readyCue,readyCueText,"","");setCue(hintCue,hintCueText,"","");
+  rdRing.style.strokeDashoffset="100";
+  rdCount.textContent="3";
+  rdCount.classList.remove("word","pop");
+  rdChips.forEach(el=>el.dataset.ok="0");
+  readyHint.textContent="Atsistokite taip, kad matytųsi visas kūnas";
+  loadingRoot.classList.add("hide");
+  cam.srcObject?.getTracks().forEach(t=>t.stop());
+  cam.srcObject=null;
+  try{landmarker?.close?.()}catch(e){}
+  landmarker=null;
+  $("#start").classList.remove("hide");
+  $("#start").scrollTop=0;
+  $("#goTxt").textContent="Pradėti";
+  $("#go").removeAttribute("aria-busy");
+}
+$("#readyBack").onclick=backToSettings;
+
+function readyLoop(){
+  if(!readying)return;
+  const now=performance.now();
+  drawCamera();
+  const poses=detectPoses(now);
+  poses.forEach((p,i)=>draw(p.lm,i));
+
+  const up=poses.map(p=>armsUp(p.lm));
+  rdChips.forEach((el,i)=>el.dataset.ok=(i<poses.length&&up[i])?"1":"0");
+
+  const allVisible=poses.length===players;
+  const allReady=allVisible&&up.slice(0,players).every(Boolean);
+  const sides=poses.map(p=>sideCue(p.lm));
+  if(!allVisible)setCue(readyCue,readyCueText,"back","Atsitrauk");
+  else if(sides.some(Boolean)){
+    const k=sides.findIndex(Boolean),dir=sides[k];
+    setCue(readyCue,readyCueText,dir,`P${k+1} · ${dir==="left"?"į kairę":"į dešinę"}`);
+  }else if(!allReady)setCue(readyCue,readyCueText,"arms","Rankos aukštyn");
+  else setCue(readyCue,readyCueText,"","");
+  if(allReady){
+    lastReady=now;
+    if(!holdStart)holdStart=now;
+  }else if(holdStart&&now-lastReady>READY_GRACE){
+    holdStart=0;
+  }
+
+  const held=holdStart?Math.min(READY_MS,now-holdStart):0;
+  const pct=held/READY_MS;
+  rdRing.style.strokeDashoffset=String(100-pct*100);
+
+  const digit=holdStart?String(Math.max(1,Math.ceil((READY_MS-held)/1000))):"3";
+  if(digit!==lastReadyDigit){lastReadyDigit=digit;rdCount.textContent=digit;replay(rdCount,"pop")}
+  readyRoot.classList.toggle("holding",allReady);
+  readyRoot.classList.toggle("done",pct>=1);
+
+  let msg;
+  if(!allVisible){
+    const missing=players-poses.length;
+    msg=missing===1?"Nematau žaidėjo – įsirikiuokite, kad matytųsi visas kūnas":`Nematau ${missing} žaidėjų – įsirikiuokite, kad matytųsi visi`;
+  }else if(!allReady){
+    const waiting=up.slice(0,players).map((ok,i)=>ok?null:`P${i+1}`).filter(Boolean);
+    msg=waiting.length===1?`${waiting[0]}: pakelkite abi rankas virš galvos`:"Pakelkite abi rankas virš galvos";
+  }else msg="Puiku – laikykite rankas virš galvos";
+  if(readyHint.textContent!==msg)readyHint.textContent=msg;
+
+  if(pct>=1){readying=false;cancelAnimationFrame(readyRaf);finishReady();return}
+  readyRaf=requestAnimationFrame(readyLoop);
+}
 
 function startRec(){
-  try{const s=cv.captureStream(30);rec=new MediaRecorder(s,{mimeType:"video/webm"});rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);rec.start(1000)}catch(e){rec=null}
+  clipPortrait=innerHeight>innerWidth;
+  recCv.width=clipPortrait?720:1280;
+  recCv.height=clipPortrait?1280:720;
+  previewBox.classList.toggle("portrait",clipPortrait);
+  try{
+    drawRecordFrame();
+    const s=recCv.captureStream(30);
+    rec=new MediaRecorder(s,REC_MIME?{mimeType:REC_MIME}:undefined);
+    rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+    rec.start(1000);
+  }catch(e){rec=null}
 }
 
 function loop(){
   if(!running)return;
-  const el=(performance.now()-t0)/1000, left=Math.max(0,duration-el);
-  const round=Math.floor(el/30), mult=1+round, ex=EX[round%EX.length];
+  const now=performance.now();
+  const el=(now-t0)/1000, left=Math.max(0,duration-el);
+  const round=Math.floor(el/ROUND_SECS), mult=1+round, ex=EX[round%EX.length];
   $("#timer").textContent=`${Math.floor(left/60)}:${String(Math.floor(left%60)).padStart(2,"0")}`;
   $("#tbar").style.transform=`scaleX(${left/duration})`;
   curMult=mult;
-  if(round!==lastRound){lastRound=round;$("#mult").textContent=`×${mult}`;$("#exName").textContent=ex.name;$("#round").textContent=`${ex.name} · ×${mult}`;replay($("#round"),"go-pop")}
-
-  ctx.save();ctx.translate(cv.width,0);ctx.scale(-1,1);ctx.drawImage(cam,0,0);ctx.restore();
-  const res=landmarker.detectForVideo(cam,performance.now());
+  if(round!==lastRound){lastRound=round;$("#mult").textContent=`×${mult}`;$("#exName").textContent=ex.name;$("#round").textContent=`${ex.name} · ×${mult}`;replay($("#round"),"go-pop");showDemo(ex)}
+  drawCamera();drawRecordFrame();
   // assign by x: leftmost on screen (mirrored) = player 1
-  const poses=(res.landmarks||[]).map(lm=>({lm,x:1-lm[0].x})).sort((a,b)=>a.x-b.x).slice(0,players);
+  const poses=detectPoses(now);
   poses.forEach((p,i)=>{detect(p.lm,i,ex.id,mult);draw(p.lm,i)});
   const lost=poses.map((p,i)=>st[i].lost?i+1:0).filter(Boolean);
   const missing=poses.length<players?`Nematau ${players-poses.length===2?"žaidėjų":"žaidėjo "+(poses.length+1)}`:lost.length?`P${lost.join(" ir P")}: atsitrauk, nesimato viso kūno`:"";
-  $("#hint").textContent=missing;$("#hint").classList.toggle("on",!!missing);
+  $("#hint").textContent=missing;
+  const sides=poses.map(p=>sideCue(p.lm));
+  if(poses.length<players)setCue(hintCue,hintCueText,"back","Įsirikiuok");
+  else if(sides.some(Boolean)){
+    const k=sides.findIndex(Boolean),dir=sides[k];
+    setCue(hintCue,hintCueText,dir,`P${k+1} · ${dir==="left"?"į kairę":"į dešinę"}`);
+  }else if(lost.length)setCue(hintCue,hintCueText,"back",`P${lost.join(" ir P")} · atsitrauk`);
+  else setCue(hintCue,hintCueText,"","");
   [0,1].forEach(i=>{const v=String(score[i]);if(v!==shown[i]){shown[i]=v;setDigits($(`#s${i+1}`),v)}});
+  const roundStart=round*ROUND_SECS;
+  if(nudgedRound!==round&&el-roundStart>9&&!demoRoot.classList.contains("on")&&!hintCue.classList.contains("on")){
+    let idle=false;
+    for(let i=0;i<players;i++)if(el-Math.max(lastPointAt[i],roundStart)>9)idle=true;
+    if(idle){showDemo(ex);nudgedRound=round}
+  }
   if(left<=0){finish();return}
   raf=requestAnimationFrame(loop);
 }
@@ -431,8 +1030,158 @@ function draw(lm,i){
   ctx.font="italic 900 34px 'Barlow Condensed',system-ui";ctx.fillText(`P${i+1}`,(1-lm[0].x)*W-18,lm[0].y*H-30);
 }
 
+function openClips(){
+  $("#end").classList.add("hide");
+  clipsRoot.classList.remove("hide");
+  if(clipState==="ready"){
+    previewVid.currentTime=0;
+    previewVid.play().catch(()=>{});
+  }
+}
+$("#toClips").onclick=openClips;
+previewVid.onerror=()=>{if(clipState==="ready")setClipState("error","Nepavyko atkurti peržiūros.")};
+
+function setDlOpen(open){
+  dlMenu.hidden=!open;
+  dlToggle.setAttribute("aria-expanded",String(open));
+}
+dlToggle.onclick=e=>{e.stopPropagation();setDlOpen(dlMenu.hidden)};
+document.addEventListener("click",e=>{if(!e.target.closest("#dlWrap"))setDlOpen(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")setDlOpen(false)});
+dlMenu.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>setTimeout(()=>setDlOpen(false),80)));
+
+async function sharePreviewClip(){
+  if(!previewBlob)return;
+  const type=(previewBlob.type||REC_MIME||"video/mp4").split(";")[0];
+  const ext=type.includes("mp4")?"mp4":"webm";
+  const file=new File([previewBlob],`novacore-highlights.${ext}`,{type});
+  try{
+    if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
+      await navigator.share({files:[file],title:"NovaCore",text:"Mano NovaCore geriausios akimirkos"});
+      return;
+    }
+  }catch(e){if(e.name==="AbortError")return}
+  const a=document.createElement("a");a.href=previewURL;a.download=`novacore-highlights.${ext}`;
+  document.body.appendChild(a);a.click();a.remove();
+}
+sharePrev.onclick=sharePreviewClip;
+
+function setClipState(state,message){
+  clipState=state;
+  const ready=state==="ready";
+  previewVid.hidden=!ready;
+  previewLoad.hidden=ready;
+  previewSpin.hidden=state!=="processing";
+  if(state==="processing")previewMsg.innerHTML="Kerpamos geriausios akimirkos…<small>15–20 s iš taškų karščiausių vietų</small>";
+  else if(state==="error")previewMsg.innerHTML=`${message||"Nepavyko paruošti peržiūros."}<small>Pilną klipą vis tiek galite atsisiųsti.</small>`;
+  else if(state==="unavailable")previewMsg.innerHTML="Klipas neįrašytas.<small>Ši naršyklė nepalaiko įrašymo.</small>";
+  if(fullURL){dlFull.href=fullURL;dlFull.hidden=false}else{dlFull.hidden=true;dlFull.removeAttribute("href")}
+  if(previewURL){dlPrev.href=previewURL;dlPrev.hidden=false}else{dlPrev.hidden=true;dlPrev.removeAttribute("href")}
+  dlToggle.hidden=!(fullURL||previewURL);
+  if(dlToggle.hidden)setDlOpen(false);
+  sharePrev.hidden=!previewBlob;
+  if(ready){
+    if(previewVid.src!==previewURL)previewVid.src=previewURL;
+    if(!clipsRoot.classList.contains("hide"))previewVid.play().catch(()=>{});
+  }
+}
+
+function preparePreview(){
+  if(!fullBlob||!fullBlob.size){setClipState("unavailable");return}
+  setClipState("processing");
+  const plan=highlightPlan.length?highlightPlan:[{start:0,end:Math.min(16,Math.max(1,highlightTotal))}];
+  makeHighlightClip(fullBlob,plan)
+    .then(blob=>{previewBlob=blob;previewURL=URL.createObjectURL(blob);setClipState("ready")})
+    .catch(err=>{console.error("Highlight preview:",err);setClipState("error")});
+}
+
+function seekVideo(video,time){
+  return new Promise(resolve=>{
+    const target=Math.max(0,time);
+    if(Math.abs(video.currentTime-target)<0.02)return resolve();
+    let done=false;
+    const finish=()=>{if(done)return;done=true;clearTimeout(timer);video.removeEventListener("seeked",finish);resolve()};
+    const timer=setTimeout(finish,2500);
+    video.addEventListener("seeked",finish);
+    try{video.currentTime=target}catch(e){finish()}
+  });
+}
+
+function playSegment(video,c,canvas,start,end){
+  return new Promise((resolve,reject)=>{
+    let done=false;
+    const finish=()=>{if(done)return;done=true;video.pause();resolve()};
+    const draw=()=>{
+      if(done)return;
+      if(video.ended||video.currentTime>=end){
+        c.drawImage(video,0,0,canvas.width,canvas.height);
+        finish();return;
+      }
+      c.drawImage(video,0,0,canvas.width,canvas.height);
+      requestAnimationFrame(draw);
+    };
+    try{video.currentTime=Math.max(0,start)}catch(e){}
+    video.play().then(()=>requestAnimationFrame(draw)).catch(reject);
+  });
+}
+
+function makeHighlightClip(source,segments){
+  return new Promise((resolve,reject)=>{
+    const src=document.createElement("video");
+    src.muted=true;src.playsInline=true;src.preload="auto";src.setAttribute("aria-hidden","true");
+    src.style.cssText="position:fixed;left:-20px;top:0;width:2px;height:2px;opacity:0;pointer-events:none;display:block";
+    const srcURL=URL.createObjectURL(source);
+    src.src=srcURL;document.body.appendChild(src);
+    const out=document.createElement("canvas");
+    out.width=recCv.width||cv.width;out.height=recCv.height||cv.height;
+    const outCtx=out.getContext("2d");
+    const stream=out.captureStream(30);
+    let recorder,parts=[],settled=false,guard;
+    const cleanup=()=>{
+      clearTimeout(guard);
+      URL.revokeObjectURL(srcURL);
+      src.remove();
+      stream.getTracks().forEach(t=>t.stop());
+    };
+    const fail=err=>{
+      if(settled)return;
+      settled=true;
+      try{recorder&&recorder.stop()}catch(e){}
+      cleanup();reject(err);
+    };
+    try{recorder=new MediaRecorder(stream,REC_MIME?{mimeType:REC_MIME}:undefined)}catch(e){cleanup();reject(e);return}
+    recorder.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};
+    recorder.onerror=e=>fail(e.error||new Error("MediaRecorder error"));
+    recorder.onstop=()=>{
+      if(settled)return;
+      settled=true;cleanup();
+      const blob=new Blob(parts,{type:recorder.mimeType||REC_MIME||"video/webm"});
+      blob.size?resolve(blob):reject(new Error("Empty highlight clip"));
+    };
+    guard=setTimeout(()=>fail(new Error("Highlight preview timeout")),120000);
+    src.onerror=()=>fail(new Error("Could not load full clip"));
+    src.onloadeddata=async()=>{
+      if(settled)return;
+      try{
+        src.pause();
+        await seekVideo(src,segments[0].start);
+        outCtx.drawImage(src,0,0,out.width,out.height);
+        recorder.start(500);
+        for(const seg of segments){
+          await seekVideo(src,seg.start);
+          await playSegment(src,outCtx,out,seg.start,seg.end);
+        }
+        recorder.stop();
+      }catch(e){fail(e)}
+    };
+  });
+}
+
 function finish(){
   running=false;cancelAnimationFrame(raf);
+  clearTimeout(demoTimer);demoRoot.classList.remove("on");
+  setCue(hintCue,hintCueText,"","");setCue(readyCue,readyCueText,"","");
+  document.body.classList.remove("playing");
   if(players===1)score[1]=0;
   setDigits($("#r1"),String(score[0]));setDigits($("#r2"),String(score[1]));
   const top=Math.max(score[0],score[1],1);
@@ -442,12 +1191,19 @@ function finish(){
   else if(score[0]===score[1]){$("#wl").textContent="Rezultatas";w.textContent="Lygiosios!";end.dataset.w="0"}
   else{const k=score[0]>score[1]?1:2;$("#wl").textContent="Laimėjo";w.textContent=`Žaidėjas ${k}`;end.dataset.w=k}
   $("#endsub").textContent=`Iš viso judesių: ${score[0]+score[1]} taškų per ${duration/60} min`;
-  const clip=$("#clip");
-  if(rec){rec.onstop=()=>{const b=new Blob(chunks,{type:"video/webm"});const a=$("#dl");a.href=URL.createObjectURL(b);a.hidden=false;
-    clip.classList.add("ready");$("#chk").dataset.state="in";$("#clipTxt").innerHTML="Klipas paruoštas<small>Atsisiųsk ir pasidalink su draugais</small>"};rec.stop()}
-  else{clip.classList.add("none");$("#clipTxt").innerHTML="Klipas neįrašytas<small>Ši naršyklė nepalaiko įrašymo</small>"}
+  highlightTotal=Math.min(duration,Math.max(0,(performance.now()-t0)/1000));
+  highlightPlan=highlightSegments(scoreEvents,highlightTotal);
   $("#hud").classList.remove("on");end.classList.remove("hide");
   cam.srcObject?.getTracks().forEach(t=>t.stop());
+  if(rec){
+    setClipState("processing");
+    rec.onstop=()=>{
+      fullBlob=new Blob(chunks,{type:rec.mimeType||REC_MIME||"video/webm"});
+      if(fullBlob.size){fullURL=URL.createObjectURL(fullBlob);preparePreview()}
+      else setClipState("unavailable");
+    };
+    rec.stop();
+  }else setClipState("unavailable");
 }
 </script>
 </body>
