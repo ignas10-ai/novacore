@@ -29,6 +29,7 @@ NovaCore is a Lithuanian-language, single-file browser game: phone camera -> Med
 - Jumping-jack legs are one `.jj-legs` group scaled on X around the floor (`60px 132px`); feet stay planted while spreading. Do not reintroduce a root hop.
 - Jumping-jack detection is strict on purpose: both arms must be above the head and swung outward, and both ankles must move outward from their own hip (`NEED` includes hips 23/24). A single stepping foot or hands-up-only motion must not count.
 - `#readyBack` calls `backToSettings()`: stops the camera, cancels the readiness RAF and pending start timer, closes the landmarker, resets the ring/chips, and shows `#start` so settings can be changed before another Start.
+- `keepScreenAwake()` requests the Screen Wake Lock when readiness starts and reacquires it on visibility changes. `releaseWakeLock()` must run on finish, back-to-settings, and startup errors; do not keep the lock on the results/clip screens.
 - Prompt text (`#readyHint`, `#hint`) is now screen-reader-only; visible guidance is driven by `setCue()` into `#readyCue` / `#hintCue` with a bouncing arrow (`back`, `arms`, `left`, `right`). `sideCue()` checks core body points in mirrored screen space; keep the arrow direction and player labels in sync.
 - If a player has not scored for ~9 s in a round, the current exercise demo is shown again once (`nudgedRound`). It is suppressed while a movement cue is active.
 - The fullscreen control hides itself when the Fullscreen API is missing and moves to the bottom-right while `body.playing` so it doesn't cover P2.

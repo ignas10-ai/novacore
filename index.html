@@ -818,6 +818,36 @@ fsBtn.onclick=toggleFs;
 ["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,updateFs));
 updateFs();
 
+// keep the screen awake from readiness through gameplay
+let wakeLock=null, wakeWanted=false, wakePending=false;
+async function acquireWakeLock(){
+  if(!wakeWanted||document.visibilityState!=="visible"||!("wakeLock" in navigator)||wakePending)return;
+  if(wakeLock&&!wakeLock.released)return;
+  wakePending=true;
+  try{
+    const lock=await navigator.wakeLock.request("screen");
+    if(!wakeWanted){try{lock.release().catch(()=>{})}catch(e){}return}
+    wakeLock=lock;
+    lock.addEventListener("release",()=>{if(wakeLock===lock)wakeLock=null});
+  }catch(e){/* unsupported, denied, or page not visible */}
+  finally{wakePending=false}
+}
+function keepScreenAwake(){
+  wakeWanted=true;
+  acquireWakeLock();
+}
+function releaseWakeLock(){
+  wakeWanted=false;
+  if(wakeLock){
+    const lock=wakeLock;wakeLock=null;
+    try{lock.release().catch(()=>{})}catch(e){}
+  }
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"&&wakeWanted)acquireWakeLock();
+});
+window.addEventListener("pagehide",releaseWakeLock);
+
 const readyRoot=$("#ready"), rdRing=$("#rdRing"), rdCount=$("#rdCount"), readyHint=$("#readyHint"), rdChips=[$("#rd1"),$("#rd2")];
 const loadingRoot=$("#loading"), clipsRoot=$("#clips"), previewBox=$("#preview"), previewVid=$("#previewVid"), previewLoad=$("#previewLoad"), previewSpin=$("#previewSpin"), previewMsg=$("#previewMsg"), dlPrev=$("#dlPrev"), dlFull=$("#dlFull"), dlToggle=$("#dlToggle"), dlMenu=$("#dlMenu"), sharePrev=$("#sharePrev");
 const demoRoot=$("#demo"), demoName=$("#demoName"), demoCue=$("#demoCue");
@@ -858,11 +888,13 @@ $("#go").onclick=async()=>{
     $("#start").classList.add("hide");
     document.body.classList.toggle("solo",players===1);
     readyRoot.classList.remove("hide");
+    keepScreenAwake();
     loadingRoot.classList.add("hide");
     readying=true;
     readyLoop();
   }catch(e){
     console.error("Nepavyko paleisti žaidimo:",e);
+    releaseWakeLock();
     cam.srcObject?.getTracks().forEach(t=>t.stop());
     cam.srcObject=null;
     readying=false;
@@ -880,6 +912,7 @@ function startGame(){
   readyRoot.classList.add("hide");
   readyRoot.classList.remove("done","holding");
   setCue(readyCue,readyCueText,"","");setCue(hintCue,hintCueText,"","");
+  keepScreenAwake();
   $("#hud").classList.add("on");
   document.body.classList.add("playing");
   lastRound=-1;
@@ -900,6 +933,7 @@ function finishReady(){
 
 function backToSettings(){
   readying=false;
+  releaseWakeLock();
   clearTimeout(startTimer);startTimer=0;
   clearTimeout(demoTimer);demoRoot.classList.remove("on");
   cancelAnimationFrame(readyRaf);
@@ -1179,6 +1213,7 @@ function makeHighlightClip(source,segments){
 
 function finish(){
   running=false;cancelAnimationFrame(raf);
+  releaseWakeLock();
   clearTimeout(demoTimer);demoRoot.classList.remove("on");
   setCue(hintCue,hintCueText,"","");setCue(readyCue,readyCueText,"","");
   document.body.classList.remove("playing");
