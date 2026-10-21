@@ -32,6 +32,9 @@ assert(hot.every((s,i)=>s.start<s.end&&(!i||s.start>=hot[i-1].end)),"highlight o
 const cover=highlightSegments([{t:2,points:3}],180),covered=new Set();
 for(let t=0;t<180;t++)if(cover.some(s=>s.start<=t&&t<=s.end))covered.add(Math.floor(t/30)%3);
 assert.strictEqual(covered.size,3,"all exercises represented");
+// custom exercise set: the reel still reserves a slot for the second selected exercise
+const pair=highlightSegments([],180,4,16,2);
+assert(pair.some(s=>s.start<=31&&31<=s.end),"second selected exercise covered");
 const cold=highlightSegments([],60);
 assert(cold.reduce((n,s)=>n+s.end-s.start,0)>=15,"fallback highlight length");
 assert.deepStrictEqual(highlightSegments([],0),[],"empty timeline");
