@@ -1028,6 +1028,14 @@ const READY_MS=3000, READY_GRACE=300; // hold arms up this long before the game 
 let readying=false, readyRaf=0, holdStart=0, lastReady=0, lastReadyDigit="";
 
 function ang(a,b,c){const v1=[a.x-b.x,a.y-b.y],v2=[c.x-b.x,c.y-b.y];const d=v1[0]*v2[0]+v1[1]*v2[1];const m=Math.hypot(...v1)*Math.hypot(...v2)||1;return Math.acos(Math.max(-1,Math.min(1,d/m)))*180/Math.PI}
+// 3D angle using MediaPipe z (depth, same scale as x). From a FRONT camera the 2D knee angle barely moves
+// in a real squat (180→150 in tools/fixtures/squat.json) while the 3D angle swings ~130→60. z is noisy and
+// standing reads ~125-150, not 180, so thresholds below are tuned on real clips (tools/replay.cjs).
+function ang3(a,b,c){if(a.z==null||b.z==null||c.z==null)return ang(a,b,c);const v1=[a.x-b.x,a.y-b.y,a.z-b.z],v2=[c.x-b.x,c.y-b.y,c.z-b.z];const d=v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2];const m=Math.hypot(...v1)*Math.hypot(...v2)||1;return Math.acos(Math.max(-1,Math.min(1,d/m)))*180/Math.PI}
+const knee2=lm=>(ang(lm[23],lm[25],lm[27])+ang(lm[24],lm[26],lm[28]))/2;
+const knee3=lm=>(ang3(lm[23],lm[25],lm[27])+ang3(lm[24],lm[26],lm[28]))/2;
+// squat depth gate shared by squat / squat jump: deep when EITHER angle says so, standing when both do
+const KNEE_DOWN3=95, KNEE_UP3=118, KNEE_DOWN2=110, KNEE_UP2=160;
 
 // landmarks that MUST be visible per exercise (else: no counting + hint "atsitrauk")
 const NEED={
@@ -1127,16 +1135,17 @@ function clipSpec(videoW,videoH,frameRate,portrait){
 }
 // pure: mutates s, returns true when one rep completes
 function step(s,lm,ex,now){
-  if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.last=0;s.base=null;s.baseOk=false;s.air=false;s.baseW=null;s.baseC=0;s.step=false;s.stepFrom=0;s.stepAt=0;s.stepCrouch=false;s.downAt=0;s.r=null;s.r0=null}
+  if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.k3=null;s.last=0;s.base=null;s.baseOk=false;s.air=false;s.downAt=0;s.phase=null;s.cx0=0;s.closedW=null;s.stepAt=0}
   if(!visible(lm,ex)){s.lost=true;return false}
   s.lost=false;
   let rep=false;
   if(ex==="squat"){
-    // knee angle: hip(23/24) knee(25/26) ankle(27/28); EMA-smoothed avg of both legs
-    const raw=(ang(lm[23],lm[25],lm[27])+ang(lm[24],lm[26],lm[28]))/2;
-    const k=s.k=s.k==null?raw:s.k*0.6+raw*0.4;
-    if(k<110&&!s.down) s.down=true;
-    else if(k>160&&s.down){s.down=false;rep=true}
+    // knee angle: hip(23/24) knee(25/26) ankle(27/28); EMA-smoothed avg of both legs, 2D + 3D
+    const r2=knee2(lm),r3=knee3(lm);
+    const k=s.k=s.k==null?r2:s.k*0.6+r2*0.4;
+    const k3=s.k3=s.k3==null?r3:s.k3*0.6+r3*0.4;
+    if((k<KNEE_DOWN2||k3<KNEE_DOWN3)&&!s.down) s.down=true;
+    else if(k>KNEE_UP2&&k3>KNEE_UP3&&s.down){s.down=false;rep=true}
   }else if(ex==="jack"){
     // require both arms to swing out/up and both legs to spread, not just total width
     const sw=Math.abs(lm[11].x-lm[12].x)||0.1, aw=Math.abs(lm[27].x-lm[28].x);
@@ -1151,13 +1160,14 @@ function step(s,lm,ex,now){
     else if(closed&&s.open){s.open=false;rep=true}
   }else if(ex==="squatjump"){
     // a squat only counts as a rep when the hips actually leave the standing baseline
-    const raw=(ang(lm[23],lm[25],lm[27])+ang(lm[24],lm[26],lm[28]))/2;
-    const k=s.k=s.k==null?raw:s.k*0.6+raw*0.4;
+    const r2=knee2(lm),r3=knee3(lm);
+    const k=s.k=s.k==null?r2:s.k*0.6+r2*0.4;
+    const k3=s.k3=s.k3==null?r3:s.k3*0.6+r3*0.4;
     const h=Math.abs(lm[23].y-lm[11].y)||0.3; // torso length = scale
     const hipY=(lm[23].y+lm[24].y)/2;
     if(s.base==null)s.base=hipY;
-    else if(!s.down&&!s.air&&k>160){s.base=s.base*0.9+hipY*0.1;s.baseOk=true}
-    if(!s.air&&k<115&&!s.down){s.down=true;s.downAt=now}
+    else if(!s.down&&!s.air&&k>KNEE_UP2&&k3>KNEE_UP3){s.base=s.base*0.9+hipY*0.1;s.baseOk=true}
+    if(!s.air&&(k<KNEE_DOWN2+5||k3<KNEE_DOWN3)&&!s.down){s.down=true;s.downAt=now}
     if(s.baseOk){
       if(s.down&&!s.air&&hipY<s.base-h*0.12)s.air=true;
       if(s.air&&hipY>s.base-h*0.05){
@@ -1167,31 +1177,23 @@ function step(s,lm,ex,now){
     }
     if(s.down&&!s.air&&now-s.downAt>2600)s.down=false;
   }else if(ex==="sidestep"){
-    // side step: lead foot steps out, trail foot closes; both feet must move while crouched
+    // side step = feet CLOSED → OPEN (lead foot out) → CLOSED again with the body having travelled sideways.
+    // Widths are relative to this player's narrowest stance (closedW), so a wide natural stance still works.
+    // No crouch gate: on a real lateral-shuffle clip (tools/fixtures/sidestep.json) the hip/shoulder ratio
+    // moved 0.60→0.58 between standing and the athletic crouch – inside landmark noise, unusable from the front.
     const hw=Math.abs(lm[23].x-lm[24].x)||0.2;
     const aw=Math.abs(lm[27].x-lm[28].x), cx=(lm[27].x+lm[28].x)/2;
-    const ankleY=(lm[27].y+lm[28].y)/2, hipY=(lm[23].y+lm[24].y)/2, shoulderY=(lm[11].y+lm[12].y)/2;
-    // crouch = hips lower than this player's own standing posture. A fixed 0.62 cut-off failed on real
-    // bodies: long legs read as "always crouched", short legs as "never" (ratio is ~0.56-0.68 standing).
-    const rawR=(ankleY-hipY)/(ankleY-shoulderY||1);
-    const r=s.r=s.r==null?rawR:s.r*0.7+rawR*0.3;
-    s.r0=s.r0==null?r:Math.max(s.r0,r); // tallest smoothed posture this round = standing
-    const crouch=r<s.r0-0.03;
-    if(s.baseW==null){s.baseW=aw;s.baseC=cx}
-    if(!s.step){
-      if(crouch&&aw<=s.baseW+hw*0.25){
-        if(aw<s.baseW)s.baseW=aw;
-        s.baseC=s.baseC*0.85+cx*0.15;
-      }
-      if(crouch&&aw>s.baseW+hw*0.6){s.step=true;s.stepFrom=s.baseC;s.stepAt=now;s.stepCrouch=true}
+    if(s.closedW==null){s.closedW=aw;s.cx0=cx;s.phase="closed"}
+    if(aw<s.closedW)s.closedW=aw;
+    if(s.phase==="closed"){
+      s.closedW+=(aw-s.closedW)*0.01; // drift up slowly so one accidental narrow frame does not stick
+      s.cx0=s.cx0*0.8+cx*0.2;
+      if(aw>s.closedW+hw*1.5){s.phase="open";s.stepAt=now}
     }else{
-      if(!crouch)s.stepCrouch=false;
-      if(aw<s.baseW+hw*0.25&&now-s.stepAt>200){
-        if(s.stepCrouch&&Math.abs(cx-s.stepFrom)>hw*0.35){rep=true;s.baseW=aw;s.baseC=cx}
-        s.step=false;s.stepFrom=0;s.stepCrouch=false;
-      }else if(now-s.stepAt>1600){
-        s.step=false;s.stepFrom=0;s.stepCrouch=false;s.baseW=aw;s.baseC=cx;
-      }
+      if(aw<s.closedW+hw*0.7){
+        if(Math.abs(cx-s.cx0)>hw*0.5)rep=true; // stepping out and back to the same spot is not a step
+        s.phase="closed";s.cx0=cx;
+      }else if(now-s.stepAt>2500){s.phase="closed";s.cx0=cx}
     }
   }else if(ex==="lunge"){
     // hips drop + staggered knees + narrow stance separate a lunge from a squat
@@ -1200,18 +1202,24 @@ function step(s,lm,ex,now){
     const hips=Math.abs(lm[23].x-lm[24].x)||0.2;
     const stance=Math.abs(lm[27].x-lm[28].x);
     const stagger=Math.abs(lm[25].y-lm[26].y)/h;
-    const kRaw=(ang(lm[23],lm[25],lm[27])+ang(lm[24],lm[26],lm[28]))/2;
+    const kRaw=knee2(lm);
     if(s.base==null)s.base=hipY;
     else if(!s.down&&kRaw>160){s.base=s.base*0.9+hipY*0.1;s.baseOk=true}
-    if(s.baseOk&&!s.down&&hipY>s.base+h*0.12&&stagger>0.14&&stance<hips*1.25)s.down=true;
+    // stance gate dropped: on a real front-view reverse-lunge clip (tools/fixtures/lunge.json) the ankles sit
+    // 1.5–3.5 hip widths apart at the bottom, so `stance<1.25*hips` rejected every rep. Stagger (0.5–0.8 of
+    // torso in a lunge vs 0.02–0.05 in a squat) is what separates it from a squat.
+    if(s.baseOk&&!s.down&&hipY>s.base+h*0.12&&stagger>0.25&&stance<hips*4)s.down=true;
     else if(s.baseOk&&s.down&&hipY<s.base+h*0.06){s.down=false;rep=true}
   }else if(ex==="crunch"){
-    // knee up + opposite elbow touching it; the knee must lower before the next rep
+    // knee up + opposite elbow coming DOWN to it; the knee must lower before the next rep.
+    // From the front the elbow never gets closer than ~0.8 shoulder widths to the knee in x (it is a twist),
+    // but it drops to knee height: dy 0.2–0.6 torso at the crunch vs 1.6–1.9 with hands behind the head
+    // (tools/fixtures/crunch.json). The old 0.6/0.6 window caught 2 of 8 reps.
     const h=Math.abs(lm[23].y-lm[11].y)||0.3;
     const sw=Math.abs(lm[11].x-lm[12].x)||0.2;
     [[24,26,13],[23,25,14]].forEach(([hip,knee,elbow],j)=>{
       const lift=(lm[hip].y-lm[knee].y)/h;
-      const touch=Math.abs(lm[elbow].x-lm[knee].x)/sw<0.6&&Math.abs(lm[elbow].y-lm[knee].y)/h<0.6;
+      const touch=Math.abs(lm[elbow].x-lm[knee].x)/sw<1.3&&Math.abs(lm[elbow].y-lm[knee].y)/h<0.8;
       if(lift>0.1&&touch&&!s.leg[j]){s.leg[j]=true;rep=true}
       else if(lift<0.03&&s.leg[j])s.leg[j]=false;
     });

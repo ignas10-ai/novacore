@@ -1,5 +1,16 @@
 # Pakeitimų žurnalas
 
+## 2026-10-23 — atpažinimas patikrintas ant TIKRŲ žmonių įrašų (`tools/`)
+
+- Naujas `tools/` rinkinys: `extract.cjs` (vaizdo įrašas → MediaPipe Pose landmark'ai į `tools/fixtures/*.json`, tas pats modelis kaip žaidime), `replay.cjs` (fixture → `step()` → kiek pakartojimų užskaityta), `replay-check.cjs` (regresija: 7 teigiami + 5 neigiami atvejai ant 8 tikrų klipų iš priekio). Paleisti: `node tools/replay-check.cjs`.
+- **Rasta esminė klaida: 2D kelio kampas iš priekio neveikia.** Tikrame pritūpime iš priekio 2D kampas keičiasi tik 180°→150°, todėl riba `<110°` niekada nepasiekiama (0 iš 3 pritūpimų, 3 iš 9 šuoliukų). Įvestas `ang3()` su MediaPipe `z` – 3D kampas svyruoja ~130°→60°. Pritūpimai ir šuoliukai dabar naudoja abu (gilu, kai bet kuris sako gilu; stovima, kai abu sako stovima): 3/3 pritūpimai, 8/9 šuoliukai.
+- **Šoniniai žingsniai perrašyti:** būsenos *suglausta → plati (išžengta ~2 klubų pločiai) → suglausta su kūno pasislinkimu*. Pločiai lyginami su paties žaidėjo siauriausia stovėsena. Pritūpimo vartas pašalintas – tikrame įraše klubų/pečių santykis tarp stovėjimo ir sportinio pritūpimo keitėsi 0,60→0,58 (triukšmo ribose). Buvo 3, dabar 9 iš ~9 realių žingsnių su pasislinkimu (išžengimas ir grįžimas į tą pačią vietą neskaičiuojamas – sąmoningai).
+- **Įtūpstai:** pašalinta sąlyga `stance<1.25 klubų` – iš priekio kulkšnys apačioje būna 1,5–3,5 klubų pločio, todėl ji atmetė visus pakartojimus. Skiriamasis požymis nuo pritūpimo – kelių aukščių skirtumas (`stagger>0.25`, įtūpste 0,5–0,8, pritūpime 0,02–0,05). Buvo 0 tikrų, dabar 6/7.
+- **Įstriži atsilenkimai:** alkūnė iš priekio niekada nepriartėja prie kelio arčiau ~0,8 pečių pločio (tai sukimas), bet nusileidžia iki kelio aukščio. Langas 0,6/0,6 → 1,3/0,8. Buvo 2/8, dabar 7/8; šoninis atsilenkimas (kitas pratimas) – 0, kaip ir turi būti.
+- Aukšti keliai: 24 iš ~25 – nekeista.
+- `test-detect.cjs` sintetiniai atvejai suderinti su realiais dydžiais (šoninio žingsnio plotis, įtūpsto stagger).
+- Beta žymos dar NEnuimtos: tai vis dar YouTube klipai, ne mūsų telefonas; po komandos testo pagal `docs/TESTAVIMO-PROTOKOLAS.md` galima nuimti.
+
 ## 2026-10-23 — garsas, rekordai, PWA
 
 - **Garsas ir vibracija.** Web Audio sintezuoti garsai be jokių failų: „tick“ už kiekvieną užskaitytą pakartojimą (P1 ir P2 skirtingo aukščio), dviejų natų „ding“ keičiantis raundui, tylus tiksėjimas paskutines 10 s, trumpa fanfara finiše. Telefone už pakartojimą – `navigator.vibrate(30)`. Starto ekrane mygtukas **„Garsas: įj./išj.“** (įsimenamas `localStorage` `novacore.sound`). `AudioContext` sukuriamas tik paspaudus „Pradėti“ (naršyklės reikalauja vartotojo gesto).

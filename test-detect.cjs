@@ -88,31 +88,32 @@ lowDeep[27]={x:0.6,y:0.72,visibility:1};lowDeep[28]={x:0.4,y:0.72,visibility:1};
 sj={};sjT=0;sjReps=0;
 for(const f of [...Array(8).fill(lowDeep),...Array(8).fill(stand),...Array(6).fill(lowDeep),...Array(8).fill(stand)])if(step(sj,f,"squatjump",sjT+=50))sjReps++;
 assert.strictEqual(sjReps,0,"standing from a mid-round squat is not a jump");
-// side step: crouched step out + trail foot closes = 1 rep; standing steps and step-out/back = 0
+// side step: feet closed -> wide (lead foot out, ~2 hip widths like real clips) -> closed again with the
+// body moved sideways = 1 rep. A tiny shuffle (feet barely apart) and step-out-then-back = 0.
 const sidePose=(lx,rx)=>{const p=body();
   p[23]={x:0.4,y:0.54,visibility:1};p[24]={x:0.6,y:0.54,visibility:1};
   p[25]={x:0.4,y:0.7,visibility:1};p[26]={x:0.6,y:0.7,visibility:1};
   p[27]={x:lx,y:0.88,visibility:1};p[28]={x:rx,y:0.88,visibility:1};
   return p};
-const sideBase=sidePose(0.46,0.54),sideRO=sidePose(0.46,0.8),sideRC=sidePose(0.72,0.8);
+const sideBase=sidePose(0.46,0.54),sideRO=sidePose(0.4,0.8),sideRC=sidePose(0.72,0.8);
 const sideLO=sidePose(0.2,0.8),sideLC=sidePose(0.2,0.28);
 let sd={},sdT=0,sdReps=0;
 for(const f of [...Array(5).fill(stand),...Array(5).fill(sideBase),...Array(5).fill(sideRO),...Array(5).fill(sideRC),...Array(5).fill(sideLO),...Array(5).fill(sideLC)])if(step(sd,f,"sidestep",sdT+=50))sdReps++;
 assert.strictEqual(sdReps,2,"side step reps");
-const standRO=body(),standRC=body();
-standRO[27]={x:0.46,y:0.9,visibility:1};standRO[28]={x:0.8,y:0.9,visibility:1};
-standRC[27]={x:0.72,y:0.9,visibility:1};standRC[28]={x:0.8,y:0.9,visibility:1};
+const tinyRO=body(),tinyRC=body();
+tinyRO[27]={x:0.46,y:0.9,visibility:1};tinyRO[28]={x:0.66,y:0.9,visibility:1};
+tinyRC[27]={x:0.58,y:0.9,visibility:1};tinyRC[28]={x:0.66,y:0.9,visibility:1};
 sd={};sdT=0;sdReps=0;
-for(const f of [...Array(5).fill(stand),...Array(5).fill(standRO),...Array(5).fill(standRC)])if(step(sd,f,"sidestep",sdT+=50))sdReps++;
-assert.strictEqual(sdReps,0,"standing side step does not count");
+for(const f of [...Array(5).fill(stand),...Array(5).fill(tinyRO),...Array(5).fill(tinyRC)])if(step(sd,f,"sidestep",sdT+=50))sdReps++;
+assert.strictEqual(sdReps,0,"tiny shuffle does not count");
 sd={};sdT=0;sdReps=0;
 for(const f of [...Array(5).fill(stand),...Array(5).fill(sideBase),...Array(5).fill(sideRO),...Array(5).fill(sideBase)])if(step(sd,f,"sidestep",sdT+=50))sdReps++;
 assert.strictEqual(sdReps,0,"step out and back does not count");
 // reverse lunge: hip drop with staggered knees and narrow stance, then stand = 1 rep
 const lunge=body();
 lunge[23]={x:0.4,y:0.58,visibility:1};lunge[24]={x:0.6,y:0.58,visibility:1};
-lunge[25]={x:0.4,y:0.66,visibility:1};lunge[26]={x:0.6,y:0.62,visibility:1};
-lunge[27]={x:0.5,y:0.86,visibility:1};lunge[28]={x:0.5,y:0.86,visibility:1};
+lunge[25]={x:0.4,y:0.74,visibility:1};lunge[26]={x:0.6,y:0.62,visibility:1}; // back knee near the floor: stagger ~0.6 torso like real clips
+lunge[27]={x:0.45,y:0.86,visibility:1};lunge[28]={x:0.6,y:0.86,visibility:1};
 let lu={},luT=0,luReps=0;
 for(const f of [...Array(4).fill(stand),...Array(6).fill(lunge),...Array(6).fill(stand)])if(step(lu,f,"lunge",luT+=100))luReps++;
 assert.strictEqual(luReps,1,"reverse lunge rep");

@@ -5,7 +5,7 @@ NovaCore is a Lithuanian-language, single-file browser game: phone camera -> Med
 ## Run and verify
 
 - Camera requires a secure context: use `npx serve` and open `http://localhost:...`, or deploy over HTTPS (README uses Vercel). Opening `index.html` via `file://` will not work. Testing from a phone over LAN needs HTTPS.
-- Only automated check: `node test-detect.cjs` (prints `OK`). Run it after changing `step()`, `armsUp()`, `highlightSegments()`, `clipSpec()`, `NEED`, landmark indices, or detection thresholds.
+- Automated checks: `node test-detect.cjs` (synthetic poses, prints `OK`) and `node tools/replay-check.cjs` (real-person clips in `tools/fixtures/*.json`, prints `OK`). Run BOTH after changing `step()`, `armsUp()`, `highlightSegments()`, `clipSpec()`, `NEED`, landmark indices, or detection thresholds. The replay check is the one that catches "works on synthetic poses, fails on a real body" – see `tools/README.md` for how to add a clip.
 - There are no build, lint, typecheck, or formatter commands. Vercel deployment is static with no config in the repo; `.vercel` is ignored.
 
 ## Test harness constraint
@@ -13,6 +13,8 @@ NovaCore is a Lithuanian-language, single-file browser game: phone camera -> Med
 `test-detect.cjs` reads `index.html`, slices from the literal `const EX=[` to `if(typeof module`, and evaluates that slice in Node via `new Function("module", ...)`. Keep both markers, keep `step` / `ang` / `armsUp` / `sideCue` / `highlightSegments` / `clipSpec` pure, and keep the sliced region free of top-level DOM access and `import` / `export`; otherwise the self-check breaks. Preserve the `if(typeof module!=="undefined") module.exports={step,ang,armsUp,sideCue,highlightSegments,clipSpec}` line.
 
 ## Detection and game logic
+
+- The camera is FRONT-facing, which changes what is measurable: the 2D knee angle barely moves in a real squat (180→150), so squat/squat-jump depth uses `knee3()` (3D angle via MediaPipe `z`, swings ~130→60, standing reads 125-150 not 180) OR the 2D angle, with `KNEE_DOWN3/UP3/DOWN2/UP2` constants. Crouch via hip/shoulder ratio is noise from the front (do not reintroduce). Lunges are separated from squats by knee stagger, not stance width (ankles are 1.5-3.5 hip widths apart from the front). Cross-crunch checks the elbow dropping to knee HEIGHT (dy), not horizontal proximity. All of this came from `tools/fixtures`; retune against them, not by intuition.
 
 - `step(s, lm, ex, now)` is the pure per-player state machine (`st=[{},{}]`); `detect()` adds `score[i] += multiplier`.
 - Before each game, `readyLoop()` gates the start: every selected player must have both wrists above the nose (`armsUp()`) continuously for `READY_MS=3000`, with a `READY_GRACE=300` ms tolerance for detection dropouts. This replaces the old 3-2-1 countdown.
