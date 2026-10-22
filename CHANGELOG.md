@@ -1,5 +1,12 @@
 # Pakeitimų žurnalas
 
+## 2026-10-22 (vakaras) — nauji pratimai pažymėti „beta“, animacijų ir šoninių žingsnių pataisos
+
+- Keturi nauji pratimai (`squatjump`, `sidestep`, `lunge`, `crunch`) gavo `beta:true` žymą: pasirinkimo lentelėje matomi su „BETA“ etikete, bet **pagal nutylėjimą išjungti**, kol nepatikrinti su tikru žmogumi prieš kamerą. Pirmi trys pratimai veikia kaip anksčiau. Išsaugotas naršyklės pasirinkimas gerbiamas.
+- Šoninių žingsnių pritūpimo tikrinimas nebenaudoja fiksuotos ribos 0,62 (klubų–kulkšnių / pečių–kulkšnių santykis). Realiems kūnams stovint šis santykis svyruoja ~0,56–0,68, todėl ilgakojams „pritūpimas“ buvo visada, trumpakojams – niekada. Dabar lyginama su paties žaidėjo aukščiausia (stovima) poza tame raunde (`s.r0`), pritūpimas = santykis nukrito ≥0,03.
+- Trenerio animacijos: pritūpimo su šuoliuku rankos viršuje pakeltos į V (anksčiau 110° slėpė plaštakas už galvos); šoniniai žingsniai perpiešti kaip pritūpusi figūra, kuri žingsniuoja kairėn–dešinėn (kojos išsiskiria, tada susiglaudžia); įstrižų atsilenkimų liemuo lenkiasi link pakelto kelio, kad alkūnė jį pasiektų.
+- Trukmės mygtukų skaičiai (`3:00` / `1:00`) nebesikerpa 430 px pločio ekranuose (`min(34px,8vw)`).
+
 ## 2026-10-22 — šoniniai žingsniai vietoje čiuožėjo šuoliukų
 
 - **Čiuožėjo šuoliukai** pakeisti **šoniniais žingsniais** (`sidestep`): žaidėjas turi šiek tiek pritūpti, žengti viena koja į šoną ir prikelti kitą koją prie jos, tada kartoti į kitą pusę.

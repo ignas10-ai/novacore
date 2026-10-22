@@ -69,7 +69,7 @@ canvas{width:100%;height:100%;object-fit:contain}
 .seg button:active{scale:.94;translate:0 1px}
 @media (hover:hover) and (pointer:fine){.seg button:hover:not(:active){translate:0 -2px}}
 .seg button>span{display:block;transform:skewX(calc(var(--skew)*-1))}
-.seg button .d{font-size:34px}
+.seg button .d{font-size:min(34px,8vw)} /* 430px phones clipped "1:00" */
 .seg button small{display:block;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-top:2px}
 .seg button.on{background:var(--white);color:var(--ink);box-shadow:4px 4px 0 var(--p1)}
 .seg.dur button.on{box-shadow:4px 4px 0 var(--p2)}
@@ -135,6 +135,7 @@ canvas{width:100%;height:100%;object-fit:contain}
 .ex-tile .ex-name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-family:var(--disp);font-weight:700;font-size:12px;line-height:1.1;letter-spacing:.1em;text-transform:uppercase;margin-top:9px;max-width:100%}
 .ex-tile .ex-mark{position:absolute;top:10px;right:10px;width:19px;height:19px;display:grid;place-items:center;background:var(--accent);scale:0;transition:scale 360ms var(--ease-bounce)}
 .ex-tile .ex-mark svg{width:11px;height:11px;fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:square;stroke-linejoin:miter}
+.ex-tile .ex-beta{position:absolute;left:13px;bottom:-6px;padding:2px 6px 1px;background:var(--p2);color:var(--ink);font-family:var(--disp);font-weight:900;font-size:9px;letter-spacing:.14em;text-transform:uppercase}
 .ex-tile.on{background:var(--white);color:var(--ink);box-shadow:5px 5px 0 var(--accent)}
 .ex-tile.on .ex-n{color:var(--ink)}
 .ex-tile.on .ex-name{color:rgba(7,8,26,.62)}
@@ -315,7 +316,7 @@ body.solo .pl.p2{visibility:hidden}
 .demo-svg .motion{stroke:var(--p2);stroke-width:2.5;stroke-dasharray:4 7;opacity:.7;animation:motion-dash 1.2s linear infinite}
 @keyframes motion-dash{to{stroke-dashoffset:-22}}
 .sq-root,.sq-torso,.sq-thigh,.sq-shin,.sq-arm,.jj-root,.jj-arm-l,.jj-arm-r,.jj-legs,.rn-thigh,.rn-shin,.rn-arm{transform-box:view-box}
-.sj-root,.sj-torso,.sj-thigh,.sj-shin,.sj-arm,.ss-root,.ss-leg,.ss-arm,.ss-torso,.rl-root,.rl-torso,.rl-thigh,.rl-shin,.rl-leg,.cc-root,.cc-thigh,.cc-shin,.cc-arm{transform-box:view-box}
+.sj-root,.sj-torso,.sj-thigh,.sj-shin,.sj-arm,.ss-root,.ss-legs,.rl-root,.rl-torso,.rl-thigh,.rl-shin,.rl-leg,.cc-root,.cc-thigh,.cc-shin,.cc-arm{transform-box:view-box}
 .sq-root{transform-origin:60px 78px;animation:sq-drop 1.6s var(--ease-bounce) infinite}
 .sq-torso{transform-origin:60px 78px;animation:sq-lean 1.6s var(--ease-bounce) infinite}
 .sq-thigh{transform-origin:60px 78px;animation:sq-thigh 1.6s var(--ease-bounce) infinite}
@@ -357,42 +358,16 @@ body.solo .pl.p2{visibility:hidden}
 @keyframes sj-lean{0%,100%{transform:rotate(0)}22%{transform:rotate(14deg)}40%,56%{transform:rotate(0)}}
 @keyframes sj-thigh{0%,100%{transform:rotate(0)}22%{transform:rotate(-42deg)}40%,56%{transform:rotate(0)}}
 @keyframes sj-shin{0%,100%{transform:rotate(0)}22%{transform:rotate(84deg)}40%,56%{transform:rotate(0)}}
-@keyframes sj-arm-l{0%,100%{transform:rotate(0)}22%{transform:rotate(28deg)}40%,56%{transform:rotate(110deg)}}
-@keyframes sj-arm-r{0%,100%{transform:rotate(0)}22%{transform:rotate(-28deg)}40%,56%{transform:rotate(-110deg)}}
+/* 80deg = arms up and out in a V; 110deg hid the hands behind the head */
+@keyframes sj-arm-l{0%,100%{transform:rotate(0)}22%{transform:rotate(28deg)}40%,56%{transform:rotate(80deg)}}
+@keyframes sj-arm-r{0%,100%{transform:rotate(0)}22%{transform:rotate(-28deg)}40%,56%{transform:rotate(-80deg)}}
 /* side step: slightly crouched, step out with one foot, close with the other, reverse */
-.ss-root{transform-origin:60px 78px;animation:ss-shift 1.6s var(--ease-bounce) infinite}
-.ss-leg-l{transform-origin:56px 78px;animation:ss-leg-l 1.6s var(--ease-bounce) infinite}
-.ss-leg-r{transform-origin:64px 78px;animation:ss-leg-r 1.6s var(--ease-bounce) infinite}
-.ss-torso{transform-origin:60px 78px;animation:ss-lean 1.6s var(--ease-bounce) infinite}
-.ss-arm{transform-origin:60px 46px}
-.ss-arm-l{animation:ss-arm-l 1.6s var(--ease-bounce) infinite}
-.ss-arm-r{animation:ss-arm-r 1.6s var(--ease-bounce) infinite}
-@keyframes ss-shift{
-  0%,12%{transform:translate(-6px,0)}
-  16%{transform:translate(-6px,-2px)}
-  22%{transform:translate(-6px,0)}
-  38%,50%{transform:translate(6px,0)}
-  58%{transform:translate(6px,-2px)}
-  64%{transform:translate(6px,0)}
-  80%,100%{transform:translate(-6px,0)}}
-@keyframes ss-leg-l{
-  0%,20%{transform:rotate(0)}
-  28%{transform:rotate(-10deg)}
-  40%,52%{transform:rotate(0)}
-  58%,64%{transform:rotate(22deg)}
-  78%,100%{transform:rotate(0)}}
-@keyframes ss-leg-r{
-  0%,10%{transform:rotate(0)}
-  16%,22%{transform:rotate(-22deg)}
-  34%,62%{transform:rotate(0)}
-  70%{transform:rotate(-10deg)}
-  82%,100%{transform:rotate(0)}}
-@keyframes ss-lean{
-  0%,12%{transform:rotate(-3deg)}
-  30%,62%{transform:rotate(3deg)}
-  80%,100%{transform:rotate(-3deg)}}
-@keyframes ss-arm-l{0%,100%{transform:rotate(-8deg)}30%,50%{transform:rotate(10deg)}80%{transform:rotate(-8deg)}}
-@keyframes ss-arm-r{0%,100%{transform:rotate(8deg)}30%,50%{transform:rotate(-10deg)}80%{transform:rotate(8deg)}}
+/* side step: crouched figure shuffles left<->right; legs spread (lead foot out) then close (trail foot follows), like the jack legs */
+.ss-root{transform-origin:60px 132px;animation:ss-shift 1.6s var(--ease-bounce) infinite}
+.ss-legs{transform-origin:60px 132px;animation:ss-legs 1.6s var(--ease-bounce) infinite}
+.ss-legs path{vector-effect:non-scaling-stroke}
+@keyframes ss-shift{0%,100%{transform:translate(-14px,0)}25%{transform:translate(0,3px)}50%{transform:translate(14px,0)}75%{transform:translate(0,3px)}}
+@keyframes ss-legs{0%,50%,100%{transform:scaleX(1)}25%,75%{transform:scaleX(2.2)}}
 /* reverse lunge: step the back leg away while the hips drop */
 .rl-root{transform-origin:60px 78px;animation:rl-drop 1.8s var(--ease-bounce) infinite}
 .rl-torso{transform-origin:60px 78px;animation:rl-lean 1.8s var(--ease-bounce) infinite}
@@ -408,7 +383,7 @@ body.solo .pl.p2{visibility:hidden}
 @keyframes rl-back-thigh{0%,100%{transform:rotate(0)}45%,55%{transform:rotate(42deg)}}
 @keyframes rl-back-shin{0%,100%{transform:rotate(0)}45%,55%{transform:rotate(-34deg)}}
 /* standing cross-crunch: knee up, opposite elbow comes down to meet it */
-.cc-root{transform-origin:60px 78px;animation:cc-twist 1.6s var(--ease-bounce) infinite}
+.cc-torso{transform-origin:60px 78px;animation:cc-lean 1.6s var(--ease-bounce) infinite}
 .cc-thigh{transform-origin:60px 78px;animation:cc-thigh 1.6s var(--ease-bounce) infinite}
 .cc-shin{transform-origin:60px 104px;animation:cc-shin 1.6s var(--ease-bounce) infinite}
 .cc-arm{transform-origin:60px 46px}
@@ -416,11 +391,12 @@ body.solo .pl.p2{visibility:hidden}
 .cc-arm-r{animation:cc-arm-r 1.6s var(--ease-bounce) infinite}
 .cc-leg-b{opacity:.42}
 .cc-leg-b .cc-thigh,.cc-leg-b .cc-shin{animation-delay:-.8s}
-@keyframes cc-twist{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
-@keyframes cc-thigh{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-50deg)}}
-@keyframes cc-shin{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(92deg)}}
-@keyframes cc-arm-l{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-65deg)}}
-@keyframes cc-arm-r{0%,50%,100%{transform:rotate(0)}75%{transform:rotate(65deg)}}
+/* torso bends toward the lifted knee so the opposite elbow can actually reach it */
+@keyframes cc-lean{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(25deg)}75%{transform:rotate(-25deg)}}
+@keyframes cc-thigh{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-65deg)}}
+@keyframes cc-shin{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(60deg)}}
+@keyframes cc-arm-l{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-75deg)}}
+@keyframes cc-arm-r{0%,50%,100%{transform:rotate(0)}75%{transform:rotate(75deg)}}
 .demo-copy{min-width:0}
 .demo-copy .lbl{font-size:10px;letter-spacing:.16em}
 .demo-copy b{display:block;font-size:24px;margin-top:2px}
@@ -662,13 +638,11 @@ body.solo .bar.p2{display:none}
             <ellipse class="floor-shadow" cx="60" cy="133" rx="30" ry="3"/>
           </g>
           <g class="ss-root">
-            <g class="ss-leg ss-leg-l"><path d="M56 78 52 102"/><path d="M52 102 56 130"/></g>
-            <g class="ss-leg ss-leg-r"><path d="M64 78 68 102"/><path d="M68 102 64 130"/></g>
+            <g class="ss-legs"><path d="M60 84 50 106 54 132"/><path d="M60 84 70 106 66 132"/></g>
             <g class="ss-torso">
-              <circle cx="60" cy="22" r="10"/>
-              <path d="M60 33v45"/>
-              <g class="ss-arm ss-arm-l"><path d="M60 46 46 64"/></g>
-              <g class="ss-arm ss-arm-r"><path d="M60 46 74 64"/></g>
+              <circle cx="60" cy="28" r="10"/>
+              <path d="M60 39v45"/>
+              <path d="M60 52 46 68"/><path d="M60 52 74 68"/>
             </g>
           </g>
           <path class="motion" d="M22 134h26M72 134h26"/>
@@ -931,12 +905,13 @@ const EX=[
  {id:"squat",name:"Pritūpimai"},
  {id:"jack",name:"Pašokimai"},
  {id:"knees",name:"Aukšti keliai"},
- {id:"squatjump",name:"Pritūpimai su šuoliuku"},
- {id:"sidestep",name:"Šoniniai žingsniai"},
- {id:"lunge",name:"Atvirkštiniai įtūpstai"},
- {id:"crunch",name:"Įstriži atsilenkimai stovint"},
+ // beta: detection not yet verified on a real person (10-22) – off by default, pickable in the sheet
+ {id:"squatjump",name:"Pritūpimai su šuoliuku",beta:true},
+ {id:"sidestep",name:"Šoniniai žingsniai",beta:true},
+ {id:"lunge",name:"Atvirkštiniai įtūpstai",beta:true},
+ {id:"crunch",name:"Įstriži atsilenkimai stovint",beta:true},
 ];
-let activeEX=EX.slice(); // start-screen picker keeps this non-empty
+let activeEX=EX.filter(e=>!e.beta); // start-screen picker keeps this non-empty
 const ROUND_SECS=30;
 const IDLE_DEMO_SECS=5; // re-show the coach card after this long without points
 const DEMO_SHOW_MS=5100;
@@ -1058,7 +1033,7 @@ function clipSpec(videoW,videoH,frameRate,portrait){
 }
 // pure: mutates s, returns true when one rep completes
 function step(s,lm,ex,now){
-  if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.last=0;s.base=null;s.baseOk=false;s.air=false;s.baseW=null;s.baseC=0;s.step=false;s.stepFrom=0;s.stepAt=0;s.stepCrouch=false;s.downAt=0}
+  if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.last=0;s.base=null;s.baseOk=false;s.air=false;s.baseW=null;s.baseC=0;s.step=false;s.stepFrom=0;s.stepAt=0;s.stepCrouch=false;s.downAt=0;s.r=null;s.r0=null}
   if(!visible(lm,ex)){s.lost=true;return false}
   s.lost=false;
   let rep=false;
@@ -1102,7 +1077,12 @@ function step(s,lm,ex,now){
     const hw=Math.abs(lm[23].x-lm[24].x)||0.2;
     const aw=Math.abs(lm[27].x-lm[28].x), cx=(lm[27].x+lm[28].x)/2;
     const ankleY=(lm[27].y+lm[28].y)/2, hipY=(lm[23].y+lm[24].y)/2, shoulderY=(lm[11].y+lm[12].y)/2;
-    const crouch=(ankleY-hipY)/(ankleY-shoulderY||1)<0.62; // hips lowered -> slight crouch
+    // crouch = hips lower than this player's own standing posture. A fixed 0.62 cut-off failed on real
+    // bodies: long legs read as "always crouched", short legs as "never" (ratio is ~0.56-0.68 standing).
+    const rawR=(ankleY-hipY)/(ankleY-shoulderY||1);
+    const r=s.r=s.r==null?rawR:s.r*0.7+rawR*0.3;
+    s.r0=s.r0==null?r:Math.max(s.r0,r); // tallest smoothed posture this round = standing
+    const crouch=r<s.r0-0.03;
     if(s.baseW==null){s.baseW=aw;s.baseC=cx}
     if(!s.step){
       if(crouch&&aw<=s.baseW+hw*0.25){
@@ -1237,7 +1217,7 @@ function renderExGrid(){
     btn.style.setProperty("--accent",exAccent(e));
     btn.classList.toggle("on",on);
     btn.setAttribute("aria-pressed",String(on));
-    btn.innerHTML=`<span class="ex-n" aria-hidden="true">${exPad(i+1)}</span><span class="ex-name"></span><span class="ex-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13l5 5 9-12"/></svg></span>`;
+    btn.innerHTML=`<span class="ex-n" aria-hidden="true">${exPad(i+1)}</span><span class="ex-name"></span>${e.beta?'<span class="ex-beta">beta</span>':''}<span class="ex-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13l5 5 9-12"/></svg></span>`;
     btn.querySelector(".ex-name").textContent=e.name;
     return btn;
   }));
