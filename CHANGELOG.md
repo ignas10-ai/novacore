@@ -1,5 +1,28 @@
 # Pakeitimų žurnalas
 
+## 2026-10-22 — 1080p / 60 fps pagal įrenginio galimybes
+
+- Kamera dabar prašoma **1920×1080 @ 60 fps**. Po paleidimo tikrinamas realus kameros režimas (`getSettings()`), todėl telefonas, kuris to nepalaiko, automatiškai gauna artimiausią variantą. Įkėlimo ekrane parodoma, kokį režimą telefonas realiai davė.
+- Jei telefonas realiai duoda 1080p60, tiesioginė peržiūra rodoma 1080p, o pilnas ir geriausių akimirkų klipai įrašomi **1080×1920 / 1920×1080 @ 60 fps**. Jei ne – naudojamas 1080p30, 720p60 arba 720p30 pagal tai, ką telefonas tikrai gali.
+- Klipų bitrate padidintas (iki **8 Mbps** 1080p60 atveju), o pirmenybė teikiama H.264 High 4.2 profiliui.
+- Pozų atpažinimas 1080p kameros atveju vyksta sumažintame iki 1280 px kadre, kad didelė peržiūra nesulėtintų 60 fps judesio sekimo; 720p atveju kokybė lieka tokia pat kaip anksčiau.
+- `clipSpec()` kokybės pasirinkimas padengtas `test-detect.cjs` testais.
+- Pastaba: 1080p60 klipai užima žymiai daugiau vietos ir atminties nei buvę 720p30.
+
+## 2026-10-22 — spartesnis judesio sekimas
+
+- Pose modelis nebeapdoroja to paties kameros kadro po kelis kartus: darbas vyksta tik atsiradus naujam `cam.currentTime` kadrui, todėl 60/120 Hz ekranuose nebedaromas dvigubas ar keturgubas darbas.
+- Inferencija iš pradžių buvo ribojama iki ~30 kadrų/s ir automatiškai retinama, jei telefone ji užtrunka, kad piešimas ir HUD liktų sklandūs (vėliau tikslas pakeltas iki 60 fps, žr. naujausią įrašą). Kamera iš pradžių paprašyta 30 fps.
+- Laikmatis atnaujinamas kartą per sekundę, progreso juosta – 10 kartų/s; dažnai naudojami HUD elementai kešuojami, o skeletas piešiamas vienu `stroke()` vietoj 12 atskirų brūkštelėjimų žaidėjui.
+- Judesio slenksčiai ir taškų logika nepakeisti, todėl `node test-detect.cjs` rezultatai išlieka tokie patys.
+
+## 2026-10-22 — užuominos, neaktyvumo priminimas ir kamera
+
+- Judėjimo užuomina (rodyklė „Atsitrauk“, „Į kairę / Į dešinę“) nebeužstoja ir nebeišjungia trenerio animacijos. Abu elementai rodomi vienu metu.
+- Portretiniame ekrane užuomina rodoma virš trenerio kortelės, o telefonų landšafte – kompaktiška eilute po ja, todėl animacija visada lieka matoma.
+- Trenerio demonstracija pakartojama jau po **5 s** be taškų (anksčiau – po ~9 s). Laikas valdomas per `IDLE_DEMO_SECS`.
+- Kamera pradėta prašyti iki 60 fps. Vėlesnis įrašas prideda 1080p60 režimą ir klipų kokybę pagal realias įrenginio galimybes (žr. naujausią įrašą).
+
 ## 2026-10-21 — pasirenkami pratimai
 
 - Pradžios ekrane įdėta kompaktiška pratimų suvestinė: pasirinktų pratimų skaičius, pavadinimų žetonai ir **„Keisti“** mygtukas.
@@ -31,7 +54,7 @@
   - pridedama po 0,5 s konteksto;
   - garantuojama, kad peržiūroje atsispindėtų kiekvienas žaidime buvęs pratimas, kad lengvesni pratimai neužgožtų kitų.
 - Pilnas klipas ir peržiūra įrašomi **MP4 (H.264/AVC1)** formatu; WebM naudojamas tik kaip paskutinė fallback išeitis.
-- Klipų orientacija atitinka žaidimo formatą: **720×1280** portretinis arba **1280×720** landšaftinis vaizdas.
+- Klipų orientacija atitinka žaidimo formatą: **720×1280** portretinis arba **1280×720** landšaftinis vaizdas (vėliau pridėtas 1080p60 režimas, žr. naujausią įrašą).
 - Klipuose nebėra kūno sekimo linijų: įrašomas tik veidrodinis kameros vaizdas.
 - Abu atsisiuntimai sujungti į vieną **„Atsisiųsti klipą“** meniu su „Geriausios akimirkos“ ir „Pilnas klipas“ pasirinkimais; meniu turi bounce animaciją ir chevron pasukimą.
 - Pridėtas **„Bendrinti peržiūrą“** mygtukas, naudojantis Web Share API su MP4 failu; nepalaikant – atsisiunčiama peržiūra.

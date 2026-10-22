@@ -295,7 +295,8 @@ body.solo .pl.p2{visibility:hidden}
 .cue[data-cue="left"] .cue-arrow{rotate:90deg}
 @keyframes cue-bob{0%,100%{translate:0 -4px}50%{translate:0 7px}}
 .cue-label{font-family:var(--disp);font-weight:800;font-size:18px;letter-spacing:.1em;text-transform:uppercase;color:var(--white);background:rgba(7,8,26,.8);padding:4px 12px 3px;transform:skewX(var(--skew));box-shadow:4px 4px 0 rgba(31,216,255,.3);white-space:nowrap}
-.hint-cue{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);z-index:5}
+/* keep the hint above the 260px demo area, even on short screens */
+.hint-cue{position:absolute;left:50%;top:min(42%,calc(100% - 350px));transform:translate(-50%,-50%);z-index:5}
 .ready-cue{margin-top:2px}
 
 /* exercise demo card */
@@ -440,7 +441,9 @@ body.solo .bar.p2{display:none}
   #clips .preview.portrait{width:min(100%,190px)}
   #clipsTitle{font-size:min(13vh,64px)}
   #clipsSub{font-size:13px}
-  .hint-cue{top:56%}
+  .hint-cue{top:auto;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);flex-direction:row;gap:10px}
+  .hint-cue .cue-arrow{width:60px;height:60px}
+  .hint-cue .cue-label{font-size:15px;padding:3px 10px 2px}
   .demo{bottom:calc(120px + env(safe-area-inset-bottom))}
   .demo-card{padding:8px 12px;gap:10px}
   .demo-art{width:72px}
@@ -667,7 +670,7 @@ body.solo .bar.p2{display:none}
     <span class="tag">Judesio žaidimas</span>
     <h2 class="d load-title">Kraunama<span class="dots">…</span></h2>
     <div class="loader" aria-hidden="true"><i></i><i></i><i></i></div>
-    <p class="load-msg">Ruošiama kamera ir judesio modelis</p>
+    <p class="load-msg" id="loadMsg">Ruošiama kamera ir judesio modelis</p>
   </div>
 </div>
 
@@ -742,11 +745,14 @@ body.solo .bar.p2{display:none}
 import {PoseLandmarker, FilesetResolver} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
 
 const $=s=>document.querySelector(s);
-const cam=$("#cam"), cv=$("#cv"), ctx=cv.getContext("2d");
+const cam=$("#cam"), cv=$("#cv"), ctx=cv.getContext("2d",{alpha:false});
 // offscreen canvas -> clips contain the raw camera only, no skeleton overlay
-const recCv=document.createElement("canvas"), recCtx=recCv.getContext("2d");
+const recCv=document.createElement("canvas"), recCtx=recCv.getContext("2d",{alpha:false});
+// pose inference runs on a smaller copy; the visible canvas keeps the full camera resolution
+const detCv=document.createElement("canvas"), detCtx=detCv.getContext("2d",{alpha:false});
 // prefer MP4 (universal playback); webm only as a last-resort fallback
-const REC_MIME=(()=>{if(typeof MediaRecorder==="undefined")return "";for(const t of ["video/mp4;codecs=avc1.42E01E","video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp8","video/webm"]){try{if(MediaRecorder.isTypeSupported(t))return t}catch(e){}}return ""})();
+// H.264 level 4.2 is the first candidate because 1080p60 exceeds level 3.0
+const REC_MIME=(()=>{if(typeof MediaRecorder==="undefined")return "";for(const t of ["video/mp4;codecs=avc1.64002A","video/mp4;codecs=avc1.4D402A","video/mp4;codecs=avc1.42E02A","video/mp4;codecs=avc1.640028","video/mp4;codecs=avc1.42E01E","video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp8","video/webm"]){try{if(MediaRecorder.isTypeSupported(t))return t}catch(e){}}return ""})();
 const REC_EXT=REC_MIME.includes("mp4")?"mp4":"webm";
 let players=2, duration=180;
 document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{players=+b.dataset.p;sel(b);document.body.classList.toggle("solo",players===1)});
@@ -761,6 +767,8 @@ const EX=[
 ];
 let activeEX=EX.slice(); // start-screen picker keeps this non-empty
 const ROUND_SECS=30;
+const IDLE_DEMO_SECS=5; // re-show the coach card after this long without points
+const DEMO_SHOW_MS=5100;
 const DEMO={
  squat:{name:"Pritūpimai",cue:"Sulenk kelius ir vėl atsistok"},
  jack:{name:"Pašokimai",cue:"Rankos aukštyn, kojos plačiau"},
@@ -853,6 +861,18 @@ function highlightSegments(events,total,binSecs=4,targetSecs=16,exerciseCount=EX
   }
   return segments;
 }
+// pick clip size from the camera mode the phone actually negotiated
+function clipSpec(videoW,videoH,frameRate,portrait){
+  const short=Math.min(+videoW||0,+videoH||0);
+  const fps=+frameRate||30;
+  const hd=short>=1080;
+  const fast=fps>=50;
+  const side=hd?1080:720;
+  const w=portrait?side:Math.round(side*16/9);
+  const h=portrait?Math.round(side*16/9):side;
+  const bps=hd?(fast?8000000:5500000):(fast?4500000:3000000);
+  return {w,h,fps:fast?60:30,bps,hd,fast,hq:hd&&fast};
+}
 // pure: mutates s, returns true when one rep completes
 function step(s,lm,ex,now){
   if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.last=0}
@@ -900,7 +920,7 @@ function detect(lm,i,ex,mult){
     flash(i);
   }
 }
-if(typeof module!=="undefined") module.exports={step,ang,armsUp,sideCue,highlightSegments}; // node self-check
+if(typeof module!=="undefined") module.exports={step,ang,armsUp,sideCue,highlightSegments,clipSpec}; // node self-check
 // restore the last exercise selection (UI only; localStorage is unavailable in the node self-check)
 try{
   const saved=JSON.parse(localStorage.getItem("novacore.exercises")||"[]");
@@ -1054,7 +1074,6 @@ function setDigits(el,str){ // transitions.dev number pop-in
 }
 let fl=[0,0];function flash(i){fl[i]=performance.now();const f=$(`#f${i+1}`);f.textContent=`+${curMult}`;replay(f,"go-pop");replay($(`#e${i+1}`),"go-pop")}
 function showDemo(ex){
-  if(hintCue.classList.contains("on"))return;
   const info=DEMO[ex.id];
   if(!info){clearTimeout(demoTimer);demoRoot.classList.remove("on");return}
   demoRoot.dataset.ex=ex.id;
@@ -1062,13 +1081,13 @@ function showDemo(ex){
   demoCue.textContent=info.cue;
   replay(demoRoot,"on");
   clearTimeout(demoTimer);
-  demoTimer=setTimeout(()=>demoRoot.classList.remove("on"),5100);
+  demoTimer=setTimeout(()=>demoRoot.classList.remove("on"),DEMO_SHOW_MS);
 }
 function setCue(root,label,kind,text){
   kind=kind||"none";
-  if(root===hintCue&&kind!=="none"){clearTimeout(demoTimer);demoRoot.classList.remove("on")}
   if(root.dataset.cue!==kind)root.dataset.cue=kind;
-  root.classList.toggle("on",kind!=="none");
+  const on=kind!=="none";
+  if(root.classList.contains("on")!==on)root.classList.toggle("on",on);
   if(label.textContent!==text)label.textContent=text;
 }
 
@@ -1129,11 +1148,33 @@ document.addEventListener("visibilitychange",()=>{
 window.addEventListener("pagehide",releaseWakeLock);
 
 const readyRoot=$("#ready"), rdRing=$("#rdRing"), rdCount=$("#rdCount"), readyHint=$("#readyHint"), rdChips=[$("#rd1"),$("#rd2")];
-const loadingRoot=$("#loading"), clipsRoot=$("#clips"), previewBox=$("#preview"), previewVid=$("#previewVid"), previewLoad=$("#previewLoad"), previewSpin=$("#previewSpin"), previewMsg=$("#previewMsg"), dlPrev=$("#dlPrev"), dlFull=$("#dlFull"), dlToggle=$("#dlToggle"), dlMenu=$("#dlMenu"), sharePrev=$("#sharePrev");
+const loadingRoot=$("#loading"), loadMsg=$("#loadMsg"), clipsRoot=$("#clips"), previewBox=$("#preview"), previewVid=$("#previewVid"), previewLoad=$("#previewLoad"), previewSpin=$("#previewSpin"), previewMsg=$("#previewMsg"), dlPrev=$("#dlPrev"), dlFull=$("#dlFull"), dlToggle=$("#dlToggle"), dlMenu=$("#dlMenu"), sharePrev=$("#sharePrev");
 const demoRoot=$("#demo"), demoName=$("#demoName"), demoCue=$("#demoCue");
 const readyCue=$("#readyCue"), readyCueText=$("#readyCueText"), hintCue=$("#hintCue"), hintCueText=$("#hintCueText");
+const hudRoot=$("#hud"), timerEl=$("#timer"), tbarEl=$("#tbar"), multEl=$("#mult"), exNameEl=$("#exName"), roundEl=$("#round"), hintEl=$("#hint"), scoreEls=[$("#s1"),$("#s2")];
 dlPrev.download=`novacore-highlights.${REC_EXT}`;dlFull.download=`novacore-full.${REC_EXT}`;
 let fullBlob=null, fullURL=null, previewBlob=null, previewURL=null, clipState="idle", highlightPlan=[], highlightTotal=0, clipPortrait=false, demoTimer=0, startTimer=0, nudgedRound=-1;
+let lastHudSec=-1, lastBarAt=0;
+let camFps=30, clipProfile=null;
+function readCameraInfo(){
+  const track=cam.srcObject?.getVideoTracks?.()[0];
+  const settings=track?.getSettings?.()||{};
+  return {
+    w:cam.videoWidth||settings.width||1280,
+    h:cam.videoHeight||settings.height||720,
+    fps:Math.max(1,+settings.frameRate||camFps||30)
+  };
+}
+function recorderOptions(profile){
+  const opts={};
+  if(REC_MIME)opts.mimeType=REC_MIME;
+  if(profile?.bps)opts.videoBitsPerSecond=profile.bps;
+  return opts;
+}
+function makeRecorder(stream,profile){
+  try{return new MediaRecorder(stream,recorderOptions(profile))}
+  catch(e){return new MediaRecorder(stream,REC_MIME?{mimeType:REC_MIME}:undefined)}
+}
 function drawMirrored(target,targetCanvas){
   target.save();target.translate(targetCanvas.width,0);target.scale(-1,1);target.drawImage(cam,0,0);target.restore();
 }
@@ -1148,19 +1189,58 @@ function drawRecordFrame(){
   recCtx.drawImage(cam,(recCv.width-dw)/2,(recCv.height-dh)/2,dw,dh);
   recCtx.restore();
 }
-function detectPoses(now){
-  const res=landmarker.detectForVideo(cam,now);
-  return (res.landmarks||[]).map(lm=>({lm,x:1-lm[0].x})).sort((a,b)=>a.x-b.x).slice(0,players);
+function detectFrame(){
+  const sw=cam.videoWidth,sh=cam.videoHeight;
+  const scale=Math.min(1,1280/Math.max(sw,sh));
+  const w=Math.max(2,Math.round(sw*scale)),h=Math.max(2,Math.round(sh*scale));
+  if(detCv.width!==w||detCv.height!==h){detCv.width=w;detCv.height=h}
+  detCtx.drawImage(cam,0,0,w,h);
+  return detCv;
+}
+// The camera can deliver up to ~60 new frames/s while a phone screen refreshes at 60-120 Hz.
+// Only work on fresh camera frames, let inference follow the camera rate, and back off on slow devices.
+let recFrameMs=28;
+const DETECT_TARGET=16, DETECT_MAX_GAP=120;
+let lastVideoTime=-1, lastDetectAt=0, detectGap=0, detectCost=0, lastPoses=[], lastRecDrawAt=0;
+function sampleCamera(now){
+  if(!cam.videoWidth)return null;
+  const vt=cam.currentTime;
+  if(vt===lastVideoTime)return null; // same frame as last refresh: nothing new to draw or infer
+  lastVideoTime=vt;
+  if(cv.width!==cam.videoWidth||cv.height!==cam.videoHeight){cv.width=cam.videoWidth;cv.height=cam.videoHeight}
+  drawCamera();
+  // record before inference so a slow detection cannot delay the recorder frame
+  if(rec&&now-lastRecDrawAt>=recFrameMs){lastRecDrawAt=now;drawRecordFrame()}
+  if(now-lastDetectAt<detectGap)return lastPoses;
+  lastDetectAt=now;
+  const started=performance.now();
+  const res=landmarker.detectForVideo(detectFrame(),now);
+  const cost=performance.now()-started;
+  detectCost=detectCost?detectCost*0.5+cost*0.5:cost;
+  // aim for ~60 fps inference; detection cost widens the gap on slower phones
+  detectGap=Math.max(DETECT_TARGET,Math.min(DETECT_MAX_GAP,detectCost*1.25));
+  const poses=(res.landmarks||[]).map(lm=>({lm,x:1-lm[0].x})).sort((a,b)=>a.x-b.x);
+  if(poses.length>players)poses.length=players;
+  lastPoses=poses;
+  return poses;
 }
 
 $("#go").onclick=async()=>{
   $("#goTxt").textContent="Kraunama…";$("#go").setAttribute("aria-busy","true");
+  loadMsg.textContent="Ruošiama kamera ir judesio modelis";
   loadingRoot.classList.remove("hide");
   const loadingSince=performance.now();
   try{
-    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:false});
+    // ask for the best mode; the browser falls back to the closest one it can deliver
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:60}},audio:false});
     cam.srcObject=stream; await new Promise(r=>cam.onloadedmetadata=r); await cam.play();
     cv.width=cam.videoWidth; cv.height=cam.videoHeight;
+    const track=stream.getVideoTracks()[0],settings=track?.getSettings?.()||{};
+    camFps=Math.max(1,+settings.frameRate||30);
+    const shortSide=Math.min(cam.videoWidth,cam.videoHeight);
+    const sizeLabel=shortSide>=1080?"1080p":shortSide>=720?"720p":`${shortSide}p`;
+    loadMsg.textContent=`Kamera ${sizeLabel} · ${Math.round(camFps)} fps · ruošiamas modelis`;
+    console.info(`NovaCore kamera: ${cam.videoWidth}×${cam.videoHeight} @ ${Math.round(camFps)} fps`);
     const fs=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
     landmarker=await PoseLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",delegate:"GPU"},runningMode:"VIDEO",numPoses:players});
     const wait=700-(performance.now()-loadingSince);
@@ -1189,14 +1269,16 @@ function startGame(){
   if(running)return;
   clearTimeout(startTimer);startTimer=0;
   nudgedRound=-1;lastPointAt[0]=lastPointAt[1]=0;
+  lastHudSec=-1;lastBarAt=0;
   readyRoot.classList.add("hide");
   readyRoot.classList.remove("done","holding");
   setCue(readyCue,readyCueText,"","");setCue(hintCue,hintCueText,"","");
   keepScreenAwake();
-  $("#hud").classList.add("on");
+  hudRoot.classList.add("on");
   document.body.classList.add("playing");
   lastRound=-1;
   startRec();
+  lastRecDrawAt=performance.now();
   $("#recInd").hidden=!rec;
   running=true;t0=performance.now();
   loop();
@@ -1229,6 +1311,7 @@ function backToSettings(){
   loadingRoot.classList.add("hide");
   cam.srcObject?.getTracks().forEach(t=>t.stop());
   cam.srcObject=null;
+  lastVideoTime=-1;lastPoses=[];lastDetectAt=0;detectGap=0;detectCost=0;
   try{landmarker?.close?.()}catch(e){}
   landmarker=null;
   $("#start").classList.remove("hide");
@@ -1241,9 +1324,9 @@ $("#readyBack").onclick=backToSettings;
 function readyLoop(){
   if(!readying)return;
   const now=performance.now();
-  drawCamera();
-  const poses=detectPoses(now);
-  poses.forEach((p,i)=>draw(p.lm,i));
+  const sampled=sampleCamera(now);
+  const poses=sampled||lastPoses;
+  if(sampled)poses.forEach((p,i)=>draw(p.lm,i));
 
   const up=poses.map(p=>armsUp(p.lm));
   rdChips.forEach((el,i)=>el.dataset.ok=(i<poses.length&&up[i])?"1":"0");
@@ -1289,16 +1372,25 @@ function readyLoop(){
 
 function startRec(){
   clipPortrait=innerHeight>innerWidth;
-  recCv.width=clipPortrait?720:1280;
-  recCv.height=clipPortrait?1280:720;
+  const info=readCameraInfo();
+  camFps=info.fps;
+  clipProfile=clipSpec(info.w,info.h,info.fps,clipPortrait);
+  recFrameMs=clipProfile.fps>=60?15:28;
+  recCv.width=clipProfile.w;
+  recCv.height=clipProfile.h;
   previewBox.classList.toggle("portrait",clipPortrait);
+  let stream=null;
   try{
     drawRecordFrame();
-    const s=recCv.captureStream(30);
-    rec=new MediaRecorder(s,REC_MIME?{mimeType:REC_MIME}:undefined);
+    stream=recCv.captureStream(clipProfile.fps);
+    rec=makeRecorder(stream,clipProfile);
     rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
     rec.start(1000);
-  }catch(e){rec=null}
+    console.info(`NovaCore klipas: ${clipProfile.w}×${clipProfile.h} @ ${clipProfile.fps} fps, ${(clipProfile.bps/1e6).toFixed(1)} Mbps`);
+  }catch(e){
+    stream?.getTracks().forEach(t=>t.stop());
+    rec=null;
+  }
 }
 
 function loop(){
@@ -1306,29 +1398,32 @@ function loop(){
   const now=performance.now();
   const el=(now-t0)/1000, left=Math.max(0,duration-el);
   const round=Math.floor(el/ROUND_SECS), mult=1+round, ex=activeEX[round%activeEX.length];
-  $("#timer").textContent=`${Math.floor(left/60)}:${String(Math.floor(left%60)).padStart(2,"0")}`;
-  $("#tbar").style.transform=`scaleX(${left/duration})`;
+  const sec=Math.floor(left);
+  if(sec!==lastHudSec){lastHudSec=sec;timerEl.textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`}
+  if(now-lastBarAt>=100){lastBarAt=now;tbarEl.style.transform=`scaleX(${left/duration})`}
   curMult=mult;
-  if(round!==lastRound){lastRound=round;$("#mult").textContent=`×${mult}`;$("#exName").textContent=ex.name;$("#round").textContent=`${ex.name} · ×${mult}`;replay($("#round"),"go-pop");showDemo(ex)}
-  drawCamera();drawRecordFrame();
-  // assign by x: leftmost on screen (mirrored) = player 1
-  const poses=detectPoses(now);
-  poses.forEach((p,i)=>{detect(p.lm,i,ex.id,mult);draw(p.lm,i)});
-  const lost=poses.map((p,i)=>st[i].lost?i+1:0).filter(Boolean);
-  const missing=poses.length<players?`Nematau ${players-poses.length===2?"žaidėjų":"žaidėjo "+(poses.length+1)}`:lost.length?`P${lost.join(" ir P")}: atsitrauk, nesimato viso kūno`:"";
-  $("#hint").textContent=missing;
-  const sides=poses.map(p=>sideCue(p.lm));
-  if(poses.length<players)setCue(hintCue,hintCueText,"back","Įsirikiuok");
-  else if(sides.some(Boolean)){
-    const k=sides.findIndex(Boolean),dir=sides[k];
-    setCue(hintCue,hintCueText,dir,`P${k+1} · ${dir==="left"?"į kairę":"į dešinę"}`);
-  }else if(lost.length)setCue(hintCue,hintCueText,"back",`P${lost.join(" ir P")} · atsitrauk`);
-  else setCue(hintCue,hintCueText,"","");
-  [0,1].forEach(i=>{const v=String(score[i]);if(v!==shown[i]){shown[i]=v;setDigits($(`#s${i+1}`),v)}});
+  if(round!==lastRound){lastRound=round;multEl.textContent=`×${mult}`;exNameEl.textContent=ex.name;roundEl.textContent=`${ex.name} · ×${mult}`;replay(roundEl,"go-pop");showDemo(ex)}
+  // the camera is slower than the screen: skip all pose work until a new frame arrives
+  const poses=sampleCamera(now);
+  if(poses){
+    // assign by x: leftmost on screen (mirrored) = player 1
+    poses.forEach((p,i)=>{detect(p.lm,i,ex.id,mult);draw(p.lm,i)});
+    const lost=poses.map((p,i)=>st[i].lost?i+1:0).filter(Boolean);
+    const missing=poses.length<players?`Nematau ${players-poses.length===2?"žaidėjų":"žaidėjo "+(poses.length+1)}`:lost.length?`P${lost.join(" ir P")}: atsitrauk, nesimato viso kūno`:"";
+    if(hintEl.textContent!==missing)hintEl.textContent=missing;
+    const sides=poses.map(p=>sideCue(p.lm));
+    if(poses.length<players)setCue(hintCue,hintCueText,"back","Įsirikiuok");
+    else if(sides.some(Boolean)){
+      const k=sides.findIndex(Boolean),dir=sides[k];
+      setCue(hintCue,hintCueText,dir,`P${k+1} · ${dir==="left"?"į kairę":"į dešinę"}`);
+    }else if(lost.length)setCue(hintCue,hintCueText,"back",`P${lost.join(" ir P")} · atsitrauk`);
+    else setCue(hintCue,hintCueText,"","");
+  }
+  [0,1].forEach(i=>{const v=String(score[i]);if(v!==shown[i]){shown[i]=v;setDigits(scoreEls[i],v)}});
   const roundStart=round*ROUND_SECS;
-  if(nudgedRound!==round&&el-roundStart>9&&!demoRoot.classList.contains("on")&&!hintCue.classList.contains("on")){
+  if(nudgedRound!==round&&el-roundStart>IDLE_DEMO_SECS&&!demoRoot.classList.contains("on")){
     let idle=false;
-    for(let i=0;i<players;i++)if(el-Math.max(lastPointAt[i],roundStart)>9)idle=true;
+    for(let i=0;i<players;i++)if(el-Math.max(lastPointAt[i],roundStart)>IDLE_DEMO_SECS)idle=true;
     if(idle){showDemo(ex);nudgedRound=round}
   }
   if(left<=0){finish();return}
@@ -1338,10 +1433,13 @@ function loop(){
 const COL=["#ff2e7e","#1fd8ff"];
 const EDGES=[[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28]];
 function draw(lm,i){
-  const W=cv.width,H=cv.height,c=COL[i];const hot=performance.now()-fl[i]<250;
-  ctx.lineWidth=hot?10:5;ctx.lineCap="round";ctx.strokeStyle=c;ctx.fillStyle=c;
-  for(const[a,b]of EDGES){ctx.beginPath();ctx.moveTo((1-lm[a].x)*W,lm[a].y*H);ctx.lineTo((1-lm[b].x)*W,lm[b].y*H);ctx.stroke()}
-  ctx.font="italic 900 34px 'Barlow Condensed',system-ui";ctx.fillText(`P${i+1}`,(1-lm[0].x)*W-18,lm[0].y*H-30);
+  const W=cv.width,H=cv.height,scale=Math.max(1,Math.min(W,H)/720),c=COL[i];const hot=performance.now()-fl[i]<250;
+  ctx.lineWidth=(hot?10:5)*scale;ctx.lineCap="round";ctx.strokeStyle=c;ctx.fillStyle=c;
+  ctx.beginPath(); // one stroke for the whole skeleton, not one per bone
+  for(const[a,b]of EDGES){ctx.moveTo((1-lm[a].x)*W,lm[a].y*H);ctx.lineTo((1-lm[b].x)*W,lm[b].y*H)}
+  ctx.stroke();
+  ctx.font=`italic 900 ${Math.round(34*scale)}px 'Barlow Condensed',system-ui`;
+  ctx.fillText(`P${i+1}`,(1-lm[0].x)*W-18*scale,lm[0].y*H-30*scale);
 }
 
 function openClips(){
@@ -1449,7 +1547,8 @@ function makeHighlightClip(source,segments){
     const out=document.createElement("canvas");
     out.width=recCv.width||cv.width;out.height=recCv.height||cv.height;
     const outCtx=out.getContext("2d");
-    const stream=out.captureStream(30);
+    const profile=clipProfile||{fps:30,bps:3000000};
+    const stream=out.captureStream(profile.fps);
     let recorder,parts=[],settled=false,guard;
     const cleanup=()=>{
       clearTimeout(guard);
@@ -1463,7 +1562,7 @@ function makeHighlightClip(source,segments){
       try{recorder&&recorder.stop()}catch(e){}
       cleanup();reject(err);
     };
-    try{recorder=new MediaRecorder(stream,REC_MIME?{mimeType:REC_MIME}:undefined)}catch(e){cleanup();reject(e);return}
+    try{recorder=makeRecorder(stream,profile)}catch(e){cleanup();reject(e);return}
     recorder.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};
     recorder.onerror=e=>fail(e.error||new Error("MediaRecorder error"));
     recorder.onstop=()=>{
@@ -1508,7 +1607,7 @@ function finish(){
   $("#endsub").textContent=`Iš viso judesių: ${score[0]+score[1]} taškų per ${duration/60} min`;
   highlightTotal=Math.min(duration,Math.max(0,(performance.now()-t0)/1000));
   highlightPlan=highlightSegments(scoreEvents,highlightTotal,4,16,activeEX.length);
-  $("#hud").classList.remove("on");end.classList.remove("hide");
+  hudRoot.classList.remove("on");end.classList.remove("hide");
   cam.srcObject?.getTracks().forEach(t=>t.stop());
   if(rec){
     setClipState("processing");

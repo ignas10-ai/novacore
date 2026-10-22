@@ -1,7 +1,7 @@
 // ponytail: vienas self-check – paleisti `node test-detect.cjs`
 const fs=require("fs");const html=fs.readFileSync(__dirname+"/index.html","utf8");
 const a=html.indexOf("const EX=["),b=html.indexOf("if(typeof module");
-const m={};new Function("module",html.slice(a,b)+"\nmodule.exports={step,armsUp,sideCue,highlightSegments};")(m);const {step,armsUp,sideCue,highlightSegments}=m.exports;
+const m={};new Function("module",html.slice(a,b)+"\nmodule.exports={step,armsUp,sideCue,highlightSegments,clipSpec};")(m);const {step,armsUp,sideCue,highlightSegments,clipSpec}=m.exports;
 const assert=require("assert");
 const P=(y=0.9,vis=1)=>({x:0.5,y,visibility:vis});
 function body(o={}){const lm=Array.from({length:33},()=>P());
@@ -38,6 +38,18 @@ assert(pair.some(s=>s.start<=31&&31<=s.end),"second selected exercise covered");
 const cold=highlightSegments([],60);
 assert(cold.reduce((n,s)=>n+s.end-s.start,0)>=15,"fallback highlight length");
 assert.deepStrictEqual(highlightSegments([],0),[],"empty timeline");
+// recording tiers follow the camera mode the phone actually negotiated
+const hqPortrait=clipSpec(1920,1080,60,true);
+assert.deepStrictEqual([hqPortrait.w,hqPortrait.h,hqPortrait.fps,hqPortrait.hq],[1080,1920,60,true],"portrait 1080p60 clip");
+const hqLandscape=clipSpec(1920,1080,59.94,false);
+assert.deepStrictEqual([hqLandscape.w,hqLandscape.h,hqLandscape.fps,hqLandscape.hq],[1920,1080,60,true],"landscape 1080p60 clip");
+const sharp=clipSpec(1920,1080,30,true);
+assert.deepStrictEqual([sharp.w,sharp.h,sharp.fps,sharp.hq],[1080,1920,30,false],"1080p30 clip");
+const smooth=clipSpec(1280,720,60,false);
+assert.deepStrictEqual([smooth.w,smooth.h,smooth.fps,smooth.hq],[1280,720,60,false],"720p60 clip");
+const standard=clipSpec(1280,720,30,true);
+assert.deepStrictEqual([standard.w,standard.h,standard.fps,standard.hq],[720,1280,30,false],"720p30 clip");
+assert(standard.bps>0&&hqPortrait.bps>standard.bps,"hq bitrate higher");
 // squat: stand -> deep -> stand = 1 rep (needs several frames for EMA)
 let s={},t=0,reps=0;const stand=body();const deep=body();deep[25]={x:0.4,y:0.62,visibility:1};deep[26]={x:0.6,y:0.62,visibility:1};deep[27]={x:0.6,y:0.64,visibility:1};deep[28]={x:0.4,y:0.64,visibility:1};
 for(const f of [...Array(5).fill(stand),...Array(8).fill(deep),...Array(8).fill(stand)]) if(step(s,f,"squat",t+=50))reps++;
