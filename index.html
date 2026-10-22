@@ -249,7 +249,7 @@ body.solo .rpl.p2{display:none}
 .pl .sc{font-size:clamp(64px,19vw,96px);margin-top:4px;text-shadow:0 2px 18px rgba(7,8,26,.6)}
 .pl.p1 .sc{color:var(--p1)}.pl.p2 .sc{color:var(--p2)}
 .mid{text-align:center;padding-top:2px}
-.mid .ex{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
+.mid .ex{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.14em;text-transform:uppercase;max-width:38vw;line-height:1.1;overflow-wrap:break-word}
 .mid .t{font-size:44px;margin-top:3px}
 .mid .x{display:inline-block;margin-top:6px;background:var(--white);color:var(--ink);padding:2px 10px 0;transform:skewX(var(--skew));font-size:22px}
 .rec{display:inline-flex;align-items:center;gap:5px;margin-left:6px;font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.14em;color:var(--white);vertical-align:2px}
@@ -278,7 +278,7 @@ body.solo .pl.p2{visibility:hidden}
 
 /* round banner, sits under HUD strip */
 .round{position:absolute;left:50%;top:calc(170px + env(safe-area-inset-top));transform:translateX(-50%) skewX(var(--skew));background:var(--white);color:var(--ink);
-  padding:8px 18px 6px;white-space:nowrap;font-size:28px;opacity:0;box-shadow:5px 5px 0 var(--p1),10px 10px 0 var(--p2)}
+  padding:8px 18px 6px;width:max-content;max-width:calc(100vw - 24px);white-space:normal;text-align:center;line-height:1.05;font-size:clamp(18px,5.6vw,28px);opacity:0;box-shadow:5px 5px 0 var(--p1),10px 10px 0 var(--p2)}
 .round.go-pop{animation:round 1700ms var(--ease-smooth-out) both}
 @keyframes round{0%{opacity:0;translate:-40px 0}14%{opacity:1;translate:0 0}82%{opacity:1;translate:0 0}100%{opacity:0;translate:40px 0}}
 .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
@@ -307,7 +307,7 @@ body.solo .pl.p2{visibility:hidden}
 .demo-card>*{transform:skewX(calc(var(--skew)*-1))}
 .demo-art{flex:none;display:grid;place-items:center;width:96px}
 .demo-svg{display:none;width:96px;height:110px;fill:none;stroke:var(--white);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
-.demo[data-ex="squat"] .demo-svg[data-ex="squat"],.demo[data-ex="jack"] .demo-svg[data-ex="jack"],.demo[data-ex="knees"] .demo-svg[data-ex="knees"]{display:block}
+.demo[data-ex="squat"] .demo-svg[data-ex="squat"],.demo[data-ex="jack"] .demo-svg[data-ex="jack"],.demo[data-ex="knees"] .demo-svg[data-ex="knees"],.demo[data-ex="squatjump"] .demo-svg[data-ex="squatjump"],.demo[data-ex="sidestep"] .demo-svg[data-ex="sidestep"],.demo[data-ex="lunge"] .demo-svg[data-ex="lunge"],.demo[data-ex="crunch"] .demo-svg[data-ex="crunch"]{display:block}
 .demo-svg .floor-plane{fill:rgba(245,246,255,.13);stroke:rgba(245,246,255,.38);stroke-width:2;stroke-linejoin:round}
 .demo-svg .floor-line{fill:none;stroke:rgba(245,246,255,.55);stroke-width:2.5;stroke-linecap:round}
 .demo-svg .floor-hatch{fill:none;stroke:rgba(245,246,255,.3);stroke-width:1.5;stroke-linecap:round}
@@ -315,6 +315,7 @@ body.solo .pl.p2{visibility:hidden}
 .demo-svg .motion{stroke:var(--p2);stroke-width:2.5;stroke-dasharray:4 7;opacity:.7;animation:motion-dash 1.2s linear infinite}
 @keyframes motion-dash{to{stroke-dashoffset:-22}}
 .sq-root,.sq-torso,.sq-thigh,.sq-shin,.sq-arm,.jj-root,.jj-arm-l,.jj-arm-r,.jj-legs,.rn-thigh,.rn-shin,.rn-arm{transform-box:view-box}
+.sj-root,.sj-torso,.sj-thigh,.sj-shin,.sj-arm,.ss-root,.ss-leg,.ss-arm,.ss-torso,.rl-root,.rl-torso,.rl-thigh,.rl-shin,.rl-leg,.cc-root,.cc-thigh,.cc-shin,.cc-arm{transform-box:view-box}
 .sq-root{transform-origin:60px 78px;animation:sq-drop 1.6s var(--ease-bounce) infinite}
 .sq-torso{transform-origin:60px 78px;animation:sq-lean 1.6s var(--ease-bounce) infinite}
 .sq-thigh{transform-origin:60px 78px;animation:sq-thigh 1.6s var(--ease-bounce) infinite}
@@ -342,6 +343,84 @@ body.solo .pl.p2{visibility:hidden}
 @keyframes rn-thigh{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-48deg)}}
 @keyframes rn-shin{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(82deg)}}
 @keyframes rn-arm{0%,100%{transform:rotate(-22deg)}50%{transform:rotate(26deg)}}
+/* squat jump: squat first, then leave the floor with the arms overhead */
+.sj-root{transform-origin:60px 78px;animation:sj-hop 1.5s var(--ease-bounce) infinite}
+.sj-torso{transform-origin:60px 78px;animation:sj-lean 1.5s var(--ease-bounce) infinite}
+.sj-thigh{transform-origin:60px 78px;animation:sj-thigh 1.5s var(--ease-bounce) infinite}
+.sj-shin{transform-origin:60px 104px;animation:sj-shin 1.5s var(--ease-bounce) infinite}
+.sj-arm{transform-origin:60px 46px;animation-duration:1.5s;animation-timing-function:var(--ease-bounce);animation-iteration-count:infinite}
+.sj-arm-l{animation-name:sj-arm-l}
+.sj-arm-r{animation-name:sj-arm-r}
+.sj-leg-back{opacity:.42}
+.sj-leg-back .sj-shin{transform-origin:64px 104px}
+@keyframes sj-hop{0%,100%{transform:translateY(0)}22%{transform:translateY(15px)}40%{transform:translateY(-18px)}56%{transform:translateY(0)}}
+@keyframes sj-lean{0%,100%{transform:rotate(0)}22%{transform:rotate(14deg)}40%,56%{transform:rotate(0)}}
+@keyframes sj-thigh{0%,100%{transform:rotate(0)}22%{transform:rotate(-42deg)}40%,56%{transform:rotate(0)}}
+@keyframes sj-shin{0%,100%{transform:rotate(0)}22%{transform:rotate(84deg)}40%,56%{transform:rotate(0)}}
+@keyframes sj-arm-l{0%,100%{transform:rotate(0)}22%{transform:rotate(28deg)}40%,56%{transform:rotate(110deg)}}
+@keyframes sj-arm-r{0%,100%{transform:rotate(0)}22%{transform:rotate(-28deg)}40%,56%{transform:rotate(-110deg)}}
+/* side step: slightly crouched, step out with one foot, close with the other, reverse */
+.ss-root{transform-origin:60px 78px;animation:ss-shift 1.6s var(--ease-bounce) infinite}
+.ss-leg-l{transform-origin:56px 78px;animation:ss-leg-l 1.6s var(--ease-bounce) infinite}
+.ss-leg-r{transform-origin:64px 78px;animation:ss-leg-r 1.6s var(--ease-bounce) infinite}
+.ss-torso{transform-origin:60px 78px;animation:ss-lean 1.6s var(--ease-bounce) infinite}
+.ss-arm{transform-origin:60px 46px}
+.ss-arm-l{animation:ss-arm-l 1.6s var(--ease-bounce) infinite}
+.ss-arm-r{animation:ss-arm-r 1.6s var(--ease-bounce) infinite}
+@keyframes ss-shift{
+  0%,12%{transform:translate(-6px,0)}
+  16%{transform:translate(-6px,-2px)}
+  22%{transform:translate(-6px,0)}
+  38%,50%{transform:translate(6px,0)}
+  58%{transform:translate(6px,-2px)}
+  64%{transform:translate(6px,0)}
+  80%,100%{transform:translate(-6px,0)}}
+@keyframes ss-leg-l{
+  0%,20%{transform:rotate(0)}
+  28%{transform:rotate(-10deg)}
+  40%,52%{transform:rotate(0)}
+  58%,64%{transform:rotate(22deg)}
+  78%,100%{transform:rotate(0)}}
+@keyframes ss-leg-r{
+  0%,10%{transform:rotate(0)}
+  16%,22%{transform:rotate(-22deg)}
+  34%,62%{transform:rotate(0)}
+  70%{transform:rotate(-10deg)}
+  82%,100%{transform:rotate(0)}}
+@keyframes ss-lean{
+  0%,12%{transform:rotate(-3deg)}
+  30%,62%{transform:rotate(3deg)}
+  80%,100%{transform:rotate(-3deg)}}
+@keyframes ss-arm-l{0%,100%{transform:rotate(-8deg)}30%,50%{transform:rotate(10deg)}80%{transform:rotate(-8deg)}}
+@keyframes ss-arm-r{0%,100%{transform:rotate(8deg)}30%,50%{transform:rotate(-10deg)}80%{transform:rotate(8deg)}}
+/* reverse lunge: step the back leg away while the hips drop */
+.rl-root{transform-origin:60px 78px;animation:rl-drop 1.8s var(--ease-bounce) infinite}
+.rl-torso{transform-origin:60px 78px;animation:rl-lean 1.8s var(--ease-bounce) infinite}
+.rl-thigh{transform-origin:60px 78px;animation:rl-thigh 1.8s var(--ease-bounce) infinite}
+.rl-shin{transform-origin:60px 104px;animation:rl-shin 1.8s var(--ease-bounce) infinite}
+.rl-leg-back{opacity:.42}
+.rl-leg-back .rl-thigh{animation-name:rl-back-thigh}
+.rl-leg-back .rl-shin{animation-name:rl-back-shin}
+@keyframes rl-drop{0%,100%{transform:translateY(0)}45%,55%{transform:translateY(10px)}}
+@keyframes rl-lean{0%,100%{transform:rotate(0)}45%,55%{transform:rotate(-8deg)}}
+@keyframes rl-thigh{0%,100%{transform:rotate(0)}45%,55%{transform:rotate(-20deg)}}
+@keyframes rl-shin{0%,100%{transform:rotate(0)}45%,55%{transform:rotate(28deg)}}
+@keyframes rl-back-thigh{0%,100%{transform:rotate(0)}45%,55%{transform:rotate(42deg)}}
+@keyframes rl-back-shin{0%,100%{transform:rotate(0)}45%,55%{transform:rotate(-34deg)}}
+/* standing cross-crunch: knee up, opposite elbow comes down to meet it */
+.cc-root{transform-origin:60px 78px;animation:cc-twist 1.6s var(--ease-bounce) infinite}
+.cc-thigh{transform-origin:60px 78px;animation:cc-thigh 1.6s var(--ease-bounce) infinite}
+.cc-shin{transform-origin:60px 104px;animation:cc-shin 1.6s var(--ease-bounce) infinite}
+.cc-arm{transform-origin:60px 46px}
+.cc-arm-l{animation:cc-arm-l 1.6s var(--ease-bounce) infinite}
+.cc-arm-r{animation:cc-arm-r 1.6s var(--ease-bounce) infinite}
+.cc-leg-b{opacity:.42}
+.cc-leg-b .cc-thigh,.cc-leg-b .cc-shin{animation-delay:-.8s}
+@keyframes cc-twist{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+@keyframes cc-thigh{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-50deg)}}
+@keyframes cc-shin{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(92deg)}}
+@keyframes cc-arm-l{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(-65deg)}}
+@keyframes cc-arm-r{0%,50%,100%{transform:rotate(0)}75%{transform:rotate(65deg)}}
 .demo-copy{min-width:0}
 .demo-copy .lbl{font-size:10px;letter-spacing:.16em}
 .demo-copy b{display:block;font-size:24px;margin-top:2px}
@@ -552,6 +631,94 @@ body.solo .bar.p2{display:none}
           </g>
           <path class="motion" d="M82 82q12 8 14 22M38 82q-12 8-14 22"/>
         </svg>
+        <svg class="demo-svg" data-ex="squatjump" viewBox="0 0 120 140">
+          <g class="floor">
+            <path class="floor-plane" d="M16 129h88l14 9H2Z"/>
+            <path class="floor-line" d="M16 130h88"/>
+            <path class="floor-hatch" d="M28 133l-5 5M42 133l-5 5M56 133l-5 5M70 133l-5 5M84 133l-5 5M98 133l-5 5"/>
+            <ellipse class="floor-shadow" cx="60" cy="133" rx="25" ry="3"/>
+          </g>
+          <g class="sj-root">
+            <g class="sj-leg sj-leg-back">
+              <g class="sj-thigh"><path d="M60 78l4 26"/><g class="sj-shin"><path d="M64 104v28"/></g></g>
+            </g>
+            <g class="sj-leg">
+              <g class="sj-thigh"><path d="M60 78v26"/><g class="sj-shin"><path d="M60 104v28"/></g></g>
+            </g>
+            <g class="sj-torso">
+              <circle cx="60" cy="22" r="10"/>
+              <path d="M60 33v45"/>
+              <g class="sj-arm sj-arm-r"><path d="M60 46 76 66"/></g>
+              <g class="sj-arm sj-arm-l"><path d="M60 46 44 66"/></g>
+            </g>
+          </g>
+          <path class="motion" d="M30 75q-9-15-3-31M90 75q9-15 3-31"/>
+        </svg>
+        <svg class="demo-svg" data-ex="sidestep" viewBox="0 0 120 140">
+          <g class="floor">
+            <path class="floor-plane" d="M16 129h88l14 9H2Z"/>
+            <path class="floor-line" d="M16 130h88"/>
+            <path class="floor-hatch" d="M28 133l-5 5M42 133l-5 5M56 133l-5 5M70 133l-5 5M84 133l-5 5M98 133l-5 5"/>
+            <ellipse class="floor-shadow" cx="60" cy="133" rx="30" ry="3"/>
+          </g>
+          <g class="ss-root">
+            <g class="ss-leg ss-leg-l"><path d="M56 78 52 102"/><path d="M52 102 56 130"/></g>
+            <g class="ss-leg ss-leg-r"><path d="M64 78 68 102"/><path d="M68 102 64 130"/></g>
+            <g class="ss-torso">
+              <circle cx="60" cy="22" r="10"/>
+              <path d="M60 33v45"/>
+              <g class="ss-arm ss-arm-l"><path d="M60 46 46 64"/></g>
+              <g class="ss-arm ss-arm-r"><path d="M60 46 74 64"/></g>
+            </g>
+          </g>
+          <path class="motion" d="M22 134h26M72 134h26"/>
+        </svg>
+        <svg class="demo-svg" data-ex="lunge" viewBox="0 0 120 140">
+          <g class="floor">
+            <path class="floor-plane" d="M16 129h88l14 9H2Z"/>
+            <path class="floor-line" d="M16 130h88"/>
+            <path class="floor-hatch" d="M28 133l-5 5M42 133l-5 5M56 133l-5 5M70 133l-5 5M84 133l-5 5M98 133l-5 5"/>
+            <ellipse class="floor-shadow" cx="60" cy="133" rx="30" ry="3"/>
+          </g>
+          <g class="rl-root">
+            <g class="rl-leg rl-leg-back">
+              <g class="rl-thigh"><path d="M60 78v26"/><g class="rl-shin"><path d="M60 104v28"/></g></g>
+            </g>
+            <g class="rl-leg">
+              <g class="rl-thigh"><path d="M60 78v26"/><g class="rl-shin"><path d="M60 104v28"/></g></g>
+            </g>
+            <g class="rl-torso">
+              <circle cx="60" cy="22" r="10"/>
+              <path d="M60 33v45"/>
+              <g class="rl-arm"><path d="M60 46 44 64"/></g>
+              <g class="rl-arm rl-arm-b"><path d="M60 46 76 64"/></g>
+            </g>
+          </g>
+          <path class="motion" d="M92 80q12 14 4 34"/>
+        </svg>
+        <svg class="demo-svg" data-ex="crunch" viewBox="0 0 120 140">
+          <g class="floor">
+            <path class="floor-plane" d="M16 129h88l14 9H2Z"/>
+            <path class="floor-line" d="M16 130h88"/>
+            <path class="floor-hatch" d="M28 133l-5 5M42 133l-5 5M56 133l-5 5M70 133l-5 5M84 133l-5 5M98 133l-5 5"/>
+            <ellipse class="floor-shadow" cx="60" cy="133" rx="25" ry="3"/>
+          </g>
+          <g class="cc-root">
+            <g class="cc-leg cc-leg-b">
+              <g class="cc-thigh"><path d="M60 78v26"/><g class="cc-shin"><path d="M60 104v28"/></g></g>
+            </g>
+            <g class="cc-leg">
+              <g class="cc-thigh"><path d="M60 78v26"/><g class="cc-shin"><path d="M60 104v28"/></g></g>
+            </g>
+            <g class="cc-torso">
+              <circle cx="60" cy="22" r="10"/>
+              <path d="M60 33v45"/>
+              <g class="cc-arm cc-arm-l"><path d="M60 46 44 60 50 38"/></g>
+              <g class="cc-arm cc-arm-r"><path d="M60 46 76 60 70 38"/></g>
+            </g>
+          </g>
+          <path class="motion" d="M88 66q6 14-4 24"/>
+        </svg>
       </div>
       <div class="demo-copy">
         <span class="lbl">Kaip daryti</span>
@@ -591,16 +758,16 @@ body.solo .bar.p2{display:none}
       <div class="ex-row">
         <div class="ex-info">
           <div class="lbl" id="exPickLabel">Pratimai</div>
-          <p class="ex-summary" id="exSummary">Visi 3 pratimai</p>
+          <p class="ex-summary" id="exSummary">Visi 7 pratimai</p>
         </div>
         <button class="ex-open" id="exOpen" type="button" aria-haspopup="dialog" aria-controls="exSheet" aria-expanded="false">
-          <span class="n" id="exCount">3</span>
+          <span class="n" id="exCount">7</span>
           <b>Keisti</b>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="square"/><path d="M13 7l4 4" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="square"/></svg>
         </button>
       </div>
       <div class="ex-chips" id="exPreview" aria-hidden="true"></div>
-      <p class="ex-note" id="exNote" aria-live="polite">Pasirinkti 3 pratimai. Raundai keisis tik tarp jų.</p>
+      <p class="ex-note" id="exNote" aria-live="polite">Pasirinkti 7 pratimai. Raundai keisis tik tarp jų.</p>
     </section>
 
     <section class="setup" aria-label="Kaip pastatyti telefoną">
@@ -735,7 +902,7 @@ body.solo .bar.p2{display:none}
     </header>
     <div class="ex-grid" id="exGrid" role="group" aria-label="Pratimų sąrašas"></div>
     <footer class="ex-sheet-foot">
-      <p class="ex-sheet-note" id="exSheetNote" aria-live="polite">Pasirinkti 3 pratimai</p>
+      <p class="ex-sheet-note" id="exSheetNote" aria-live="polite">Pasirinkti 7 pratimai</p>
       <button class="go ex-done" id="exDone" type="button">Gerai<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5 9-12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square" stroke-linejoin="miter"/></svg></button>
     </footer>
   </div>
@@ -759,11 +926,15 @@ document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{players=+b.datas
 document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{duration=+b.dataset.d;sel(b)});
 function sel(b){[...b.parentNode.children].forEach(x=>{x.classList.toggle("on",x===b);x.setAttribute("aria-pressed",x===b)})}
 
-// ponytail: 3 pratimai, 30 s rundai; sąrašą plėsti čia
+// ponytail: pratimai 30 s rundai; sąrašą plėsti čia
 const EX=[
  {id:"squat",name:"Pritūpimai"},
  {id:"jack",name:"Pašokimai"},
  {id:"knees",name:"Aukšti keliai"},
+ {id:"squatjump",name:"Pritūpimai su šuoliuku"},
+ {id:"sidestep",name:"Šoniniai žingsniai"},
+ {id:"lunge",name:"Atvirkštiniai įtūpstai"},
+ {id:"crunch",name:"Įstriži atsilenkimai stovint"},
 ];
 let activeEX=EX.slice(); // start-screen picker keeps this non-empty
 const ROUND_SECS=30;
@@ -773,6 +944,10 @@ const DEMO={
  squat:{name:"Pritūpimai",cue:"Sulenk kelius ir vėl atsistok"},
  jack:{name:"Pašokimai",cue:"Rankos aukštyn, kojos plačiau"},
  knees:{name:"Aukšti keliai",cue:"Bėk vietoje ir kelk kelius aukštyn"},
+ squatjump:{name:"Pritūpimai su šuoliuku",cue:"Pritūpk ir šok aukštyn"},
+ sidestep:{name:"Šoniniai žingsniai",cue:"Pritūpk ir ženk į šoną, tada prikelk kitą koją"},
+ lunge:{name:"Atvirkštiniai įtūpstai",cue:"Ženk viena koja atgal ir nusileisk"},
+ crunch:{name:"Įstriži atsilenkimai stovint",cue:"Kelk kelį ir liesk jį priešingu alkūniu"},
 };
 const score=[0,0];
 const scoreEvents=[];
@@ -786,7 +961,15 @@ let readying=false, readyRaf=0, holdStart=0, lastReady=0, lastReadyDigit="";
 function ang(a,b,c){const v1=[a.x-b.x,a.y-b.y],v2=[c.x-b.x,c.y-b.y];const d=v1[0]*v2[0]+v1[1]*v2[1];const m=Math.hypot(...v1)*Math.hypot(...v2)||1;return Math.acos(Math.max(-1,Math.min(1,d/m)))*180/Math.PI}
 
 // landmarks that MUST be visible per exercise (else: no counting + hint "atsitrauk")
-const NEED={squat:[23,24,25,26,27,28],jack:[0,11,12,15,16,23,24,27,28],knees:[23,24,25,26]};
+const NEED={
+ squat:[23,24,25,26,27,28],
+ jack:[0,11,12,15,16,23,24,27,28],
+ knees:[23,24,25,26],
+ squatjump:[11,12,23,24,25,26,27,28],
+ sidestep:[11,12,23,24,25,26,27,28],
+ lunge:[11,12,23,24,25,26,27,28],
+ crunch:[11,12,13,14,23,24,25,26],
+};
 const VIS=0.5, MIN_GAP=350; // ms between reps – kills jitter double-counts
 function visible(lm,ex){return NEED[ex].every(j=>(lm[j].visibility??1)>VIS)}
 // ready gate: both wrists above the nose, all key points visible
@@ -875,7 +1058,7 @@ function clipSpec(videoW,videoH,frameRate,portrait){
 }
 // pure: mutates s, returns true when one rep completes
 function step(s,lm,ex,now){
-  if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.last=0}
+  if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.last=0;s.base=null;s.baseOk=false;s.air=false;s.baseW=null;s.baseC=0;s.step=false;s.stepFrom=0;s.stepAt=0;s.stepCrouch=false;s.downAt=0}
   if(!visible(lm,ex)){s.lost=true;return false}
   s.lost=false;
   let rep=false;
@@ -897,7 +1080,68 @@ function step(s,lm,ex,now){
     const open=up&&armsOut&&legsOut, closed=down&&armsIn&&legsIn;
     if(open&&!s.open) s.open=true;
     else if(closed&&s.open){s.open=false;rep=true}
-  }else{
+  }else if(ex==="squatjump"){
+    // a squat only counts as a rep when the hips actually leave the standing baseline
+    const raw=(ang(lm[23],lm[25],lm[27])+ang(lm[24],lm[26],lm[28]))/2;
+    const k=s.k=s.k==null?raw:s.k*0.6+raw*0.4;
+    const h=Math.abs(lm[23].y-lm[11].y)||0.3; // torso length = scale
+    const hipY=(lm[23].y+lm[24].y)/2;
+    if(s.base==null)s.base=hipY;
+    else if(!s.down&&!s.air&&k>160){s.base=s.base*0.9+hipY*0.1;s.baseOk=true}
+    if(!s.air&&k<115&&!s.down){s.down=true;s.downAt=now}
+    if(s.baseOk){
+      if(s.down&&!s.air&&hipY<s.base-h*0.12)s.air=true;
+      if(s.air&&hipY>s.base-h*0.05){
+        s.air=false;
+        if(s.down){s.down=false;rep=true}
+      }
+    }
+    if(s.down&&!s.air&&now-s.downAt>2600)s.down=false;
+  }else if(ex==="sidestep"){
+    // side step: lead foot steps out, trail foot closes; both feet must move while crouched
+    const hw=Math.abs(lm[23].x-lm[24].x)||0.2;
+    const aw=Math.abs(lm[27].x-lm[28].x), cx=(lm[27].x+lm[28].x)/2;
+    const ankleY=(lm[27].y+lm[28].y)/2, hipY=(lm[23].y+lm[24].y)/2, shoulderY=(lm[11].y+lm[12].y)/2;
+    const crouch=(ankleY-hipY)/(ankleY-shoulderY||1)<0.62; // hips lowered -> slight crouch
+    if(s.baseW==null){s.baseW=aw;s.baseC=cx}
+    if(!s.step){
+      if(crouch&&aw<=s.baseW+hw*0.25){
+        if(aw<s.baseW)s.baseW=aw;
+        s.baseC=s.baseC*0.85+cx*0.15;
+      }
+      if(crouch&&aw>s.baseW+hw*0.6){s.step=true;s.stepFrom=s.baseC;s.stepAt=now;s.stepCrouch=true}
+    }else{
+      if(!crouch)s.stepCrouch=false;
+      if(aw<s.baseW+hw*0.25&&now-s.stepAt>200){
+        if(s.stepCrouch&&Math.abs(cx-s.stepFrom)>hw*0.35){rep=true;s.baseW=aw;s.baseC=cx}
+        s.step=false;s.stepFrom=0;s.stepCrouch=false;
+      }else if(now-s.stepAt>1600){
+        s.step=false;s.stepFrom=0;s.stepCrouch=false;s.baseW=aw;s.baseC=cx;
+      }
+    }
+  }else if(ex==="lunge"){
+    // hips drop + staggered knees + narrow stance separate a lunge from a squat
+    const h=Math.abs(lm[23].y-lm[11].y)||0.3;
+    const hipY=(lm[23].y+lm[24].y)/2;
+    const hips=Math.abs(lm[23].x-lm[24].x)||0.2;
+    const stance=Math.abs(lm[27].x-lm[28].x);
+    const stagger=Math.abs(lm[25].y-lm[26].y)/h;
+    const kRaw=(ang(lm[23],lm[25],lm[27])+ang(lm[24],lm[26],lm[28]))/2;
+    if(s.base==null)s.base=hipY;
+    else if(!s.down&&kRaw>160){s.base=s.base*0.9+hipY*0.1;s.baseOk=true}
+    if(s.baseOk&&!s.down&&hipY>s.base+h*0.12&&stagger>0.14&&stance<hips*1.25)s.down=true;
+    else if(s.baseOk&&s.down&&hipY<s.base+h*0.06){s.down=false;rep=true}
+  }else if(ex==="crunch"){
+    // knee up + opposite elbow touching it; the knee must lower before the next rep
+    const h=Math.abs(lm[23].y-lm[11].y)||0.3;
+    const sw=Math.abs(lm[11].x-lm[12].x)||0.2;
+    [[24,26,13],[23,25,14]].forEach(([hip,knee,elbow],j)=>{
+      const lift=(lm[hip].y-lm[knee].y)/h;
+      const touch=Math.abs(lm[elbow].x-lm[knee].x)/sw<0.6&&Math.abs(lm[elbow].y-lm[knee].y)/h<0.6;
+      if(lift>0.1&&touch&&!s.leg[j]){s.leg[j]=true;rep=true}
+      else if(lift<0.03&&s.leg[j])s.leg[j]=false;
+    });
+  }else if(ex==="knees"){
     // high knees: knee rises above hip line (y grows downward), each leg separately
     const h=Math.abs(lm[23].y-lm[11].y)||0.3; // torso length = scale
     [[23,25],[24,26]].forEach(([hip,knee],j)=>{
@@ -924,11 +1168,11 @@ if(typeof module!=="undefined") module.exports={step,ang,armsUp,sideCue,highligh
 // restore the last exercise selection (UI only; localStorage is unavailable in the node self-check)
 try{
   const saved=JSON.parse(localStorage.getItem("novacore.exercises")||"[]");
-  const restored=Array.isArray(saved)?EX.filter(e=>saved.includes(e.id)):[];
+  const restored=Array.isArray(saved)?EX.filter(e=>saved.includes(e.id)||(e.id==="sidestep"&&saved.includes("skater"))):[];
   if(restored.length)activeEX=restored;
 }catch(e){}
 // --- DOM helpers (UI only) ---
-let curMult=1, lastRound=0;
+let curMult=1, lastRound=0, exShift=0;
 const shown=["0","0"];
 function replay(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
 // exercise picker: generated from EX, multi-select, but never allow an empty game
@@ -1277,6 +1521,8 @@ function startGame(){
   hudRoot.classList.add("on");
   document.body.classList.add("playing");
   lastRound=-1;
+  // more selected exercises than 30 s rounds -> rotate the skipped one between games
+  exShift=activeEX.length>1?Math.floor(Math.random()*activeEX.length):0;
   startRec();
   lastRecDrawAt=performance.now();
   $("#recInd").hidden=!rec;
@@ -1397,7 +1643,7 @@ function loop(){
   if(!running)return;
   const now=performance.now();
   const el=(now-t0)/1000, left=Math.max(0,duration-el);
-  const round=Math.floor(el/ROUND_SECS), mult=1+round, ex=activeEX[round%activeEX.length];
+  const round=Math.floor(el/ROUND_SECS), mult=1+round, ex=activeEX[(round+exShift)%activeEX.length];
   const sec=Math.floor(left);
   if(sec!==lastHudSec){lastHudSec=sec;timerEl.textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`}
   if(now-lastBarAt>=100){lastBarAt=now;tbarEl.style.transform=`scaleX(${left/duration})`}

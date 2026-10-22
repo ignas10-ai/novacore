@@ -1,5 +1,29 @@
 # Pakeitimų žurnalas
 
+## 2026-10-22 — šoniniai žingsniai vietoje čiuožėjo šuoliukų
+
+- **Čiuožėjo šuoliukai** pakeisti **šoniniais žingsniais** (`sidestep`): žaidėjas turi šiek tiek pritūpti, žengti viena koja į šoną ir prikelti kitą koją prie jos, tada kartoti į kitą pusę.
+- Atpažinimas nebepriima vien kūno siūbavimo ar kojų platinimo. Reikia, kad:
+  - pėdų plotis iš tiesaus (susikėlusios kojos) išaugtų bent 0,6 klubų pločio,
+  - pėdų centras po žingsnio pasislinktų bent 0,35 klubų pločio (kita koja turi sekti pirmą),
+  - klubai nusileistų iki mažiau nei ~62 % atstumo nuo peties iki kulkšnies (šiek tiek pritūpus),
+  - pėdos vėl sugrįžtų į pradinį plotį. Išžengimas ir grįžimas ta pačia koja neįskaitomas, o žengiant stovint (be pritūpimo) taškų nėra.
+- Perpiešta demonstracija: pritūpusi figūra iš tiesų perkelia pėdą į šoną, prikelia kitą ir kartoja į priešingą pusę; nebėra slystančio plačių kojų silueto.
+- Išsaugomas ankstesnis pratimų pasirinkimas: senasis `skater` įrašas automatiškai atitinka naująjį `sidestep`.
+- `test-detect.cjs` pridėti teigiami ir neigiami scenarijai: pritūpęs šoninis žingsnis į abi puses, stovimas šoninis žingsnis ir išžengimas-grįžimas.
+
+## 2026-10-22 — keturi nauji pratimai
+
+- Į pratimų sąrašą įtraukti **pritūpimai su šuoliuku**, **čiuožėjo šuoliukai**, **atvirkštiniai įtūpstai** ir **įstriži atsilenkimai stovint**. „Aukšti keliai“ jau buvo žaidime, todėl jis nedubliuojamas.
+- Kiekvienas naujas pratimas turi savo judesio atpažinimą:
+  - Pritūpimas su šuoliuku skaičiuojamas tik po pritūpimo (kelio kampas < 115°) ir tik tada, kai klubai realiai pakyla virš stovėjimo lygio daugiau nei 12 % liemens ilgio. Vien atsistojimas iš pritūpimo neįskaitomas.
+  - Čiuožėjo šuoliukui reikia plataus šoninio klubų judesio į abi puses ir krypties pasikeitimo; mažas siūbavimas neįskaitomas.
+  - Atvirkštiniam įtūpstui reikia klubų nusileidimo, skirtingo aukščio kelių ir siauros pėdų pozicijos, todėl paprastas pritūpimas su lygiais keliais nesiskaičiuoja.
+  - Įstrižiems atsilenkimams stovint reikia pakelto kelio (virš 10 % liemens ilgio) ir prie jo prisilietusio priešingos pusės alkūnės; kol kelias nenuleidžiamas, tas pats judesys antrą kartą neįskaitomas.
+- Pridėtos animuotos trenerio kortelės su atskirais SVG judesiais (`squatjump`, `skater`, `lunge`, `crunch`), todėl kiekvienas pratimas turi savo demonstraciją.
+- `test-detect.cjs` papildytas naujų pratimų teigiamais ir neigiamais scenarijais: šuoliukas be pritūpimo, pritūpimas be šuoliuko, mažas šoninis siūbavimas, pritūpimas vietoje įtūpsto, pakeltas kelias be alkūnės ir pakartotinis judesys nenumetus kelio.
+- Kai pasirinkti visi 7 pratimai, 3 min sesija telpa 6 raundus, todėl kiekviena sesija pradedama nuo kito pasirinkto pratimo (`exShift`) – taip per kelis žaidimus visi pratimai išbandomi, o ne visada praleidžiamas paskutinis.
+
 ## 2026-10-22 — 1080p / 60 fps pagal įrenginio galimybes
 
 - Kamera dabar prašoma **1920×1080 @ 60 fps**. Po paleidimo tikrinamas realus kameros režimas (`getSettings()`), todėl telefonas, kuris to nepalaiko, automatiškai gauna artimiausią variantą. Įkėlimo ekrane parodoma, kokį režimą telefonas realiai davė.

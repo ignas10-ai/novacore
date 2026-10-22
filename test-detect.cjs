@@ -29,7 +29,7 @@ assert(hotLen>=15&&hotLen<=30,"highlight length");
 assert(hot.some(s=>s.start<=3&&s.end>=3),"hot spot included");
 assert(hot.some(s=>s.start<=50&&s.end>=50),"late hot spot included");
 assert(hot.every((s,i)=>s.start<s.end&&(!i||s.start>=hot[i-1].end)),"highlight order");
-const cover=highlightSegments([{t:2,points:3}],180),covered=new Set();
+const cover=highlightSegments([{t:2,points:3}],180,4,16,3),covered=new Set();
 for(let t=0;t<180;t++)if(cover.some(s=>s.start<=t&&t<=s.end))covered.add(Math.floor(t/30)%3);
 assert.strictEqual(covered.size,3,"all exercises represented");
 // custom exercise set: the reel still reserves a slot for the second selected exercise
@@ -67,6 +67,71 @@ assert.strictEqual(step(s,oneLeg,"jack",0),false);assert.strictEqual(step(s,stan
 // high knees: left lift, right lift = 2 reps; second lift of same leg without lowering = 0
 s={};t=0;const L=body();L[25]={x:0.4,y:0.44,visibility:1};const R=body();R[26]={x:0.6,y:0.44,visibility:1};
 assert.strictEqual(step(s,L,"knees",t+=400),true);assert.strictEqual(step(s,L,"knees",t+=400),false);assert.strictEqual(step(s,R,"knees",t+=400),true);
+// squat jump: squat alone never counts; squat + real hop + landing = 1 rep
+const jump=body();jump[23]={x:0.4,y:0.44,visibility:1};jump[24]={x:0.6,y:0.44,visibility:1};
+assert.strictEqual(step({},stand,"squatjump",0),false);
+const sjFrames=[...Array(4).fill(stand),...Array(6).fill(deep),...Array(4).fill(jump),...Array(6).fill(stand)];
+let sj={},sjT=0,sjReps=0;
+for(const f of sjFrames)if(step(sj,f,"squatjump",sjT+=50))sjReps++;
+assert.strictEqual(sjReps,1,"squat jump rep");
+sj={};sjT=0;sjReps=0;
+for(const f of [...Array(4).fill(stand),...Array(10).fill(deep),...Array(8).fill(stand)])if(step(sj,f,"squatjump",sjT+=50))sjReps++;
+assert.strictEqual(sjReps,0,"squat without hop is not a squat jump");
+sj={};sjT=0;sjReps=0;
+for(const f of [...Array(4).fill(stand),...Array(5).fill(jump),...Array(6).fill(stand)])if(step(sj,f,"squatjump",sjT+=50))sjReps++;
+assert.strictEqual(sjReps,0,"hop without squat is not a squat jump");
+// round starting mid-squat: standing up must not look like a hop (baseline needs a standing frame)
+const lowDeep=body();
+lowDeep[23]={x:0.4,y:0.58,visibility:1};lowDeep[24]={x:0.6,y:0.58,visibility:1};
+lowDeep[25]={x:0.4,y:0.7,visibility:1};lowDeep[26]={x:0.6,y:0.7,visibility:1};
+lowDeep[27]={x:0.6,y:0.72,visibility:1};lowDeep[28]={x:0.4,y:0.72,visibility:1};
+sj={};sjT=0;sjReps=0;
+for(const f of [...Array(8).fill(lowDeep),...Array(8).fill(stand),...Array(6).fill(lowDeep),...Array(8).fill(stand)])if(step(sj,f,"squatjump",sjT+=50))sjReps++;
+assert.strictEqual(sjReps,0,"standing from a mid-round squat is not a jump");
+// side step: crouched step out + trail foot closes = 1 rep; standing steps and step-out/back = 0
+const sidePose=(lx,rx)=>{const p=body();
+  p[23]={x:0.4,y:0.54,visibility:1};p[24]={x:0.6,y:0.54,visibility:1};
+  p[25]={x:0.4,y:0.7,visibility:1};p[26]={x:0.6,y:0.7,visibility:1};
+  p[27]={x:lx,y:0.88,visibility:1};p[28]={x:rx,y:0.88,visibility:1};
+  return p};
+const sideBase=sidePose(0.46,0.54),sideRO=sidePose(0.46,0.8),sideRC=sidePose(0.72,0.8);
+const sideLO=sidePose(0.2,0.8),sideLC=sidePose(0.2,0.28);
+let sd={},sdT=0,sdReps=0;
+for(const f of [...Array(5).fill(stand),...Array(5).fill(sideBase),...Array(5).fill(sideRO),...Array(5).fill(sideRC),...Array(5).fill(sideLO),...Array(5).fill(sideLC)])if(step(sd,f,"sidestep",sdT+=50))sdReps++;
+assert.strictEqual(sdReps,2,"side step reps");
+const standRO=body(),standRC=body();
+standRO[27]={x:0.46,y:0.9,visibility:1};standRO[28]={x:0.8,y:0.9,visibility:1};
+standRC[27]={x:0.72,y:0.9,visibility:1};standRC[28]={x:0.8,y:0.9,visibility:1};
+sd={};sdT=0;sdReps=0;
+for(const f of [...Array(5).fill(stand),...Array(5).fill(standRO),...Array(5).fill(standRC)])if(step(sd,f,"sidestep",sdT+=50))sdReps++;
+assert.strictEqual(sdReps,0,"standing side step does not count");
+sd={};sdT=0;sdReps=0;
+for(const f of [...Array(5).fill(stand),...Array(5).fill(sideBase),...Array(5).fill(sideRO),...Array(5).fill(sideBase)])if(step(sd,f,"sidestep",sdT+=50))sdReps++;
+assert.strictEqual(sdReps,0,"step out and back does not count");
+// reverse lunge: hip drop with staggered knees and narrow stance, then stand = 1 rep
+const lunge=body();
+lunge[23]={x:0.4,y:0.58,visibility:1};lunge[24]={x:0.6,y:0.58,visibility:1};
+lunge[25]={x:0.4,y:0.66,visibility:1};lunge[26]={x:0.6,y:0.62,visibility:1};
+lunge[27]={x:0.5,y:0.86,visibility:1};lunge[28]={x:0.5,y:0.86,visibility:1};
+let lu={},luT=0,luReps=0;
+for(const f of [...Array(4).fill(stand),...Array(6).fill(lunge),...Array(6).fill(stand)])if(step(lu,f,"lunge",luT+=100))luReps++;
+assert.strictEqual(luReps,1,"reverse lunge rep");
+const squatLike=body();squatLike[23]={x:0.4,y:0.58,visibility:1};squatLike[24]={x:0.6,y:0.58,visibility:1};
+squatLike[25]={x:0.4,y:0.66,visibility:1};squatLike[26]={x:0.6,y:0.66,visibility:1};
+squatLike[27]={x:0.4,y:0.86,visibility:1};squatLike[28]={x:0.6,y:0.86,visibility:1};
+lu={};luT=0;luReps=0;
+for(const f of [...Array(4).fill(stand),...Array(8).fill(squatLike),...Array(6).fill(stand)])if(step(lu,f,"lunge",luT+=100))luReps++;
+assert.strictEqual(luReps,0,"level-knee squat is not a lunge");
+// standing cross-crunch: knee up + opposite elbow touch, must lower between reps
+const crossR=body();crossR[26]={x:0.55,y:0.44,visibility:1};crossR[13]={x:0.55,y:0.44,visibility:1};
+const crossL=body();crossL[25]={x:0.45,y:0.44,visibility:1};crossL[14]={x:0.45,y:0.44,visibility:1};
+s={};t=0;
+assert.strictEqual(step(s,crossR,"crunch",t+=400),true,"cross crunch right knee");
+assert.strictEqual(step(s,crossR,"crunch",t+=400),false,"held crunch does not repeat");
+assert.strictEqual(step(s,stand,"crunch",t+=400),false);
+assert.strictEqual(step(s,crossL,"crunch",t+=400),true,"cross crunch other side");
+const kneeOnly=body();kneeOnly[26]={x:0.55,y:0.44,visibility:1};
+assert.strictEqual(step({},kneeOnly,"crunch",0),false,"knee alone is not a crunch");
 // debounce: two reps 100 ms apart -> second ignored
 s={};t=0;step(s,open,"jack",t);assert.strictEqual(step(s,stand,"jack",t+=400),true);step(s,open,"jack",t+=50);assert.strictEqual(step(s,stand,"jack",t+=50),false);
 console.log("OK");
