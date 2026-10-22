@@ -5,7 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07081a">
 <title>NovaCore – 3 minutės judėjimo su draugais</title>
-<meta name="description" content="Judesio žaidimas 1–2 žaidėjams: telefono kamera skaičiuoja pritūpimus ir pašokimus. 3 minutės, taškai, daugiklis, klipas pabaigoje.">
+<meta name="description" content="Judesio žaidimas 1–2 žaidėjams: telefono kamera skaičiuoja pritūpimus, pašokimus ir kitus pratimus. 3 minutės, taškai, daugiklis, klipas pabaigoje. Nieko diegti nereikia.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="NovaCore – 3 minutės judėjimo su draugais">
+<meta property="og:description" content="Pastatyk telefoną, kamera skaičiuoja pratimus, draugai varžosi taškais 3 minutes. Po žaidimo – trumpas klipas.">
+<meta property="og:image" content="https://novacore-two.vercel.app/icons/icon-512.png">
+<meta property="og:url" content="https://novacore-two.vercel.app/">
+<meta name="twitter:card" content="summary">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NovaCore">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2307081a'/%3E%3Cpath d='M6 26 13 6h5l-7 20z' fill='%23ff2e7e'/%3E%3Cpath d='M15 26 22 6h5l-7 20z' fill='%231fd8ff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -158,6 +169,35 @@ canvas{width:100%;height:100%;object-fit:contain}
 .ex-sheet-note{flex:1;min-width:0;font-size:12px;line-height:1.25;color:var(--mute);transition:color var(--duration-fast) var(--ease-smooth-out)}
 .ex-sheet-note.warn{color:var(--p1)}
 .go.ex-done{flex:none;width:auto;padding:9px 22px 7px;font-size:22px;box-shadow:4px 4px 0 var(--p1),8px 8px 0 var(--p2)}
+
+/* ---------- records card + sound toggle ---------- */
+.extras{border-top:1px solid var(--line);padding-top:16px}
+.extras[hidden]{display:none}
+.rec-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.rec-stat{background:var(--ink2);box-shadow:inset 0 0 0 1px var(--line);padding:8px 10px 7px;transform:skewX(var(--skew))}
+.rec-stat>span{display:block;transform:skewX(calc(var(--skew)*-1))}
+.rec-stat .d{font-size:26px;color:var(--white)}
+.rec-stat.p1 .d{color:var(--p1)}.rec-stat.p2 .d{color:var(--p2)}
+.rec-stat small{display:block;font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-top:3px}
+.snd-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:14px}
+.snd-row .fine{text-align:left}
+.ex-open.snd[data-on="0"] svg,.ex-open.snd[data-on="0"] b{opacity:.55}
+.ex-open.snd[data-on="0"] .snd-on{display:none}.ex-open.snd[data-on="1"] .snd-off{display:none}
+.rec-badge{display:inline-block;margin-top:12px;background:var(--p2);color:var(--ink);font-family:var(--disp);font-weight:900;font-style:italic;font-size:17px;letter-spacing:.1em;text-transform:uppercase;padding:4px 14px 2px;transform:skewX(var(--skew));box-shadow:4px 4px 0 var(--white);animation:zen-pick 620ms var(--ease-bounce) both}
+.rec-badge[hidden]{display:none}
+/* history sheet reuses .ex-sheet chrome */
+.hist-list{list-style:none;display:flex;flex-direction:column;gap:8px;padding:14px 18px 18px;overflow-y:auto;overscroll-behavior:contain;flex:1;min-height:0}
+.hist-item{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;background:var(--ink2);box-shadow:inset 0 0 0 1px var(--line);padding:9px 13px 8px;transform:skewX(var(--skew));animation:zen-tile-in 480ms var(--ease-bounce) both;animation-delay:calc(var(--i)*26ms)}
+.hist-item>*{transform:skewX(calc(var(--skew)*-1))}
+.hist-item .when{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.hist-item .what{font-size:12px;color:var(--mute);grid-column:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist-item .pts{grid-column:2;grid-row:1 / span 2;display:flex;gap:10px;align-items:baseline}
+.hist-item .pts b{font-size:28px}
+.hist-item .pts .p1{color:var(--p1)}.hist-item .pts .p2{color:var(--p2)}
+.hist-item.best .when::after{content:"rekordas";margin-left:8px;background:var(--p2);color:var(--ink);padding:1px 6px 0;font-size:9px}
+.hist-empty{padding:30px 18px;text-align:center;color:var(--mute)}
+.ex-sheet-foot .go.hist-clear{flex:none;width:auto;padding:9px 16px 7px;font-size:18px}
+@media (max-width:420px){#histSheet .ex-sheet-note{display:none}#histSheet .hist-clear{margin-right:auto}}
 
 .cta{margin-top:auto;display:flex;flex-direction:column;gap:12px;padding-top:6px}
 .go{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;border:0;cursor:pointer;text-decoration:none;
@@ -473,7 +513,10 @@ body.solo .bar.p2{display:none}
   .ex-open .n{min-width:22px;height:20px;font-size:15px}
   .ex-open b{font-size:10px}
   .ex-chips,.ex-note{display:none}
-  .cta{grid-column:2;grid-row:3 / span 2;margin-top:0}
+  .extras{grid-column:2;grid-row:3;border-top:0;padding-top:0}
+  .rec-stats{margin-top:8px;gap:6px}.rec-stat{padding:6px 8px 5px}.rec-stat .d{font-size:20px}
+  .snd-row{margin-top:8px}.snd-row .fine{display:none}
+  .cta{grid-column:2;grid-row:4;margin-top:0}
   .scrim{height:110px}
   .pl .sc{font-size:min(19vh,80px)}
   .mid .t{font-size:38px}
@@ -744,6 +787,34 @@ body.solo .bar.p2{display:none}
       <p class="ex-note" id="exNote" aria-live="polite">Pasirinkti 7 pratimai. Raundai keisis tik tarp jų.</p>
     </section>
 
+    <section class="extras" aria-label="Rekordai ir garsas">
+      <div id="records" hidden>
+        <div class="ex-row">
+          <div class="ex-info">
+            <div class="lbl">Rekordai</div>
+            <p class="ex-summary" id="recSummary">Šiame telefone</p>
+          </div>
+          <button class="ex-open" id="histOpen" type="button" aria-haspopup="dialog" aria-controls="histSheet" aria-expanded="false">
+            <span class="n" id="histCount">0</span>
+            <b>Istorija</b>
+          </button>
+        </div>
+        <div class="rec-stats" aria-label="Rekordų suvestinė">
+          <div class="rec-stat p1"><span><b class="d" id="recBest1">0</b><small>solo</small></span></div>
+          <div class="rec-stat p2"><span><b class="d" id="recBest2">0</b><small>dvikova</small></span></div>
+          <div class="rec-stat"><span><b class="d" id="recGames">0</b><small>žaidimai</small></span></div>
+          <div class="rec-stat"><span><b class="d" id="recReps">0</b><small>judesiai</small></span></div>
+        </div>
+      </div>
+      <div class="snd-row">
+        <p class="fine">Garsai už kiekvieną judesį, raundą ir finišą.</p>
+        <button class="ex-open snd" id="snd" type="button" aria-pressed="true" data-on="1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linejoin="miter"/><path class="snd-on" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="square"/><path class="snd-off" d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="square"/></svg>
+          <b>Garsas: <span id="sndTxt">įj.</span></b>
+        </button>
+      </div>
+    </section>
+
     <section class="setup" aria-label="Kaip pastatyti telefoną">
       <div class="lbl">Pasiruošimas</div>
       <svg viewBox="0 0 360 120" role="img" aria-label="Telefonas atremtas ant žemės, du žaidėjai stovi 2–3 metrų atstumu: P1 kairėje, P2 dešinėje">
@@ -821,6 +892,7 @@ body.solo .bar.p2{display:none}
       <span class="wl" id="wl">Laimėjo</span>
       <h2 class="d" id="winner">P1</h2>
       <p id="endsub">Puikus žaidimas</p>
+      <span class="rec-badge" id="recBadge" hidden>Naujas rekordas!</span>
     </header>
     <div class="bars">
       <div class="bar p1"><span class="chip">P1</span><span class="track"><i id="b1"></i></span><b class="d t-digit-group" id="r1">0</b></div>
@@ -882,8 +954,30 @@ body.solo .bar.p2{display:none}
   </div>
 </dialog>
 
+<dialog class="ex-sheet" id="histSheet" aria-labelledby="histTitle">
+  <div class="ex-sheet-panel">
+    <header class="ex-sheet-head">
+      <div class="ex-sheet-bar">
+        <span class="tag">Rekordai</span>
+        <button class="ex-close" id="histClose" type="button" aria-label="Uždaryti">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="square"/></svg>
+        </button>
+      </div>
+      <h2 class="d ex-sheet-title" id="histTitle">Paskutiniai <span>žaidimai</span></h2>
+      <p class="ex-sheet-sub">Saugoma tik šiame telefone.</p>
+    </header>
+    <ol class="hist-list" id="histList"></ol>
+    <footer class="ex-sheet-foot">
+      <p class="ex-sheet-note" id="histNote"></p>
+      <button class="go alt hist-clear" id="histClear" type="button">Išvalyti</button>
+      <button class="go ex-done" id="histDone" type="button">Gerai<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5 9-12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square" stroke-linejoin="miter"/></svg></button>
+    </footer>
+  </div>
+</dialog>
+
 <script type="module">
 import {PoseLandmarker, FilesetResolver} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 
 const $=s=>document.querySelector(s);
 const cam=$("#cam"), cv=$("#cv"), ctx=cv.getContext("2d",{alpha:false});
@@ -1155,6 +1249,106 @@ try{
 let curMult=1, lastRound=0, exShift=0;
 const shown=["0","0"];
 function replay(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
+
+// --- sound: synthesized with Web Audio, no files. AudioContext is created only after the Start gesture ---
+let ac=null, soundOn=true;
+try{soundOn=localStorage.getItem("novacore.sound")!=="0"}catch(e){}
+const sndBtn=$("#snd"), sndTxt=$("#sndTxt");
+function syncSnd(){sndBtn.dataset.on=soundOn?"1":"0";sndBtn.setAttribute("aria-pressed",String(soundOn));sndTxt.textContent=soundOn?"įj.":"išj."}
+function ensureAudio(){
+  if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return null}}
+  if(ac.state==="suspended")ac.resume().catch(()=>{});
+  return ac;
+}
+function tone(freq,dur,gain=.2,type="square",when=0){
+  if(!soundOn||!ac)return;
+  const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();
+  o.type=type;o.frequency.value=freq;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(ac.destination);o.start(t);o.stop(t+dur+.02);
+}
+const sfx={
+  rep:i=>{tone(i?1046:784,.07,.16);try{navigator.vibrate?.(30)}catch(e){}},
+  round:()=>{tone(659,.12,.2,"triangle");tone(988,.2,.2,"triangle",.12)},
+  tick:()=>tone(1200,.035,.07,"sine"),
+  finish:()=>[523,659,784,1046].forEach((f,k)=>tone(f,k===3?.55:.14,.2,"triangle",k*.13)),
+};
+sndBtn.onclick=()=>{soundOn=!soundOn;try{localStorage.setItem("novacore.sound",soundOn?"1":"0")}catch(e){}syncSnd();if(soundOn){ensureAudio();tone(880,.08,.16)}};
+syncSnd();
+
+// --- game history: localStorage only, newest first, capped ---
+const HIST_KEY="novacore.history", HIST_MAX=50, HIST_SHOW=10;
+function loadHist(){try{const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");return Array.isArray(h)?h:[]}catch(e){return []}}
+function saveHist(h){try{localStorage.setItem(HIST_KEY,JSON.stringify(h.slice(0,HIST_MAX)))}catch(e){}}
+// best single-player score among games with this player count
+function bestScore(h,p){return h.filter(g=>g.players===p).reduce((m,g)=>Math.max(m,...(g.score||[]).slice(0,p)),0)}
+const recRoot=$("#records"), histSheet=$("#histSheet"), histList=$("#histList"), histOpen=$("#histOpen"), histClose=$("#histClose"), histDone=$("#histDone"), histClear=$("#histClear"), histNote=$("#histNote");
+let histCloseTimer=0;
+const exName=id=>EX.find(e=>e.id===id)?.name||id;
+function renderRecords(){
+  const h=loadHist();
+  recRoot.hidden=!h.length;
+  if(!h.length)return;
+  $("#recBest1").textContent=String(bestScore(h,1));
+  $("#recBest2").textContent=String(bestScore(h,2));
+  $("#recGames").textContent=String(h.length);
+  $("#recReps").textContent=String(h.reduce((n,g)=>n+(g.reps||[]).reduce((a,b)=>a+b,0),0));
+  $("#histCount").textContent=String(Math.min(h.length,HIST_SHOW));
+  const last=h[0];
+  $("#recSummary").textContent=`Paskutinis: ${last.score.slice(0,last.players).join(" : ")} tšk.`;
+}
+function renderHist(){
+  const h=loadHist(), best=[0,bestScore(h,1),bestScore(h,2)];
+  histNote.textContent=h.length?`Saugoma ${h.length} iš ${HIST_MAX}`:"";
+  histClear.hidden=!h.length;
+  if(!h.length){histList.replaceChildren(Object.assign(document.createElement("li"),{className:"hist-empty",textContent:"Dar nė vieno žaidimo."}));return}
+  histList.replaceChildren(...h.slice(0,HIST_SHOW).map((g,i)=>{
+    const li=document.createElement("li");
+    li.className="hist-item";
+    li.style.setProperty("--i",i%10);
+    const top=Math.max(...g.score.slice(0,g.players));
+    if(top&&top===best[g.players])li.classList.add("best");
+    const when=document.createElement("span");when.className="when";
+    when.textContent=new Date(g.t).toLocaleString("lt-LT",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+    const what=document.createElement("span");what.className="what";
+    what.textContent=`${g.players===1?"Solo":"Dvikova"} · ${Math.round(g.duration/60)} min · ${(g.ex||[]).map(exName).join(", ")}`;
+    const pts=document.createElement("span");pts.className="pts";
+    for(let p=0;p<g.players;p++){const b=document.createElement("b");b.className=`d p${p+1}`;b.textContent=String(g.score[p]??0);pts.append(b)}
+    li.append(when,what,pts);
+    return li;
+  }));
+}
+function openHist(){
+  clearTimeout(histCloseTimer);
+  histSheet.classList.remove("closing");
+  renderHist();
+  histOpen.setAttribute("aria-expanded","true");
+  if(!histSheet.open)histSheet.showModal();
+}
+function closeHist(){
+  if(!histSheet.open||histSheet.classList.contains("closing"))return;
+  histSheet.classList.add("closing");
+  histOpen.setAttribute("aria-expanded","false");
+  clearTimeout(histCloseTimer);
+  histCloseTimer=setTimeout(()=>{histSheet.classList.remove("closing");if(histSheet.open)histSheet.close()},210);
+}
+histOpen.addEventListener("click",openHist);
+histClose.addEventListener("click",closeHist);
+histDone.addEventListener("click",closeHist);
+histClear.addEventListener("click",()=>{saveHist([]);renderHist();renderRecords()});
+histSheet.addEventListener("cancel",e=>{e.preventDefault();closeHist()});
+histSheet.addEventListener("click",e=>{if(e.target===histSheet)closeHist()});
+histSheet.addEventListener("close",()=>{clearTimeout(histCloseTimer);histSheet.classList.remove("closing");histOpen.setAttribute("aria-expanded","false")});
+renderRecords();
+// returns true when this game beat the stored best for its player count (never on the very first game)
+function recordGame(){
+  const h=loadHist(), prev=bestScore(h,players), top=Math.max(...score.slice(0,players));
+  const reps=[0,1].map(i=>scoreEvents.filter(e=>e.player===i).length);
+  h.unshift({t:Date.now(),players,duration,ex:activeEX.map(e=>e.id),score:score.slice(0,2),reps});
+  saveHist(h);
+  renderRecords();
+  return prev>0&&top>prev;
+}
 // exercise picker: generated from EX, multi-select, but never allow an empty game
 const exOpen=$("#exOpen"), exSheet=$("#exSheet"), exGrid=$("#exGrid"), exAll=$("#exAll"), exClose=$("#exClose"), exDone=$("#exDone"),
   exCount=$("#exCount"), exSummary=$("#exSummary"), exPreview=$("#exPreview"), exNote=$("#exNote"), exSheetNote=$("#exSheetNote");
@@ -1296,7 +1490,7 @@ function setDigits(el,str){ // transitions.dev number pop-in
   el.replaceChildren(...[...str].map((ch,k,a)=>{const s=document.createElement("span");s.className="t-digit";s.textContent=ch;if(k===a.length-1&&a.length>1)s.dataset.stagger="1";return s}));
   void el.offsetWidth;el.classList.add("is-animating");
 }
-let fl=[0,0];function flash(i){fl[i]=performance.now();const f=$(`#f${i+1}`);f.textContent=`+${curMult}`;replay(f,"go-pop");replay($(`#e${i+1}`),"go-pop")}
+let fl=[0,0];function flash(i){fl[i]=performance.now();const f=$(`#f${i+1}`);f.textContent=`+${curMult}`;replay(f,"go-pop");replay($(`#e${i+1}`),"go-pop");sfx.rep(i)}
 function showDemo(ex){
   const info=DEMO[ex.id];
   if(!info){clearTimeout(demoTimer);demoRoot.classList.remove("on");return}
@@ -1451,6 +1645,7 @@ function sampleCamera(now){
 
 $("#go").onclick=async()=>{
   $("#goTxt").textContent="Kraunama…";$("#go").setAttribute("aria-busy","true");
+  ensureAudio(); // user gesture: the only place an AudioContext may be created
   loadMsg.textContent="Ruošiama kamera ir judesio modelis";
   loadingRoot.classList.remove("hide");
   const loadingSince=performance.now();
@@ -1625,10 +1820,10 @@ function loop(){
   const el=(now-t0)/1000, left=Math.max(0,duration-el);
   const round=Math.floor(el/ROUND_SECS), mult=1+round, ex=activeEX[(round+exShift)%activeEX.length];
   const sec=Math.floor(left);
-  if(sec!==lastHudSec){lastHudSec=sec;timerEl.textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`}
+  if(sec!==lastHudSec){lastHudSec=sec;timerEl.textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`;if(sec>0&&sec<=10)sfx.tick()}
   if(now-lastBarAt>=100){lastBarAt=now;tbarEl.style.transform=`scaleX(${left/duration})`}
   curMult=mult;
-  if(round!==lastRound){lastRound=round;multEl.textContent=`×${mult}`;exNameEl.textContent=ex.name;roundEl.textContent=`${ex.name} · ×${mult}`;replay(roundEl,"go-pop");showDemo(ex)}
+  if(round!==lastRound){lastRound=round;multEl.textContent=`×${mult}`;exNameEl.textContent=ex.name;roundEl.textContent=`${ex.name} · ×${mult}`;replay(roundEl,"go-pop");showDemo(ex);sfx.round()}
   // the camera is slower than the screen: skip all pose work until a new frame arrives
   const poses=sampleCamera(now);
   if(poses){
@@ -1831,6 +2026,8 @@ function finish(){
   else if(score[0]===score[1]){$("#wl").textContent="Rezultatas";w.textContent="Lygiosios!";end.dataset.w="0"}
   else{const k=score[0]>score[1]?1:2;$("#wl").textContent="Laimėjo";w.textContent=`Žaidėjas ${k}`;end.dataset.w=k}
   $("#endsub").textContent=`Iš viso judesių: ${score[0]+score[1]} taškų per ${duration/60} min`;
+  $("#recBadge").hidden=!recordGame();
+  sfx.finish();
   highlightTotal=Math.min(duration,Math.max(0,(performance.now()-t0)/1000));
   highlightPlan=highlightSegments(scoreEvents,highlightTotal,4,16,activeEX.length);
   hudRoot.classList.remove("on");end.classList.remove("hide");

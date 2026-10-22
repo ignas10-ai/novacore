@@ -39,6 +39,12 @@ NovaCore is a Lithuanian-language, single-file browser game: phone camera -> Med
 - If a player has not scored for ~5 s in a round, the current exercise demo is shown again once (`nudgedRound`, `IDLE_DEMO_SECS`). It may appear even while a movement cue is active.
 - The fullscreen control hides itself when the Fullscreen API is missing and moves to the bottom-right while `body.playing` so it doesn't cover P2.
 
+## Sound, history, PWA
+
+- Sound is synthesized in `tone()` / `sfx` (Web Audio, no asset files). `ensureAudio()` creates the `AudioContext` only inside the `#go` click handler (user gesture); never create it on load. Hooks: `flash()` -> `sfx.rep`, round change -> `sfx.round`, last 10 s in `loop()` -> `sfx.tick`, `finish()` -> `sfx.finish`. Toggle `#snd` persists `novacore.sound`.
+- Game history lives in `localStorage` `novacore.history` (newest first, `HIST_MAX=50`); `recordGame()` runs in `finish()` and returns whether this game beat `bestScore()` for the same player count. `renderRecords()` fills the `#records` start card (hidden when empty); `#histSheet` reuses the `.ex-sheet` dialog chrome and shows `HIST_SHOW=10` games. All storage access is wrapped in try/catch so the game runs without `localStorage`.
+- PWA: `manifest.webmanifest`, `sw.js`, `icons/` (generated PNGs), `vercel.json` (no-cache for `sw.js`). `sw.js` registers only over https/localhost. Bump `VERSION` in `sw.js` when a change must reach already-installed phones immediately; old caches are dropped on activate. App shell is network-first (cache fallback), CDN assets (MediaPipe wasm/model, fonts) are network-first with a runtime cache.
+
 ## Conventions
 
 - User-facing copy is Lithuanian; keep new UI text Lithuanian.

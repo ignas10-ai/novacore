@@ -1,5 +1,12 @@
 # Pakeitimų žurnalas
 
+## 2026-10-23 — garsas, rekordai, PWA
+
+- **Garsas ir vibracija.** Web Audio sintezuoti garsai be jokių failų: „tick“ už kiekvieną užskaitytą pakartojimą (P1 ir P2 skirtingo aukščio), dviejų natų „ding“ keičiantis raundui, tylus tiksėjimas paskutines 10 s, trumpa fanfara finiše. Telefone už pakartojimą – `navigator.vibrate(30)`. Starto ekrane mygtukas **„Garsas: įj./išj.“** (įsimenamas `localStorage` `novacore.sound`). `AudioContext` sukuriamas tik paspaudus „Pradėti“ (naršyklės reikalauja vartotojo gesto).
+- **Žaidimų istorija ir rekordai.** Po kiekvieno žaidimo į `localStorage` (`novacore.history`, iki 50 įrašų) įrašoma data, žaidėjų skaičius, trukmė, pratimai, taškai ir pakartojimai. Rezultatų ekrane – žyma **„Naujas rekordas!“**, kai viršytas geriausias rezultatas tam žaidėjų skaičiui (pirmas žaidimas rekordu neskelbiamas). Starto ekrane nauja kortelė **„Rekordai“**: solo ir dvikovos rekordai, žaidimų skaičius, visų judesių suma; mygtukas „Istorija“ atidaro paskutinių 10 žaidimų sąrašą su „Išvalyti“. Be istorijos kortelė nerodoma.
+- **PWA.** `manifest.webmanifest` + `sw.js` + `icons/` (192, 512, maskable 512): žaidimą galima įsidėti į telefono pradžios ekraną kaip programėlę, atsidaro be naršyklės juostų. Service worker: app shell – network-first su cache atsarga; MediaPipe/šriftų CDN – network-first su runtime cache, todėl kartą paleistas žaidimas užsikrauna ir be interneto. `vercel.json` – `sw.js` be kešavimo.
+- Meta: atnaujintas aprašymas, `og:*` žymos (dalinantis nuoroda rodoma ikona ir aprašymas), `apple-touch-icon`.
+
 ## 2026-10-22 (vakaras) — nauji pratimai pažymėti „beta“, animacijų ir šoninių žingsnių pataisos
 
 - Keturi nauji pratimai (`squatjump`, `sidestep`, `lunge`, `crunch`) gavo `beta:true` žymą: pasirinkimo lentelėje matomi su „BETA“ etikete, bet **pagal nutylėjimą išjungti**, kol nepatikrinti su tikru žmogumi prieš kamerą. Pirmi trys pratimai veikia kaip anksčiau. Išsaugotas naršyklės pasirinkimas gerbiamas.
