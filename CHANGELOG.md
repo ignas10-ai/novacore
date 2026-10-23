@@ -1,5 +1,14 @@
 # Pakeitimų žurnalas
 
+## 2026-10-23 — UI po pilno prabėgimo su tikru žmogumi (fake-camera testas)
+
+Visas žaidimas (startas → paruošimas → 60 s → rezultatai → klipai) pervarytas headless Chrome su `--use-file-for-fake-video-capture` (tikro žmogaus įrašas kaip kamera), portretu ir landscape. Pataisyta tai, kas matėsi:
+
+- **Starto ekranas:** mygtukas „Pradėti“ buvo žemiau ekrano krašto (po rekordų, garso ir pasiruošimo skilčių). Dabar `position:sticky` apačioje – matomas iš karto, nustatymai slenka po juo.
+- **Klipų ekranas:** vietoj juodo langelio su „Kerpamos geriausios akimirkos…“ (iki ~30 s, nes ištrauka kerpama atkuriant realiu laiku) iš karto rodomas **pilnas klipas**, o ant jo – mažas užrašas su atgaline atskaita „ištrauka už ~N s“. Kai ištrauka paruošta, vaizdas pasikeičia į ją.
+- **Rezultatų ekranas:** pridėtas **pakartojimų sąrašas pagal pratimą** (P1/P2 stulpeliai, solo – vienas), eilutė po antrašte dabar „N judesiai · M tšk. per X min“. Tam `scoreEvents` įrašai gavo `ex` lauką.
+- Pastebėta, bet NEkeista: rankos už galvos (plaštakos ties ausimis) neužskaitomos kaip „rankos aukštyn“ – riešai turi būti virš nosies; tai teisinga, užuomina „RANKOS AUKŠTYN“ rodoma.
+
 ## 2026-10-23 — atpažinimas patikrintas ant TIKRŲ žmonių įrašų (`tools/`)
 
 - Naujas `tools/` rinkinys: `extract.cjs` (vaizdo įrašas → MediaPipe Pose landmark'ai į `tools/fixtures/*.json`, tas pats modelis kaip žaidime), `replay.cjs` (fixture → `step()` → kiek pakartojimų užskaityta), `replay-check.cjs` (regresija: 7 teigiami + 5 neigiami atvejai ant 8 tikrų klipų iš priekio). Paleisti: `node tools/replay-check.cjs`.

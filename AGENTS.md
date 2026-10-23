@@ -6,6 +6,7 @@ NovaCore is a Lithuanian-language, single-file browser game: phone camera -> Med
 
 - Camera requires a secure context: use `npx serve` and open `http://localhost:...`, or deploy over HTTPS (README uses Vercel). Opening `index.html` via `file://` will not work. Testing from a phone over LAN needs HTTPS.
 - Automated checks: `node test-detect.cjs` (synthetic poses, prints `OK`) and `node tools/replay-check.cjs` (real-person clips in `tools/fixtures/*.json`, prints `OK`). Run BOTH after changing `step()`, `armsUp()`, `highlightSegments()`, `clipSpec()`, `NEED`, landmark indices, or detection thresholds. The replay check is the one that catches "works on synthetic poses, fails on a real body" – see `tools/README.md` for how to add a clip.
+- UI changes to any screen after start: run `node tools/playthrough.cjs <cam.y4m> [--landscape]` (headless Chrome with a fake camera fed from a video file; screenshots of every screen land in `_playthrough/`, ignored by git). It is the only way to see the ready/game/end/clips screens without a phone. See `tools/README.md`.
 - There are no build, lint, typecheck, or formatter commands. Vercel deployment is static with no config in the repo; `.vercel` is ignored.
 
 ## Test harness constraint

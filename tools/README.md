@@ -15,6 +15,16 @@ vaizdo įrašas (.mp4) ──extract.cjs──▶ fixtures/<vardas>.json ──r
 | `node tools/replay.cjs <fixture> [pratimas\|all] [--from s --to s]` | Praleidžia fixture per `step()`; spausdina pakartojimus, jų laikus, „nematomų" kadrų skaičių. `all` – visi 7 detektoriai (matosi kryžminiai klaidingi užskaitymai). |
 | `node tools/replay-check.cjs` | Regresija: lentelė `CASES` su laukiamais skaičiais. Paleisti po kiekvieno `step()` / slenksčių keitimo. |
 
+## Pilnas žaidimo prabėgimas be telefono (`playthrough.cjs`)
+
+```
+ffmpeg -i klipas.mp4 -vf "scale=640:360,fps=30" -pix_fmt yuv420p cam.y4m
+node tools/playthrough.cjs cam.y4m              # portretas 390×844
+node tools/playthrough.cjs cam.y4m --landscape  # 844×390
+```
+
+Chrome vietoj kameros paima `cam.y4m`, žaidimas pereina startas → paruošimas → 60 s → rezultatai → klipai, kadrai krenta į `_playthrough/`. Paruošimo vartui įraše turi būti ~4 s su abiem riešais virš nosies (rankos už galvos NEskaitosi) – galima priklijuoti tokį gabalą priekyje per `ffmpeg concat`. Taip 2026-10-23 rastos ir pataisytos 3 UI bėdos (žr. CHANGELOG).
+
 ## Kaip pridėti savo įrašą (komandos testas)
 
 1. Nufilmuok telefonu **iš priekio**, telefonas ant grindų/stovo, visas kūnas kadre, 10 pakartojimų vieno pratimo (žr. `docs/TESTAVIMO-PROTOKOLAS.md`).
