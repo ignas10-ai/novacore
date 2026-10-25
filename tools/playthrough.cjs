@@ -3,6 +3,8 @@
 //   --social: Supabase pakeičiamas netikru (užklausos perimamos naršyklėje) → papildomi kadrai 00a–00g (slapyvardis,
 //   kompanijos, lentelė, iššūkio juosta) ir 05-end su iššūkio palyginimu. Be --social tikras serveris; pirmo paleidimo
 //   slapyvardžio langas uždaromas „Vėliau“.
+//   --palette volt: atidaro /?palette=volt (spalvų rinkinio palyginimui, žr. main.css :root[data-palette]).
+//   --history: įdeda kelis netikrus žaidimus į localStorage (rekordų kortelė starto ekrane matosi nuo pirmo kadro).
 //   y4m paruošimas: ffmpeg -i klipas.mp4 -vf "scale=640:360,fps=30" -pix_fmt yuv420p cam.y4m
 //   (paruošimo vartui reikia ~4 s, kai abu riešai virš nosies – jei įraše to nėra, suklijuok priekyje tokį gabalą)
 // Testuoja SURINKTĄ žaidimą (dist/, kaip Vercel) – po kodo pakeitimų pirma `npm run build`.
@@ -15,6 +17,7 @@ const [,,y4m,...rest]=process.argv;
 if(!y4m||!fs.existsSync(y4m)){console.error("node tools/playthrough.cjs <cam.y4m> [--landscape] [--out dir]");process.exit(1)}
 const arg=(k,d)=>{const i=rest.indexOf(k);return i>=0?rest[i+1]:d};
 const landscape=rest.includes("--landscape"),social=rest.includes("--social"),out=arg("--out",path.join(__dirname,"..","_playthrough",landscape?"landscape":"portrait"));
+const pal=arg("--palette",""),qp=pal?`palette=${pal}`:"";
 const players=arg("--players","1"),duration=arg("--duration","60"),port=8766+(landscape?1:0);
 fs.mkdirSync(out,{recursive:true});
 const root=path.join(__dirname,"..","dist");
@@ -31,7 +34,11 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const shot=async(n,t)=>{await sleep(t);await p.screenshot({path:path.join(out,n+".png")});console.log("•",n)};
   const visible=id=>p.evaluate(id=>{const el=document.getElementById(id);return !!el&&getComputedStyle(el).display!=="none"},id);
   if(social)await mockSupabase(p);
-  await p.goto(`http://localhost:${port}/`,{waitUntil:"networkidle0"});await sleep(800);
+  if(rest.includes("--history"))await p.evaluateOnNewDocument(()=>{if(!localStorage.getItem("novacore.history")){const t=Date.now();localStorage.setItem("novacore.history",JSON.stringify([
+    {t:t-36e5,players:2,duration:180,ex:["squat","jack","knees"],score:[148,131],reps:[61,55]},
+    {t:t-864e5,players:1,duration:180,ex:["squat","lunge"],score:[212,0],reps:[83,0]},
+    {t:t-1728e5,players:2,duration:60,ex:["jack"],score:[22,27],reps:[22,27]}]))}});
+  await p.goto(`http://localhost:${port}/${qp?"?"+qp:""}`,{waitUntil:"networkidle0"});await sleep(800);
   if(social){
     await shot("00a-nick-first-run",400);
     await p.type("#nickIn","Ignas");await p.click("#nickSave");
@@ -41,7 +48,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
     await p.type("#grpCodeIn","bd42ff");await p.click("#grpJoinForm button");await sleep(900);
     await p.$eval("#grpSheet .sheet-body",el=>el.scrollTop=0);await shot("00e-grp-two",300);
     await p.click("#grpDone");await sleep(400);
-    await p.goto(`http://localhost:${port}/?c=${CHAL_ID}`,{waitUntil:"networkidle0"});
+    await p.goto(`http://localhost:${port}/?c=${CHAL_ID}${qp?"&"+qp:""}`,{waitUntil:"networkidle0"});
     await shot("00f-challenge",1200);
   }else if(await visible("nickSheet")&&await p.$eval("#nickSheet",d=>d.open))await p.click("#nickLater");
   await shot("00-start",social?0:400);

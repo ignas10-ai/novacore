@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#07081a">
+<meta name="theme-color" content="#10201a">
 <title>NovaCore – 3 minutės judėjimo su draugais</title>
 <meta name="description" content="Judesio žaidimas 1–2 žaidėjams: telefono kamera skaičiuoja pritūpimus, pašokimus ir kitus pratimus. 3 minutės, taškai, daugiklis, klipas pabaigoje. Nieko diegti nereikia.">
 <meta property="og:type" content="website">
@@ -17,10 +17,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="NovaCore">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2307081a'/%3E%3Cpath d='M6 26 13 6h5l-7 20z' fill='%23ff2e7e'/%3E%3Cpath d='M15 26 22 6h5l-7 20z' fill='%231fd8ff'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2310201a'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23d9ef73'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,800;1,900&family=Barlow:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/src/styles/main.css">
 </head>
 <body>
@@ -208,9 +208,9 @@
 <main class="screen" id="start">
   <div class="wrap">
     <header class="brand">
+      <div class="topbar"><h1 class="wordmark">NovaCore</h1></div>
       <span class="tag">Judesio žaidimas</span>
-      <h1 class="d"><span>Nova</span><span class="c">Core</span></h1>
-      <p><i>3 minutės.</i> <b>2 žaidėjai.</b> Visas kūnas.</p>
+      <p class="headline">3 minutės. 2 žaidėjai. <em>Visas kūnas.</em></p>
     </header>
 
     <!-- online layer (src/ui/social.ts): hidden when Supabase is not configured; the game never waits for it -->
@@ -288,23 +288,17 @@
     <section class="setup" aria-label="Kaip pastatyti telefoną">
       <div class="lbl">Pasiruošimas</div>
       <svg viewBox="0 0 360 120" role="img" aria-label="Telefonas atremtas ant žemės, du žaidėjai stovi 2–3 metrų atstumu: P1 kairėje, P2 dešinėje">
-        <line x1="0" y1="108" x2="360" y2="108" stroke="rgba(245,246,255,.25)" stroke-width="2"/>
-        <!-- view cone -->
-        <path d="M46 70 L220 18 L220 108 L46 82 Z" fill="rgba(245,246,255,.06)"/>
-        <path d="M46 70 L220 18 M46 82 L220 108" stroke="rgba(245,246,255,.35)" stroke-width="1.5" stroke-dasharray="4 5"/>
-        <!-- phone leaning on bottle -->
-        <rect x="18" y="56" width="10" height="52" fill="#3a3d63"/>
-        <rect x="18" y="50" width="10" height="8" fill="#3a3d63"/>
-        <g transform="rotate(-12 40 108)"><rect x="32" y="52" width="16" height="56" fill="#f5f6ff"/><rect x="35" y="56" width="10" height="44" fill="#07081a"/><circle cx="40" cy="59" r="1.6" fill="#f5f6ff"/></g>
-        <!-- distance -->
-        <path d="M60 116 H210" stroke="#f5f6ff" stroke-width="1.5"/><path d="M60 112 V120 M210 112 V120" stroke="#f5f6ff" stroke-width="1.5"/>
-        <text x="135" y="104" fill="#f5f6ff" font-family="Barlow Condensed,sans-serif" font-style="italic" font-weight="900" font-size="18" text-anchor="middle">2–3 m</text>
-        <!-- P1 -->
-        <g stroke="#ff2e7e" stroke-width="5" stroke-linecap="round" fill="none"><circle cx="240" cy="32" r="7" fill="#ff2e7e"/><path d="M240 42 V72 M240 50 L226 36 M240 50 L254 36 M240 72 L230 104 M240 72 L250 104"/></g>
-        <!-- P2 -->
-        <g stroke="#1fd8ff" stroke-width="5" stroke-linecap="round" fill="none"><circle cx="300" cy="32" r="7" fill="#1fd8ff"/><path d="M300 42 V72 M300 50 L288 64 M300 50 L312 64 M300 72 L290 88 L296 104 M300 72 L310 88 L304 104"/></g>
-        <text x="240" y="16" fill="#ff2e7e" font-family="Barlow Condensed,sans-serif" font-style="italic" font-weight="900" font-size="15" text-anchor="middle">P1</text>
-        <text x="300" y="16" fill="#1fd8ff" font-family="Barlow Condensed,sans-serif" font-style="italic" font-weight="900" font-size="15" text-anchor="middle">P2</text>
+        <line class="s-line" x1="0" y1="108" x2="360" y2="108" stroke-width="2"/>
+        <path class="s-cone" d="M46 70 L220 18 L220 108 L46 82 Z"/>
+        <path class="s-ray" d="M46 70 L220 18 M46 82 L220 108" stroke-width="1.5" stroke-dasharray="4 5"/>
+        <rect class="s-prop" x="18" y="50" width="10" height="58" rx="3"/>
+        <g transform="rotate(-12 40 108)"><rect class="s-phone" x="32" y="52" width="16" height="56" rx="4"/><rect class="s-screen" x="35" y="57" width="10" height="44" rx="2"/></g>
+        <path class="s-dim" d="M60 116 H210 M60 112 V120 M210 112 V120" stroke-width="1.5"/>
+        <text class="s-txt" x="135" y="102" text-anchor="middle">2–3 m</text>
+        <g class="s-p1" stroke-width="5" stroke-linecap="round"><circle cx="240" cy="32" r="7"/><path d="M240 42 V72 M240 50 L226 36 M240 50 L254 36 M240 72 L230 104 M240 72 L250 104"/></g>
+        <g class="s-p2" stroke-width="5" stroke-linecap="round"><circle cx="300" cy="32" r="7"/><path d="M300 42 V72 M300 50 L288 64 M300 50 L312 64 M300 72 L290 88 L296 104 M300 72 L310 88 L304 104"/></g>
+        <text class="s-p1" x="240" y="16" text-anchor="middle">P1</text>
+        <text class="s-p2" x="300" y="16" text-anchor="middle">P2</text>
       </svg>
       <ol class="steps">
         <li><b>01</b>Atremk telefoną stačiai ant žemės</li>

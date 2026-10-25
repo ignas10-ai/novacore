@@ -37,6 +37,8 @@ node tools/playthrough.cjs cam.y4m              # portretas 390×844
 node tools/playthrough.cjs cam.y4m --landscape  # 844×390
 node tools/playthrough.cjs cam.y4m --social     # + netikras Supabase: slapyvardžio, kompanijų, iššūkio kadrai (00a–00f, 05-end)
 node tools/playthrough.cjs cam.y4m --social --size 360x740 --out _playthrough/p360
+node tools/playthrough.cjs cam.y4m --history          # + 3 netikri žaidimai → rekordų kortelė starto ekrane
+node tools/playthrough.cjs cam.y4m --palette volt     # /?palette=volt – kito spalvų rinkinio palyginimas
 ```
 
 Chrome vietoj kameros paima `cam.y4m`, žaidimas pereina startas → paruošimas → 60 s → rezultatai → klipai, kadrai krenta į `_playthrough/`. Paruošimo vartui įraše turi būti ~4 s su abiem riešais virš nosies (rankos už galvos NEskaitosi) – galima priklijuoti tokį gabalą priekyje per `ffmpeg concat`. Taip 2026-10-23 rastos ir pataisytos 3 UI bėdos (žr. CHANGELOG).

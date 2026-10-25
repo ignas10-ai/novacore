@@ -22,7 +22,7 @@ src/ui/                dom.ts ($, replay, setDigits, setCue), start.ts (players/
                        showDemo), results.ts (#end), social.ts (online UI: nickname/kompanijos sheets, ?g= / ?c= links,
                        post-game save + "Mesti iššūkį"), fullscreen.ts, wakelock.ts
 supabase/migrations/   001_init.sql = the DB contract (profiles, groups, group_members, games, RPCs, RLS); Ignas runs it
-src/styles/main.css    all CSS; design tokens in :root (unchanged "Active Arcade" look)
+src/styles/main.css    all CSS; ui-v2 tokens in :root (BS-PROOF structure: Inter, 18px cards, pills; palette swappable in one block)
 public/                copied as-is: pose-samples.json, sw.js, manifest.webmanifest, icons/
 tools/, test-detect.cjs  checks (Node), not shipped
 ```
@@ -98,4 +98,4 @@ tools/, test-detect.cjs  checks (Node), not shipped
 - User-facing copy is Lithuanian; keep new UI text Lithuanian.
 - MediaPipe is pinned to `@mediapipe/tasks-vision@0.10.14` in `package.json` (exact) and `MP_VERSION` in `src/camera/camera.ts` (wasm CDN URL for `FilesetResolver`), plus the `pose_landmarker_lite/float16` model URL (`POSE_MODEL`). Update version references together; `tools/extract.html` must use the same model as the game (`--model` exists only for comparisons).
 - `sw.js` precaches `pose-samples.json` but serves it network-first, so a regenerated file reaches phones on the next online open.
-- Styling and design tokens live in `:root` in `src/styles/main.css`. CSS ships unminified (`vite.config.ts` `cssMinify:false`) so no minifier can drop `-webkit-` prefixes; JS targets `esnext` (no down-levelling).
+- Styling and design tokens live in `:root` in `src/styles/main.css`. Since ui-v2 (2026-10-25) every colour is a token (`--bg`, `--surface`, `--fg*`, `--accent`, `--fill`, `--p1`, `--p2`, `--on-*`); component rules use only `var()`/`color-mix()`, and `camera.ts` reads `--p1`/`--p2` for the skeletons, so a palette swap touches only `:root`. `:root[data-palette="volt"]` + `/?palette=volt` is a temporary comparison set. Start, HUD and results are redone; sheets, ready, loading and clips still use legacy rules (mapped onto the new tokens, skew set to 0). CSS ships unminified (`vite.config.ts` `cssMinify:false`) so no minifier can drop `-webkit-` prefixes; JS targets `esnext` (no down-levelling).

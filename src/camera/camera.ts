@@ -100,14 +100,17 @@ export function resetTracking(){
   landmarker=null;
 }
 
-const COL=["#ff2e7e","#1fd8ff"];
+// player colours come from the CSS tokens (--p1/--p2 in src/styles/main.css), read once on the first frame
+let COL:string[]=[];
+const playerColors=()=>{const cs=getComputedStyle(document.documentElement);return ["--p1","--p2"].map(v=>cs.getPropertyValue(v).trim())};
 const EDGES=[[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28]];
 export function draw(lm:Lm[],i:number){
+  if(!COL.length)COL=playerColors();
   const W=cv.width,H=cv.height,scale=Math.max(1,Math.min(W,H)/720),c=COL[i];const hot=performance.now()-S.fl[i]<250;
   ctx.lineWidth=(hot?10:5)*scale;ctx.lineCap="round";ctx.strokeStyle=c;ctx.fillStyle=c;
   ctx.beginPath(); // one stroke for the whole skeleton, not one per bone
   for(const[a,b]of EDGES){ctx.moveTo((1-lm[a].x)*W,lm[a].y*H);ctx.lineTo((1-lm[b].x)*W,lm[b].y*H)}
   ctx.stroke();
-  ctx.font=`italic 900 ${Math.round(34*scale)}px 'Barlow Condensed',system-ui`;
+  ctx.font=`900 ${Math.round(32*scale)}px Inter,system-ui,sans-serif`;
   ctx.fillText(`P${i+1}`,(1-lm[0].x)*W-18*scale,lm[0].y*H-30*scale);
 }

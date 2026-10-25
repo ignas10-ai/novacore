@@ -1,5 +1,14 @@
 # Pakeitimų žurnalas
 
+## 2026-10-25 — ui-v2 pavyzdžiai: BS-PROOF struktūra (šaka `ui-v2`, tik 3 ekranai)
+
+- **Perdaryti 3 ekranai** (startas, žaidimo HUD, rezultatai) ant BS-PROOF dizaino sistemos: Inter (Google Fonts, su LT raidėmis), 900 svorio tankios antraštės, 18 px kortelės, 14 px valdikliai, 999 px „pill“ mygtukai, laimo akcentas, rekordai kaip BS-PROOF „ledger“ juosta, iššūkis kaip BS-PROOF įspėjimo kortelė. Pašalinta: pasvirę blokai, įstrižos juostos, kontūrinis „NOVA CORE“, Barlow Condensed kursyvas.
+- **Visos spalvos – tik `:root` žetonai** (`--bg`, `--surface`, `--fg*`, `--accent`, `--fill`, `--p1`, `--p2`, `--on-*`), permatomumas per `color-mix()`; skeletų spalvas `camera.ts` skaito iš `--p1`/`--p2`. Paletę galima pakeisti viename bloke. Laikinas palyginimas: `/?palette=volt` (juoda + volt žalsvai geltona, P2 šiltai raudona).
+- P1 = laimas `#d9ef73`, P2 = BS-PROOF koralas, pašviesintas tamsiam fonui `#ee7d5f` (6,2:1).
+- Logotipas – vienas teksto mazgas `.wordmark` („NovaCore“ + laimo taškas per `::after`), kad pavadinimą būtų lengva pakeisti.
+- Kiti ekranai (pasiruošimas, kraunama, klipai, lapai) dar senos struktūros, tik perkelti ant naujų žetonų be pasvirimo.
+- `playthrough.cjs`: `--history` (netikri žaidimai → rekordų kortelė) ir `--palette <vardas>`.
+
 ## 2026-10-25 — 2 etapas: slapyvardis, kompanijos, savaitės lentelė, iššūkiai (Supabase, šaka `app-v1`)
 
 - **Prisijungimas be el. pašto:** Supabase anoniminis prisijungimas + slapyvardis (2–20 simbolių). Pirmą kartą atsidaro langas „Tavo vardas“ (galima „Vėliau“). Starto ekrane – slapyvardžio mygtukas ir „Kompanijos“ su tavo vieta savaitės lentelėje (#2).
