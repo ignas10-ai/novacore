@@ -64,27 +64,34 @@ s={};const handsUp=body();handsUp[15]={x:0.38,y:0.05,visibility:1};handsUp[16]={
 assert.strictEqual(step(s,handsUp,"jack",0),false);assert.strictEqual(step(s,stand,"jack",400),false,"hands-up bypass");
 s={};const oneLeg=body();oneLeg[15]={x:0.2,y:0.05,visibility:1};oneLeg[16]={x:0.8,y:0.05,visibility:1};oneLeg[27].x=0.2;
 assert.strictEqual(step(s,oneLeg,"jack",0),false);assert.strictEqual(step(s,stand,"jack",400),false,"one-leg bypass");
-// high knees: left lift, right lift = 2 reps; second lift of same leg without lowering = 0
-s={};t=0;const L=body();L[25]={x:0.4,y:0.44,visibility:1};const R=body();R[26]={x:0.6,y:0.44,visibility:1};
+// high knees: left lift, right lift = 2 reps; second lift of same leg without lowering = 0 (the lifted foot leaves the floor)
+s={};t=0;const L=body();L[25]={x:0.4,y:0.44,visibility:1};L[27]={x:0.4,y:0.62,visibility:1};const R=body();R[26]={x:0.6,y:0.44,visibility:1};R[28]={x:0.6,y:0.62,visibility:1};
 assert.strictEqual(step(s,L,"knees",t+=400),true);assert.strictEqual(step(s,L,"knees",t+=400),false);assert.strictEqual(step(s,R,"knees",t+=400),true);
+// fast knees alternate ~0.27 s apart: both legs count; a squat (both knees up together) and a lunge (foot stays down) do not
+s={};t=1000;let kn=0;for(const f of [L,stand,R,stand,L,stand,R])if(step(s,f,"knees",t+=135))kn++;
+assert.strictEqual(kn,4,"fast alternating knees");
+const bothUp=body();bothUp[25]={x:0.4,y:0.5,visibility:1};bothUp[26]={x:0.6,y:0.5,visibility:1};
+const lungeKnee=body();lungeKnee[25]={x:0.4,y:0.5,visibility:1};lungeKnee[26]={x:0.6,y:0.75,visibility:1};
+s={};t=0;kn=0;for(const f of [stand,bothUp,stand,lungeKnee,stand])if(step(s,f,"knees",t+=400))kn++;
+assert.strictEqual(kn,0,"squat or lunge is not a high knee");
 // squat jump: squat alone never counts; squat + real hop + landing = 1 rep
-const jump=body();jump[23]={x:0.4,y:0.44,visibility:1};jump[24]={x:0.6,y:0.44,visibility:1};
+const jump=body().map(p=>({...p,y:p.y-0.06})); // whole body off the floor, feet included
+const sjDeep=body();sjDeep[25]={x:0.25,y:0.7,visibility:1};sjDeep[26]={x:0.75,y:0.7,visibility:1}; // knees out ~106°, feet planted
 assert.strictEqual(step({},stand,"squatjump",0),false);
-const sjFrames=[...Array(4).fill(stand),...Array(6).fill(deep),...Array(4).fill(jump),...Array(6).fill(stand)];
+const sjFrames=[...Array(4).fill(stand),...Array(6).fill(sjDeep),...Array(4).fill(jump),...Array(6).fill(stand)];
 let sj={},sjT=0,sjReps=0;
 for(const f of sjFrames)if(step(sj,f,"squatjump",sjT+=50))sjReps++;
 assert.strictEqual(sjReps,1,"squat jump rep");
 sj={};sjT=0;sjReps=0;
-for(const f of [...Array(4).fill(stand),...Array(10).fill(deep),...Array(8).fill(stand)])if(step(sj,f,"squatjump",sjT+=50))sjReps++;
+for(const f of [...Array(4).fill(stand),...Array(10).fill(sjDeep),...Array(8).fill(stand)])if(step(sj,f,"squatjump",sjT+=50))sjReps++;
 assert.strictEqual(sjReps,0,"squat without hop is not a squat jump");
 sj={};sjT=0;sjReps=0;
 for(const f of [...Array(4).fill(stand),...Array(5).fill(jump),...Array(6).fill(stand)])if(step(sj,f,"squatjump",sjT+=50))sjReps++;
 assert.strictEqual(sjReps,0,"hop without squat is not a squat jump");
-// round starting mid-squat: standing up must not look like a hop (baseline needs a standing frame)
+// round starting mid-squat: standing up must not look like a hop (the feet stay on the floor)
 const lowDeep=body();
 lowDeep[23]={x:0.4,y:0.58,visibility:1};lowDeep[24]={x:0.6,y:0.58,visibility:1};
-lowDeep[25]={x:0.4,y:0.7,visibility:1};lowDeep[26]={x:0.6,y:0.7,visibility:1};
-lowDeep[27]={x:0.6,y:0.72,visibility:1};lowDeep[28]={x:0.4,y:0.72,visibility:1};
+lowDeep[25]={x:0.25,y:0.75,visibility:1};lowDeep[26]={x:0.75,y:0.75,visibility:1};
 sj={};sjT=0;sjReps=0;
 for(const f of [...Array(8).fill(lowDeep),...Array(8).fill(stand),...Array(6).fill(lowDeep),...Array(8).fill(stand)])if(step(sj,f,"squatjump",sjT+=50))sjReps++;
 assert.strictEqual(sjReps,0,"standing from a mid-round squat is not a jump");
@@ -109,6 +116,15 @@ assert.strictEqual(sdReps,0,"tiny shuffle does not count");
 sd={};sdT=0;sdReps=0;
 for(const f of [...Array(5).fill(stand),...Array(5).fill(sideBase),...Array(5).fill(sideRO),...Array(5).fill(sideBase)])if(step(sd,f,"sidestep",sdT+=50))sdReps++;
 assert.strictEqual(sdReps,0,"step out and back does not count");
+// held side squat (wide for 3 s) then the lead foot back to the start = 0; a step whose trail foot stops short
+// (feet ~half of the widest spread) still counts
+sd={};sdT=0;sdReps=0;
+for(const f of [...Array(5).fill(sideBase),...Array(60).fill(sideRO),...Array(5).fill(sideBase)])if(step(sd,f,"sidestep",sdT+=50))sdReps++;
+assert.strictEqual(sdReps,0,"held side squat stepping back in does not count");
+const sideWide=sidePose(0.3,0.9),sideShort=sidePose(0.62,0.9); // trail foot came in to 0.28 of the 0.6 spread
+sd={};sdT=0;sdReps=0;
+for(const f of [...Array(5).fill(sideBase),...Array(5).fill(sideWide),...Array(5).fill(sideShort)])if(step(sd,f,"sidestep",sdT+=50))sdReps++;
+assert.strictEqual(sdReps,1,"short close still counts");
 // reverse lunge: hip drop with staggered knees and narrow stance, then stand = 1 rep
 const lunge=body();
 lunge[23]={x:0.4,y:0.58,visibility:1};lunge[24]={x:0.6,y:0.58,visibility:1};

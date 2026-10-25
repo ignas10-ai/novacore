@@ -65,11 +65,16 @@ Chrome vietoj kameros paima `cam.y4m`, žaidimas pereina startas → paruošimas
 | `squat2` | pritūpimai, kamera ~30° kampu | 3 | held-out |
 | `squat3` | pritūpimai, kojas dalinai dengia kamuolys | 6 | held-out; `step()` 5 |
 | `squat4` | pritūpimai, rankos į priekį | 4 | held-out (YT qtwh-kxcWmE) |
-| `squatjump3` | „mini" šuoliukai iš pusiau pritūpimo | 6 | apkirpta 0–17,4 s; `step()` 0 – žinoma spraga |
-| `knees2` | žemesni greiti pakėlimai su pašokimu | 24 | `step()` 7, k-NN 3 – žinoma spraga (YT DfjpR6dzLVg) |
+| `squatjump3` | šuoliukai iš gilaus pritūpimo be atsistojimo tarp jų | 6 | apkirpta 0–17,4 s; v3 `step()` 0, v4 6 (pėdos nuo grindų) |
+| `knees2` | žemesni greiti pakėlimai su pašokimu | 24 | v3 `step()` 7, v4 25 (kelių tarpusavio aukštis), k-NN 3 (YT DfjpR6dzLVg) |
 | `knees3` | bėgimas vietoje | 16 | YT VGb_fJ81yWc |
 | `crunch2`–`crunch4` | įstriži atsilenkimai, 3 kiti žmonės | 8 / 10 / 5 | held-out |
 | `lunge5` | atvirkštiniai įtūpstai, kitas žmogus | 3 | held-out (YT riVwQa0N-SU) |
+| `jack2`–`jack6` | pašokimai (jumping jacks), 5 skirtingi žmonės iš priekio | 4+3 / 11 / 3+3 / 6 / 11 | 2026-10-25 detect-v4, apkirpta iki vaizdo iš priekio (YT uLVt6u15L98, wdzPdljVpr0, CWpmIW6l-YA, c4DAnQ6DtF8, nGaXj3kkmrU); `step()` 41/41, nederinta |
+| `sidestep2` | „lateral squat walk", kamera seka žmogų | 12 | YT bQoc10-MHlE 1,5–20,6 s; pėdos ne visada susiglaudžia – pagal jį derintas `SS_CLOSE` |
+| `sidestep3` | lėti šoniniai žingsniai su pritūpimu | 11 | YT g78CxAtjkCE, tik dešinysis žmogus (2 žmonės kadre); held-out |
+| `squatjump5` | šuoliukai, kitas žmogus, šiek tiek kampu | 6 + 3 | Leap Fitness txLE-jOCEsc 13,5–21,4 ir 23,5–27,1 s; held-out (v3 – 0) |
+| `sidestep-squat` | išžengimas + pritūpimas + atgal (KITAS pratimas) | 0 | YT Ap5Xjp9lRd8 8,5–24,5 s; neigiamas atvejis šoniniams žingsniams |
 
 ## Lite vs full modelis (2026-10-25)
 
