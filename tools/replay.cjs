@@ -6,21 +6,27 @@
 const fs=require("fs"),path=require("path");
 const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
 const a=html.indexOf("const EX=["),b=html.indexOf("if(typeof module");
-const m={};new Function("module",html.slice(a,b)+"\nmodule.exports={step,EX,NEED};")(m);
-const {step,EX}=m.exports;
+const m={};new Function("module",html.slice(a,b)+"\nmodule.exports={step,EX,NEED,POSE,poseEmbed};")(m);
+const {step,EX,POSE,poseEmbed}=m.exports;
+// same sample poses as the game (index.html fetches pose-samples.json)
+const SAMPLES=path.join(__dirname,"..","pose-samples.json");
+if(fs.existsSync(SAMPLES))Object.assign(POSE,JSON.parse(fs.readFileSync(SAMPLES,"utf8")));
 const toLm=p=>p.map(([x,y,visibility,z=0])=>({x,y,z,visibility}));
-function runFile(file,id,{person=0,from=0,to=1e9}={}){
+// pose: undefined = as in the game, null = hand-written step() branch, {…} = this classifier config
+function runFile(file,id,{person=0,from=0,to=1e9,pose}={}){
   const data=JSON.parse(fs.readFileSync(file,"utf8"));
-  const s={};let reps=0,lost=0,seen=0;const times=[];
+  const live=POSE[id];if(pose!==undefined){if(pose)POSE[id]=pose;else delete POSE[id]}
+  const s={ar:data.w/data.h};let reps=0,lost=0,seen=0;const times=[];
   for(const f of data.frames){
     if(f.t<from||f.t>to)continue;
     const p=f.p[person];if(!p)continue;seen++;
     if(step(s,toLm(p),id,f.t*1000)){reps++;times.push(f.t.toFixed(1))}
     if(s.lost)lost++;
   }
+  if(live)POSE[id]=live;else delete POSE[id];
   return {id,reps,times,lost,seen,data};
 }
-module.exports={runFile,EX};
+module.exports={runFile,EX,POSE,poseEmbed};
 if(require.main===module){
   const [,,fx,exArg="all",...rest]=process.argv;
   if(!fx){console.error("node tools/replay.cjs <fixture> [pratimas|all]");process.exit(1)}
