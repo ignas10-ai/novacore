@@ -35,6 +35,8 @@ ffmpeg -i klipas.mp4 -vf "scale=640:360,fps=30" -pix_fmt yuv420p cam.y4m
 npm run build                                   # playthrough testuoja surinktą dist/
 node tools/playthrough.cjs cam.y4m              # portretas 390×844
 node tools/playthrough.cjs cam.y4m --landscape  # 844×390
+node tools/playthrough.cjs cam.y4m --social     # + netikras Supabase: slapyvardžio, kompanijų, iššūkio kadrai (00a–00f, 05-end)
+node tools/playthrough.cjs cam.y4m --social --size 360x740 --out _playthrough/p360
 ```
 
 Chrome vietoj kameros paima `cam.y4m`, žaidimas pereina startas → paruošimas → 60 s → rezultatai → klipai, kadrai krenta į `_playthrough/`. Paruošimo vartui įraše turi būti ~4 s su abiem riešais virš nosies (rankos už galvos NEskaitosi) – galima priklijuoti tokį gabalą priekyje per `ffmpeg concat`. Taip 2026-10-23 rastos ir pataisytos 3 UI bėdos (žr. CHANGELOG).
@@ -79,3 +81,7 @@ Visi klipai perekstraktuoti su `pose_landmarker_full` (`--cpu`). Rezultatas nevi
 - Įstrižame atsilenkime alkūnė iš priekio lieka ~0,8 pečių pločio nuo kelio, bet nusileidžia iki kelio aukščio – tikrinti dy, ne dx.
 - Ranka rašytas pritūpimų `step()` skaičiuoja BET KOKĮ kelių sulenkimą: atsilenkimuose 5–9, įtūpstuose 3–12 „pritūpimų". k-NN su kojų+liemens embedding'u ir `no` pavyzdžiais – 0, o tikrus pritūpimus skaičiuoja taip pat tiksliai.
 - k-NN embedding'as nepriklauso nuo padėties kadre, todėl šuolio (`squatjump`) ir pasislinkimo į šoną (`sidestep`) jis nemato – ten lieka `step()`.
+
+## Internetinė dalis prieš tikrą Supabase (`social-check.mjs`)
+
+`node tools/social-check.mjs` – 2 anoniminiai vartotojai, profiliai, kompanija, prisijungimas kodu, žaidimai, savaitės lentelė, iššūkis ir RLS (B nemato A žaidimų ir svetimos kompanijos, negali įrašyti žaidimo A vardu, keisti A profilio ar trinti A kompanijos). Išeitis 2 = serveris neparuoštas (nepaleista `001_init.sql` arba išjungtas anoniminis prisijungimas). Testinė kompanija ištrinama, 2 anoniminiai vartotojai ir jų žaidimai lieka (Authentication → Users – galima ištrinti ranka).
