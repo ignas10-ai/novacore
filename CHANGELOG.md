@@ -1,5 +1,22 @@
 # Pakeitimų žurnalas
 
+## 2026-10-25 — Android programėlė (APK) per GitHub Actions (šaka `android`)
+
+- **Capacitor 8.5.3:** tas pats žaidimas kaip Android aplikacija `lt.novacore.app` („NovaCore“). Pavadinimas ir ID – tik `capacitor.config.json`.
+- **APK renka GitHub Actions** po kiekvieno `push` į `master`: testai → `vite build` (su Supabase raktais iš repo paslapčių) → `cap sync` → `assembleDebug` → artefaktas `novacore-debug-apk`. Igno kompiuteryje Android SDK nereikia. Kaip įsidiegti – README „Android APK“.
+- **Kas kitaip programėlėje:** kamera prašo leidimo pirmą kartą paleidus žaidimą (tik vaizdas, be mikrofono); ekranas neužgęsta (Wake Lock WebView'e neveikia); Android „atgal“ veikia kaip ekrano „atgal“, pradžios ekrane uždaro programėlę; klipų „Atsisiųsti“ ir „Dalintis“ atidaro sistemos dalinimosi langą (išsaugoti į Failus / Nuotraukas, siųsti draugams); kvietimų ir iššūkių nuorodos veda į novacore-two.vercel.app; be service worker ir be viso ekrano mygtuko.
+- **Dar neveikia:** `/?g=` ir `/?c=` nuorodos atsidaro naršyklėje, ne programėlėje; pirmam paleidimui reikia interneto (MediaPipe modelis iš CDN); ikona ir užsklanda – standartinės Capacitor.
+- **Svetainė nepakito:** visi pakeitimai – tik `Capacitor.isNativePlatform()` šakose, Vercel renka tą patį `dist/`.
+
+## 2026-10-25 — klipų peržiūra nebestringa (šaka `fix-clip-lag`)
+
+Komandos draugas pranešė: po žaidimo klipų ekrane peržiūros grotuvas stringa / trūkčioja.
+
+- **Kol kerpama ištrauka, pilnas klipas nebegroja savaime:** rodomas sustabdytas kadras (pirmas geriausios vietos kadras) ir užrašas „ištrauka už ~N s“. Anksčiau tuo pačiu metu telefonas dekodavo du 1080p60 vaizdus ir dar realiu laiku perkoduodavo – grotuvas strigdavo. Pilną klipą vis dar galima paleisti pačiam paspaudus.
+- **Ištrauka kerpama pagal tikrus kadrus:** kadras piešiamas tada, kai dekoduojamas naujas vaizdo kadras (`requestVideoFrameCallback`), o ne kiekvieną ekrano atnaujinimą – mažiau pasikartojančių ir praleistų kadrų. Senose naršyklėse – kaip anksčiau.
+- **Ištrauka – 30 kadrų/s** (ir atitinkamas bitų srautas), pilnas klipas – kaip buvo (iki 60 kadrų/s). Peržiūrai ir dalinimuisi 60 nereikia, o perkodavimas tampa dvigubai lengvesnis.
+- **Patikros:** `npm test` (+ ištraukos 30 kadrų/s pakopos testas), `npm run build` – OK. Headless Chrome su netikra 60 kadrų/s kamera, prieš → po: kerpant rodomas sustabdytas kadras + „ištrauka už ~N s“, paruošus ištrauka groja, naršyklės klaidų nėra (portretas ir landscape). Ištraukos failas 6,0 MB → 1,3 MB (anksčiau ~53 kadrai/s, dauguma – tų pačių kadrų kopijos, nes piešta kiekvieną ekrano atnaujinimą), grojant ištrauką praleista 16/440 → 7/119 kadrų. Headless įrašo pilną klipą tik ~3 kadrais/s (swiftshader), todėl tikrą sklandumą dar reikia pažiūrėti telefone.
+
 ## 2026-10-25 — app-v3: šviesi sportinė išvaizda „raudonas kampas prieš mėlyną“ (šaka `ui-v2`)
 
 Ignas atmetė tamsų Volt: telefone atrodė kaip vienas puslapis, dominavo juoda + žalia. Informacinė architektūra ir funkcijos – tos pačios, pakeista išvaizda ir pojūtis.

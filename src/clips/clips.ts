@@ -2,7 +2,10 @@
 import {S} from "../game/state.ts";
 import {cv,recCv,readCameraInfo,drawRecordFrame} from "../camera/camera.ts";
 import {clipSpec,type ClipProfile,type Segment} from "./highlight.ts";
-import {$} from "../ui/dom.ts";
+import {$,toast} from "../ui/dom.ts";
+import {Capacitor} from "@capacitor/core";
+import {Filesystem,Directory} from "@capacitor/filesystem";
+import {Share} from "@capacitor/share";
 
 // prefer MP4 (universal playback); webm only as a last-resort fallback
 // H.264 level 4.2 is the first candidate because 1080p60 exceeds level 3.0
@@ -71,8 +74,27 @@ document.addEventListener("click",e=>{if(!(e.target as Element).closest("#dlWrap
 document.addEventListener("keydown",e=>{if(e.key==="Escape")setDlOpen(false)});
 dlMenu.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>setTimeout(()=>setDlOpen(false),80)));
 
+// Android app: a blob <a download> does nothing in the WebView and navigator.share is missing,
+// so the clip is written to the app cache and handed to the native share sheet (save to Files/Photos, send, ...)
+const native=Capacitor.isNativePlatform();
+const b64=(b:Blob)=>new Promise<string>((ok,no)=>{const r=new FileReader();r.onload=()=>ok((r.result as string).split(",")[1]||"");r.onerror=()=>no(r.error);r.readAsDataURL(b)});
+async function nativeShare(blob:Blob,name:string){
+  const CH=3<<20; // 3 MB per bridge call: a full 1080p60 clip can be >100 MB, one base64 string that big crashes the WebView
+  try{
+    await Filesystem.writeFile({path:name,directory:Directory.Cache,data:await b64(blob.slice(0,CH))});
+    for(let i=CH;i<blob.size;i+=CH)await Filesystem.appendFile({path:name,directory:Directory.Cache,data:await b64(blob.slice(i,i+CH))});
+    const {uri}=await Filesystem.getUri({path:name,directory:Directory.Cache});
+    await Share.share({title:"NovaCore",files:[uri]});
+  }catch(e){if(!/cancel/i.test(String(e)))toast("Nepavyko pasidalinti klipu.")}
+}
+if(native){
+  dlPrev.addEventListener("click",e=>{e.preventDefault();if(previewBlob)nativeShare(previewBlob,dlPrev.download)});
+  dlFull.addEventListener("click",e=>{e.preventDefault();if(fullBlob)nativeShare(fullBlob,dlFull.download)});
+}
+
 async function sharePreviewClip(){
   if(!previewBlob)return;
+  if(native)return nativeShare(previewBlob,`novacore-highlights.${REC_EXT}`);
   const type=(previewBlob.type||REC_MIME||"video/mp4").split(";")[0];
   const ext=type.includes("mp4")?"mp4":"webm";
   const file=new File([previewBlob],`novacore-highlights.${ext}`,{type});
@@ -90,14 +112,15 @@ sharePrev.onclick=sharePreviewClip;
 function setClipState(state:string,message?:string){
   clipState=state;
   const ready=state==="ready";
-  // while the highlight is being cut (real-time replay, up to ~30 s) show the full clip instead of a black box
+  // while the highlight is being cut (real-time replay, up to ~30 s) show the full clip PAUSED on a poster frame:
+  // playing it would decode a second 1080p60 stream next to the cut's decode + encode and make phones stutter
   const showFull=state==="processing"&&!!fullURL;
   previewVid.hidden=!(ready||showFull);
   previewLoad.hidden=ready;
   previewLoad.classList.toggle("over",showFull);
   previewSpin.hidden=state!=="processing";
-  if(showFull&&previewVid.src!==fullURL){previewVid.src=fullURL!;if(!clipsRoot.classList.contains("hide"))previewVid.play().catch(()=>{})}
-  if(state==="processing")previewMsg.innerHTML=showFull?"Kerpamos geriausios akimirkos…<small id=\"previewEta\">kol kas – pilnas klipas</small>":"Kerpamos geriausios akimirkos…<small>15–20 s iš taškų karščiausių vietų</small>";
+  if(showFull&&previewVid.src!==fullURL)previewVid.src=fullURL!; // no play(): the full clip plays only if the player taps it
+  if(state==="processing")previewMsg.innerHTML=showFull?"Kerpamos geriausios akimirkos…<small id=\"previewEta\">ruošiama ištrauka</small>":"Kerpamos geriausios akimirkos…<small>15–20 s iš taškų karščiausių vietų</small>";
   else if(state==="error")previewMsg.innerHTML=`${message||"Nepavyko paruošti peržiūros."}<small>Pilną klipą vis tiek galite atsisiųsti.</small>`;
   else if(state==="unavailable")previewMsg.innerHTML="Klipas neįrašytas.<small>Ši naršyklė nepalaiko įrašymo.</small>";
   if(fullURL){dlFull.href=fullURL;dlFull.hidden=false}else{dlFull.hidden=true;dlFull.removeAttribute("href")}
@@ -123,10 +146,10 @@ function preparePreview(){
     const eta=document.getElementById("previewEta");
     if(!eta||clipState!=="processing"){clearInterval(etaTimer);return}
     const left=Math.max(1,Math.ceil(total-(performance.now()-startedAt)/1000));
-    eta.textContent=`kol kas – pilnas klipas · ištrauka už ~${left} s`;
+    eta.textContent=`ištrauka už ~${left} s`;
   },500);
   const g=gen;
-  makeHighlightClip(fullBlob,plan)
+  makeHighlightClip(fullBlob,plan,poster=>{if(g===gen&&clipState==="processing")previewVid.poster=poster})
     .then(blob=>{if(g!==gen)return;previewBlob=blob;previewURL=URL.createObjectURL(blob);setClipState("ready")})
     .catch(err=>{if(g!==gen)return;console.error("Highlight preview:",err);setClipState("error")})
     .finally(()=>clearInterval(etaTimer));
@@ -144,25 +167,31 @@ function seekVideo(video:HTMLVideoElement,time:number){
   });
 }
 
+const HAS_VFC=typeof HTMLVideoElement!=="undefined"&&"requestVideoFrameCallback" in HTMLVideoElement.prototype;
+// draw once per DECODED frame (requestVideoFrameCallback), not once per screen refresh: rAF redraws duplicates and
+// misses frames when the phone is busy. rAF stays as the fallback (old browsers, or rVFC never firing for the hidden video).
 function playSegment(video:HTMLVideoElement,c:CanvasRenderingContext2D,canvas:HTMLCanvasElement,start:number,end:number){
   return new Promise<void>((resolve,reject)=>{
-    let done=false;
-    const finish=()=>{if(done)return;done=true;video.pause();resolve()};
-    const draw=()=>{
+    let done=false,useVfc=HAS_VFC,gotFrame=false,vfcId=0,watch=0;
+    const finish=()=>{if(done)return;done=true;clearTimeout(watch);video.removeEventListener("ended",finish);video.pause();resolve()};
+    const next=()=>{if(useVfc)vfcId=video.requestVideoFrameCallback(draw);else requestAnimationFrame(()=>draw())};
+    const draw=(_now?:number,meta?:VideoFrameCallbackMetadata)=>{
       if(done)return;
-      if(video.ended||video.currentTime>=end){
-        c.drawImage(video,0,0,canvas.width,canvas.height);
-        finish();return;
-      }
+      if(meta)gotFrame=true;
       c.drawImage(video,0,0,canvas.width,canvas.height);
-      requestAnimationFrame(draw);
+      if(video.ended||(meta?meta.mediaTime:video.currentTime)>=end){finish();return}
+      next();
     };
+    video.addEventListener("ended",finish); // rVFC does not fire after the last frame
     try{video.currentTime=Math.max(0,start)}catch(e){}
-    video.play().then(()=>requestAnimationFrame(draw)).catch(reject);
+    video.play().then(()=>{
+      next();
+      if(useVfc)watch=setTimeout(()=>{if(!done&&!gotFrame){video.cancelVideoFrameCallback(vfcId);useVfc=false;next()}},500);
+    }).catch(reject);
   });
 }
 
-function makeHighlightClip(source:Blob,segments:Segment[]){
+function makeHighlightClip(source:Blob,segments:Segment[],onPoster?:(dataURL:string)=>void){
   return new Promise<Blob>((resolve,reject)=>{
     const src=document.createElement("video");
     src.muted=true;src.playsInline=true;src.preload="auto";src.setAttribute("aria-hidden","true");
@@ -172,7 +201,9 @@ function makeHighlightClip(source:Blob,segments:Segment[]){
     const out=document.createElement("canvas");
     out.width=recCv.width||cv.width;out.height=recCv.height||cv.height;
     const outCtx=out.getContext("2d")!;
-    const profile=clipProfile||{fps:30,bps:3000000} as ClipProfile;
+    // the highlight is a preview/share clip: 30 fps (and the 30 fps bitrate tier) halves the real-time re-encode;
+    // the full clip keeps the camera fps
+    const profile=clipSpec(out.width,out.height,30,out.height>out.width);
     const stream=out.captureStream(profile.fps);
     let recorder:MediaRecorder,parts:Blob[]=[],settled=false,guard=0;
     const cleanup=()=>{
@@ -204,6 +235,7 @@ function makeHighlightClip(source:Blob,segments:Segment[]){
         src.pause();
         await seekVideo(src,segments[0].start);
         outCtx.drawImage(src,0,0,out.width,out.height);
+        try{onPoster?.(out.toDataURL("image/jpeg",0.8))}catch(e){}
         recorder.start(500);
         for(const seg of segments){
           await seekVideo(src,seg.start);
@@ -238,6 +270,6 @@ export function resetClips(){
   try{if(S.rec&&S.rec.state!=="inactive")S.rec.stop()}catch(e){}
   for(const u of [fullURL,previewURL])if(u)URL.revokeObjectURL(u);
   chunks=[];fullBlob=previewBlob=null;fullURL=previewURL=null;highlightPlan=[];
-  previewVid.pause();previewVid.removeAttribute("src");previewVid.load();
+  previewVid.pause();previewVid.removeAttribute("src");previewVid.removeAttribute("poster");previewVid.load();
   setDlOpen(false);setClipState("idle");
 }
