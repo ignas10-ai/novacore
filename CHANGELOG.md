@@ -1,5 +1,24 @@
 # Pakeitimų žurnalas
 
+## 2026-10-25 — app-v2: NovaCore kaip tikra programėlė (šaka `ui-v2`)
+
+Vieno puslapio žaidimas tapo programėle su meniu apačioje. Žaidimas, atpažinimas ir klipai – kaip buvo.
+
+- **Įvadas (tik pirmą kartą, galima praleisti):** 3 trumpi langai – kas tai (du animuoti žmogeliukai P1/P2 spalvomis), kaip pastatyti telefoną, slapyvardis + kameros leidimas su paaiškinimu „vaizdas niekur nesiunčiamas“. Vėliau atidaromas iš Profilio („Kaip žaisti“). Kas jau žaidė anksčiau, įvado nemato.
+- **Apatinis meniu:** Pradžia · Kompanijos · Pratimai · Profilis. Paslepiamas tik kameros metu (pasiruošimas, žaidimas, rezultatai, klipai). Kiekvienas ekranas turi savo nuorodą (`#/kompanijos`, `#/pratimai`, `#/profilis`, `#/zaisti`), `/?g=KODAS` ir `/?c=…` veikia kaip anksčiau. Android „atgal“ elgiasi kaip ekrano „atgal“ mygtukas: iš bet kurio skirtuko – į Pradžią, pasiruošime – į nustatymus, žaidimo metu – nieko (kad netyčia nenutrūktų), rezultatuose – atgal į programėlę.
+- **Pradžia:** pasisveikinimas vardu, serija (dienos iš eilės su bent vienu žaidimu), tavo vieta savaitės lentelėje (geriausia iš kompanijų), didelis „Žaisti“ → nustatymai, 3 greito starto plytelės (Dvikova 3 min · Solo 3 min · Greitas 1 min – iškart į kamerą), iššūkio kortelė su „Priimti“, savaitės tikslas 5 žaidimai.
+- **Žaidimo nustatymai** – atskiras ekranas: žaidėjai, trukmė, pratimų pasirinkimas, garsas, kaip pastatyti telefoną, „Pradėti“.
+- **Kompanijos:** sąrašas (pavadinimas, narių skaičius, tavo vieta), sukurti / prisijungti kodu, kompanijos ekranas su kodu, „Pakviesti“, savaitės lentele ir „Išeiti“ (du paspaudimai). Kai kompanijų nėra – paaiškinimas, kam jos; be interneto – užrašas, o ne dingęs skirtukas.
+- **Pratimai:** visi 7 pratimai su animuotu žmogeliuku, kaip daryti, patarimas (ką tikrina skaičiuoklė), BETA ženklas, tavo „iš viso“ ir „rekordas“ kiekvienam.
+- **Profilis:** vardas (keisti), žaidimai / judesiai / rekordas / serija, 7 dienų stulpeliai, judesiai pagal pratimą, 8 ženkliukai (pirmas žaidimas, dvikova, 3 dienos iš eilės, 100 pritūpimų, 100 taškų, įveiktas iššūkis, 10 žaidimų, visi pratimai), paskutiniai žaidimai + visa istorija, nustatymai (garsas, vibracija, įvadas, privatumas, versija).
+- **Rezultatai ir klipai:** pridėti „Žaisti dar kartą“ (be puslapio perkrovimo – taškai, klipai ir modelis išvalomi) ir „Į pradžią“.
+- **Pasiruošimo ekranas:** kameros rėmelis su kampais kaip BS-PROOF skeneryje; kraunama, klipai ir lapai perdaryti ant tos pačios sistemos.
+- **Spalvos:** Volt – beveik juodas fonas `#0b0b0f`, volt `#d4ff3a` (P1, akcentas), šiltai raudona `#ff4d5e` (P2). Tik `:root` žetonai, `?palette=` jungiklis pašalintas. Raudona reiškia tik P2, BETA ar įspėjimą. Pašalinta: taškų tinklelis programėlės ekranuose, šoninės juostos kortelėse.
+- **Ikonos:** Lucide (ISC) SVG viename faile `src/ui/icons.ts`, be šrifto ir be emoji. **PWA ikonos** – naujos („N.“ su volt tašku, yra maskable), `sw.js` v4.
+- **Duomenys:** viskas skaičiuojama iš telefono istorijos (veikia be interneto); istorija dabar saugo pakartojimus pagal pratimą (seni žaidimai jų neturi – pratimų sumos prasideda nuo šiol). Slapyvardis pirmiausia saugomas telefone ir sinchronizuojamas su serveriu, kai yra ryšys. Duomenų bazė nekeista (`001_init.sql`).
+- **Kodas:** `src/ui/router.ts`, `onboarding.ts`, `home.ts`, `library.ts`, `profile.ts`, `icons.ts`, `src/history/stats.ts` (grynas, `test-stats.cjs` – `npm test` dalis).
+- **Patikros:** `npm test` ir `npm run build` – OK. Naujas `tools/screens.cjs` – kiekvieno ekrano kadras portretu (390×844) ir landscape (844×390) su netikru Supabase ir istorija (28 + 28 kadrai, `Downloads\NovaCore\app-v2\`). Interaktyvi navigacijos patikra (skirtukai, gili nuoroda, atgal pasiruošime / žaidime / rezultatuose, „Žaisti dar kartą“, „Į pradžią“) – 18/18, naršyklės klaidų nėra. Dizaino patikra (styleseed) – 87/100 prieš paskutinį pataisymą.
+
 ## 2026-10-25 — ui-v2 pavyzdžiai: BS-PROOF struktūra (šaka `ui-v2`, tik 3 ekranai)
 
 - **Perdaryti 3 ekranai** (startas, žaidimo HUD, rezultatai) ant BS-PROOF dizaino sistemos: Inter (Google Fonts, su LT raidėmis), 900 svorio tankios antraštės, 18 px kortelės, 14 px valdikliai, 999 px „pill“ mygtukai, laimo akcentas, rekordai kaip BS-PROOF „ledger“ juosta, iššūkis kaip BS-PROOF įspėjimo kortelė. Pašalinta: pasvirę blokai, įstrižos juostos, kontūrinis „NOVA CORE“, Barlow Condensed kursyvas.

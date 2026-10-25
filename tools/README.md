@@ -35,13 +35,24 @@ ffmpeg -i klipas.mp4 -vf "scale=640:360,fps=30" -pix_fmt yuv420p cam.y4m
 npm run build                                   # playthrough testuoja surinktą dist/
 node tools/playthrough.cjs cam.y4m              # portretas 390×844
 node tools/playthrough.cjs cam.y4m --landscape  # 844×390
-node tools/playthrough.cjs cam.y4m --social     # + netikras Supabase: slapyvardžio, kompanijų, iššūkio kadrai (00a–00f, 05-end)
+node tools/playthrough.cjs cam.y4m --social     # + netikras Supabase ir iššūkio nuoroda → 05-end su palyginimu
 node tools/playthrough.cjs cam.y4m --social --size 360x740 --out _playthrough/p360
-node tools/playthrough.cjs cam.y4m --history          # + 3 netikri žaidimai → rekordų kortelė starto ekrane
-node tools/playthrough.cjs cam.y4m --palette volt     # /?palette=volt – kito spalvų rinkinio palyginimas
+node tools/playthrough.cjs cam.y4m --history          # + 3 netikri žaidimai istorijoje
 ```
 
 Chrome vietoj kameros paima `cam.y4m`, žaidimas pereina startas → paruošimas → 60 s → rezultatai → klipai, kadrai krenta į `_playthrough/`. Paruošimo vartui įraše turi būti ~4 s su abiem riešais virš nosies (rankos už galvos NEskaitosi) – galima priklijuoti tokį gabalą priekyje per `ffmpeg concat`. Taip 2026-10-23 rastos ir pataisytos 3 UI bėdos (žr. CHANGELOG).
+
+## Visi programėlės ekranai (`screens.cjs`)
+
+```
+npm run build
+node tools/screens.cjs cam2sq.y4m --both --out ~/Downloads/NovaCore/app-v2   # portretas 390×844 + landscape 844×390
+node tools/screens.cjs --no-game                                         # be kameros: iki nustatymų ekrano
+```
+
+Švarus naršyklės profilis → įvadas 1–3 → Pradžia (tuščia) → įdedama netikra istorija (9 žaidimai per 9 dienas) → Kompanijos (tuščia, sukurta, lentelė, sąrašas), Pradžia (su vieta ir iššūkiu), Pratimai, Profilis (+ ženkliukai, nustatymai), istorijos ir slapyvardžio lapai, nustatymai, pratimų lapas; su kameros failu – kraunama, pasiruošimas, žaidimas, rezultatai, klipai, Pradžia po žaidimo. Supabase visada netikras (`mock-supabase.cjs`). Dviem žaidėjams reikia įrašo su dviem žmonėmis (`--players 1` – vienam). Kadrai sunumeruoti (`01-onboarding-1.png` …, landscape `…-landscape.png`) – peržiūrėti VISUS.
+
+PWA ikonos: `node tools/icons.cjs` (reikia interneto Inter šriftui). Lucide ikonos: `node tools/lucide-icons.cjs src/ui/icons.ts <visi vardai>`.
 
 ## Kaip pridėti savo įrašą (komandos testas)
 
