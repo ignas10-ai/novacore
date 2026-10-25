@@ -15,15 +15,20 @@ const root=$("#screen"), s1=$("#bsS1"), s2=$("#bsS2"), p1Label=$("#bsP1Label"),
   demoEl=$("#bsDemo"), verdict=$("#bsVerdict"), verdictTag=$("#bsVerdictTag"), verdictTxt=$("#bsVerdictTxt"), repsEl=$("#bsReps"),
   staleEl=$("#bsStale"), liveEl=$("#bsLive"), liveTxt=$("#bsLiveTxt"), footCode=$("#bsFootCode"),
   waitLine=$("#bsWaiting"), waitCode=$("#bsWaitCode"), errEl=$("#bsErr"),
-  codeIn=$<HTMLInputElement>("#bsCodeIn"), form=$<HTMLFormElement>("#bsConnect"), fsBtn=$("#bsFs");
+  codeIn=$<HTMLInputElement>("#bsCodeIn"), form=$<HTMLFormElement>("#bsConnect"), fsBtn=$("#bsFs"),
+  camVid=$<HTMLVideoElement>("#bsCamVid"), camBtn=$<HTMLButtonElement>("#bsCam"), camBtnTxt=$("#bsCamTxt");
 
 let room="", bc:BroadcastChannel|null=null, ch:RealtimeChannel|null=null;
 let state:ScreenState|null=null, baseAt=0, baseLeft=0, lastSeenAt=0, seenAny=false, demoId="";
-let hello=0, ticker=0, lastSecond=-1, prevScore:[number,number]=[0,0], mounted=false;
+let hello=0, ticker=0, lastSecond=-1, prevScore:[number,number]=[0,0], mounted=false, tvJoined=false;
+const tPeer=(globalThis.crypto?.randomUUID?.()||`tv-${Math.random().toString(36).slice(2,10)}`).slice(0,36);
+let tpc:RTCPeerConnection|null=null, tCamWanted=false, tRemoteSet=false, tPending:RTCIceCandidateInit[]=[];
 const fmt=(sec:number)=>{const n=Math.max(0,Math.ceil(sec));return `${Math.floor(n/60)}:${String(n%60).padStart(2,"0")}`};
 
 function cleanup(){
   clearInterval(hello);hello=0;
+  stopCamView();
+  tCamWanted=false;tvJoined=false;
   if(bc){try{bc.close()}catch(e){}bc=null}
   if(ch&&sb){try{sb.removeChannel(ch).catch(()=>{})}catch(e){}ch=null}
   state=null;seenAny=false;demoId="";prevScore=[0,0];lastSecond=-1;
@@ -32,7 +37,7 @@ function cleanup(){
 function sendHello(){
   if(!room)return;
   try{bc?.postMessage({code:room,hello:1})}catch(e){}
-  if(ch){try{ch.send({type:"broadcast",event:"hello",payload:{code:room}}).catch(()=>{})}catch(e){}}
+  if(ch&&tvJoined){try{ch.send({type:"broadcast",event:"hello",payload:{code:room}}).catch(()=>{})}catch(e){}}
 }
 
 function receive(raw:any){
@@ -69,10 +74,102 @@ function setDemo(id:string,phase:string){
   replay(demoEl,"in");
 }
 
+// ---------- camera per TV (WebRTC; the phone is the sender, the TV only answers) ----------
+function sendCam(event:string,data:Record<string,any>={}){
+  if(!room)return;
+  const msg={code:room,peer:tPeer,...data};
+  try{bc?.postMessage({code:room,signal:event,payload:msg})}catch(e){}
+  if(ch&&tvJoined){try{ch.send({type:"broadcast",event,payload:msg}).catch(()=>{})}catch(e){}}
+}
+function camSignal(event:string,msg:any){
+  if(!msg||msg.code!==room)return;
+  if(event==="cam-offer")onCamOffer(msg);
+  else if(event==="cam-ice")onCamIce(msg);
+  else if(event==="cam-stop")onCamStop(msg);
+}
+function updateCamBtn(){
+  const live=root.dataset.cam==="1";
+  const on=tCamWanted||live||!!state?.cam;
+  camBtn.setAttribute("aria-pressed",on?"true":"false");
+  camBtn.disabled=!state;
+  camBtn.setAttribute("aria-label",on?"Išjungti kamerą per TV":"Rodyti kamerą per TV");
+  const txt=live?"Kamera":on?"Kamera…":"Kamera";
+  if(camBtnTxt.textContent!==txt)camBtnTxt.textContent=txt;
+}
+function stopCamView(){
+  if(tpc){try{tpc.close()}catch(e){}tpc=null}
+  const s=camVid.srcObject as MediaStream|null;
+  if(s)s.getTracks().forEach(t=>{try{t.stop()}catch(e){}});
+  camVid.srcObject=null;
+  root.dataset.cam="0";
+  tCamWanted=false;tRemoteSet=false;tPending=[];
+  updateCamBtn();
+}
+async function onCamOffer(msg:any){
+  if(!room||msg.code!==room||!msg.sdp)return;
+  if(msg.peer&&msg.peer!==tPeer)return;
+  stopCamView();
+  tCamWanted=true;
+  let started:RTCPeerConnection|null=null;
+  try{
+    const connection=new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});
+    started=connection;
+    tpc=connection;
+    connection.onicecandidate=e=>{if(e.candidate)sendCam("cam-ice",{candidate:e.candidate.toJSON()})};
+    connection.ontrack=e=>{
+      if(tpc!==connection)return;
+      camVid.srcObject=e.streams[0]||new MediaStream([e.track]);
+      camVid.play().catch(()=>{});
+      root.dataset.cam="1";
+      updateCamBtn();
+    };
+    connection.onconnectionstatechange=()=>{
+      if((connection.connectionState==="failed"||connection.connectionState==="closed")&&tpc===connection)stopCamView();
+    };
+    await connection.setRemoteDescription(msg.sdp);
+    if(tpc!==connection)return;
+    tRemoteSet=true;
+    for(const c of tPending)connection.addIceCandidate(c).catch(()=>{});
+    tPending=[];
+    const answer=await connection.createAnswer();
+    await connection.setLocalDescription(answer);
+    if(tpc!==connection)return;
+    sendCam("cam-answer",{sdp:connection.localDescription});
+    updateCamBtn();
+  }catch(e){if(started&&tpc===started)stopCamView()}
+}
+function onCamIce(msg:any){
+  const connection=tpc;
+  if(!connection||!room||msg.code!==room||!msg.candidate)return;
+  if(msg.peer&&msg.peer!==tPeer)return;
+  if(!tRemoteSet){tPending.push(msg.candidate);return}
+  connection.addIceCandidate(msg.candidate).catch(()=>{});
+}
+function onCamStop(msg:any){
+  if(msg.code!==room)return;
+  if(msg.peer&&msg.peer!==tPeer)return;
+  stopCamView();
+}
+function toggleCamTV(){
+  if(!state)return;
+  const on=!(tCamWanted||root.dataset.cam==="1"||!!state.cam);
+  if(on){
+    tCamWanted=true;
+    sendCam("cam-request",{on:true});
+    updateCamBtn();
+  }else{
+    tCamWanted=false;
+    sendCam("cam-request",{on:false});
+    stopCamView();
+  }
+}
+
 function render(s:ScreenState){
   root.dataset.phase=s.phase;
   root.dataset.players=String(s.players);
   root.dataset.winner=s.phase==="done"?String(s.winner):"";
+  if(!s.cam&&!tCamWanted&&root.dataset.cam==="1")stopCamView();
+  updateCamBtn();
   footCode.textContent=room;
   waitCode.textContent=room;
   waitLine.hidden=s.phase!=="idle";
@@ -153,17 +250,26 @@ function enter(arg:string){
   waitLine.hidden=!room;
   waitCode.textContent=room||"------";
   footCode.textContent=room||"------";
+  updateCamBtn();
   if(!room)return;
   keepScreenAwake();
   try{
     bc=new BroadcastChannel(SCREEN_BC);
-    bc.onmessage=e=>{const d=e.data;if(d?.code===room&&d.state)receive(d.state)};
+    bc.onmessage=e=>{
+      const d=e.data;
+      if(!d||d.code!==room)return;
+      if(d.state)receive(d.state);
+      else if(d.signal)camSignal(d.signal,d.payload);
+    };
   }catch(e){bc=null}
   if(sb){
     try{
       ch=sb.channel(channelName(room),{config:{broadcast:{self:false}}});
       ch.on("broadcast",{event:"state"},m=>{const s=readState(m.payload);if(s&&s.code===room)receive(s)});
-      ch.subscribe();
+      ch.on("broadcast",{event:"cam-offer"},m=>{const p=m.payload as any;if(p?.code===room)camSignal("cam-offer",p)});
+      ch.on("broadcast",{event:"cam-ice"},m=>{const p=m.payload as any;if(p?.code===room)camSignal("cam-ice",p)});
+      ch.on("broadcast",{event:"cam-stop"},m=>{const p=m.payload as any;if(p?.code===room)camSignal("cam-stop",p)});
+      ch.subscribe(status=>{tvJoined=status==="SUBSCRIBED"});
     }catch(e){ch=null}
   }
   sendHello();
@@ -180,6 +286,9 @@ form.addEventListener("submit",e=>{
   errEl.textContent="";
   if(c===room)enter(c);else go(`#/ekranas/${c}`,true);
 });
+
+camBtn.onclick=toggleCamTV;
+if(typeof RTCPeerConnection==="undefined")camBtn.hidden=true;
 
 // fullscreen is a user gesture; on a TV browser the page usually already fills the screen
 const fsRoot=document.documentElement as any;

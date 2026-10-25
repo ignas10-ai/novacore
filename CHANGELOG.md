@@ -1,5 +1,14 @@
 # Pakeitimų žurnalas
 
+## 2026-10-26 — Kamera per TV (WebRTC) „Dideliame ekrane“ (šaka `master`)
+
+- **Kameros vaizdas TV lentoje:** telefone `Didelis ekranas` lape atsirado **Kamera per TV** jungiklis, o TV viršutinėje juostoje – **Kamera** mygtukas. Įjungti galima iš abiejų pusių; telefonas siunčia savo žaidimo drobę (kamera + skeletas, be telefono HUD) per WebRTC.
+- **Vaizdas pritaikytas TV:** 1280×720, 20 kadrų/s; telefonas kopijuoja `#cv` į atskirą drobę, kad 1080p žaidimas ir klipų įrašymas liktų sklandūs. TV video užima visą ekraną po tamsiu viršaus/apačios šešėliu, o taškai, laikas ir pratimas perkeliami į viršų; pratimo animacija kameros režime nerodoma. Kamera paleidžiama pasiruošimo/pradžios metu ir sustabdoma pasibaigus žaidimui ar grįžus į nustatymus; pasirinkimas lieka kitam žaidimui.
+- **Signaling per tą patį kambarį:** `cam-request`, `cam-offer`, `cam-answer`, `cam-ice`, `cam-stop` per Supabase Realtime (skirtingi įrenginiai) arba BroadcastChannel (tas pats naršyklės langas). Viešas STUN (`stun.l.google.com:19302`), be TURN; vienu metu – vienas TV (naujesnis prašymas pakeičia seną, senas gauna `cam-stop`). TV peer id apsaugo, kad atsakytų tik tas ekranas. `ScreenState.cam` rodo telefono pasirinkimą; `#bsCam` rodo „Kamera…“ kol laukiama ir „Kamera“ kai vaizdas gyvas.
+- **Be kameros viskas kaip buvo:** jei WebRTC nepavyksta arba TV naršyklė jo nepalaiko, taškų lenta ir laikmatis veikia toliau. Garso nėra, vaizdas neįrašomas ir nepatenka į klipą.
+- **Failai:** `src/cast/cast.ts` (WebRTC siuntėjas, 720p drobė, signaling), `src/cast/screen.ts` (WebRTC imtuvas, `#bsCamVid`, `#bsCam`), `src/cast/room.ts` (`cam` laukas), `index.html` (telefono jungiklis, TV mygtukas + video + šešėlis), `src/styles/main.css` (kameros režimas, telefono eilutė, TV mygtukas), `src/ui/profile.ts` (versija 2.2).
+- **Testai:** pagal užsakymą šiame pakeitime testai neleisti. Reikia vieno realaus bandymo telefonu + TV/kompiuteriu: ar telefonas ir TV tame pačiame tinkle (STUN), ar vaizdas pasirodo, ar išjungimas iš abiejų pusių sustabdo srautą. `npx tsc` praėjo.
+
 ## 2026-10-25 — Didelis ekranas: taškai per TV (šaka `master`)
 
 - **Naujas „Didelis ekranas“:** telefone (Pradžios viršutinėje juostoje arba Žaisti → Didelis ekranas) įjungi 6 simbolių kodą; televizoriuje/nešiojamame atidarai nuorodą `.../#/ekranas/<kodas>` (arba įvedi kodą) ir matai didelius P1/P2 taškus, laiką, raundą, daugiklį, pratimą su animuotu žmogeliuku ir progreso juostą. Telefonas lieka kamera – žaidimas, MediaPipe ir klipai vyksta jame.

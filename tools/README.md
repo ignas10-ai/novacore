@@ -61,6 +61,8 @@ node tools/cast-check.cjs
 
 Atidaro telefono nustatymus, įjungia „Didelį ekraną“, perskaito kodą, atidaro antrą langą `#/ekranas/<kodas>` tame pačiame naršyklės kontekste ir tikrina: 6 simbolių kodą, telefone matomą „TV prijungtas“ (`hello`), TV gaunamą `idle`, taškų/laiko/pratimo/animacijos atvaizdavimą, laimėtojo būseną, kodo įvedimą TV lange ir išjungimą telefone. Tai BroadcastChannel kelias (be Supabase), todėl veikia ir be interneto; Realtime tarp įrenginių tikrinamas rankiniu telefonu + kompiuteriu. 24 teiginiai, `N/N OK`, exit 1 jei kas nors nepavyksta. Reikia Chrome ir `puppeteer-core` (kaip `screens.cjs`).
 
+Kameros vaizdas (WebRTC, „Kamera per TV“) šiame įrankyje netikrinamas – reikia tikros kameros ir antro įrenginio; `cast-check.cjs` tikrina tik kodą/būsenas. Rankinis bandymas: telefone įjunk kamerą, TV spausk „Kamera“, žaisk 1 min; patikrink vaizdą, išjungimą iš abiejų pusių ir kad žaidimas/klipas nesulėtėtų.
+
 Jei nori pamatyti tikrą žaidimą TV lentoje be telefono, suklijuok y4m, kurio pradžioje bent ~15 s abi rankos virš galvos (paruošimo vartams), tada įprastą klipe: `ffmpeg` → `cam.y4m`, tada `playthrough.cjs` su `--social` (žr. aukščiau) arba rankiniu `#/ekranas` langu. 12 s neužtenka, jei modelis kraunasi ilgiau.
 
 PWA ikonos: `node tools/icons.cjs` (reikia interneto Inter šriftui). Lucide ikonos: `node tools/lucide-icons.cjs src/ui/icons.ts <visi vardai>`.

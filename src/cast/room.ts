@@ -22,6 +22,7 @@ export interface ScreenState{
   score:[number,number];
   reps:number; // total counted reps this game
   winner:0|1|2; // 1=P1, 2=P2, 0=tie or solo
+  cam:boolean; // the phone's camera-per-TV option (the video itself goes over WebRTC)
   sent:number; // Date.now() on the phone (debug only; receivers use their own clock)
 }
 
@@ -71,6 +72,7 @@ export function readState(raw:any):ScreenState|null{
     score,
     reps:int(raw.reps,0,99999),
     winner:raw.winner===1?1:raw.winner===2?2:0,
+    cam:!!raw.cam,
     sent:Number(raw.sent)||0,
   };
 }

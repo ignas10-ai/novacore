@@ -234,7 +234,7 @@
       <p class="help" id="onbNickHelp">Jį matys draugai kompanijos lentelėje. Jokio el. pašto ar slaptažodžio.</p>
       <div class="card perm">
         <span class="perm-ic" data-tone="red" data-icon="camera"></span>
-        <div><b>Kamera</b><p>Įsijungia tik žaidimo metu. Vaizdas apdorojamas telefone ir niekur nesiunčiamas.</p></div>
+        <div><b>Kamera</b><p>Įsijungia tik žaidimo metu. Vaizdas apdorojamas telefone; į TV siunčiamas tik jei pats įjungi „Kamera per TV“.</p></div>
         <button class="pill accent tap" id="onbCam" type="button">Leisti</button>
       </div>
     </div>
@@ -345,7 +345,7 @@
     </section>
     <div class="cta">
       <button class="go tap" id="go"><span id="goTxt">Pradėti</span><span data-icon="arrow-right"></span></button>
-      <p class="fine">Vaizdas apdorojamas tik telefone ir niekur nesiunčiamas.</p>
+      <p class="fine">Vaizdas apdorojamas telefone. Į TV – tik įjungus „Kamera per TV“.</p>
     </div>
   </div>
 </section>
@@ -443,7 +443,7 @@
         <div class="set-row"><span class="set-ic" data-tone="violet" data-icon="volume-2"></span><div class="set-txt"><b>Garsas</b><small>Už judesį, raundą ir finišą</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-snd aria-label="Garsas"><i></i></button></div>
         <div class="set-row"><span class="set-ic" data-tone="mint" data-icon="vibrate"></span><div class="set-txt"><b>Vibracija</b><small>Trumpas virptelėjimas už judesį</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-vibe aria-label="Vibracija"><i></i></button></div>
         <button class="set-row tap-row" id="onbAgain" type="button"><span class="set-ic" data-tone="blue" data-icon="info"></span><div class="set-txt"><b>Kaip žaisti</b><small>Parodyti įvadą dar kartą</small></div><span class="chev" data-icon="chevron-right"></span></button>
-        <div class="set-row"><span class="set-ic" data-tone="red" data-icon="shield-check"></span><div class="set-txt"><b>Privatumas</b><small>Vaizdas niekada nepalieka telefono. Serveriui siunčiamas tik slapyvardis ir taškai.</small></div></div>
+        <div class="set-row"><span class="set-ic" data-tone="red" data-icon="shield-check"></span><div class="set-txt"><b>Privatumas</b><small>Pagal nutylėjimą vaizdas niekur nesiunčiamas. Įjungus „Kamera per TV“, jis tiesiogiai (WebRTC) siunčiamas tik tam TV, kuris turi kodą. Serveriui – tik slapyvardis ir taškai.</small></div></div>
       </div>
       <p class="fine" id="appVer">NovaCore</p>
     </section>
@@ -567,11 +567,14 @@
 
 <!-- big screen / TV (route #/ekranas/<code>): the scoreboard page, filled by src/cast/screen.ts -->
 <section class="screen cam hide" id="screen" data-phase="connect" aria-label="Didelis ekranas">
+  <video class="bs-cam-vid" id="bsCamVid" muted playsinline autoplay aria-hidden="true"></video>
+  <div class="bs-cam-scrim" id="bsCamScrim" aria-hidden="true"></div>
   <div class="wrap bs-wrap">
     <header class="bs-top">
       <span class="wordmark">NovaCore</span>
       <span class="bs-tag">Didelis ekranas</span>
       <span class="bs-live" id="bsLive" data-on="0" aria-live="polite"><i></i><span id="bsLiveTxt">Neprijungta</span></span>
+      <button class="pill sm bs-cam" id="bsCam" type="button" aria-label="Rodyti kamerą per TV" aria-pressed="false"><span data-icon="camera"></span><span class="bs-cam-txt" id="bsCamTxt">Kamera</span></button>
       <button class="icon-btn bs-fs" id="bsFs" type="button" aria-label="Visas ekranas" title="Visas ekranas"><span data-icon="maximize"></span></button>
     </header>
 
@@ -723,13 +726,19 @@
           <button class="go alt" id="castShare" type="button"><span data-icon="share-2"></span>Bendrinti</button>
           <button class="go alt" id="castOpenPage" type="button"><span data-icon="external-link"></span>Peržiūrėti</button>
         </div>
+        <div class="cast-cam">
+          <span class="set-ic" data-tone="mint" data-icon="camera"></span>
+          <div class="set-txt"><b>Kamera per TV</b><small id="camState">Rodyk žaidimo vaizdą televizoriuje</small></div>
+          <button class="switch" type="button" role="switch" aria-checked="false" id="camSwitch" aria-label="Kamera per TV"><i></i></button>
+        </div>
+        <p class="help">Per TV bus rodomas kameros vaizdas su skeletu. Kai įjungta, kamerą mato tik šį kodą turintis TV. Gali šiek tiek apkrauti telefoną.</p>
         <button class="danger-link" id="castOffBtn" type="button"><span data-icon="power"></span>Išjungti didelį ekraną</button>
       </div>
       <p class="help" id="castNet" hidden>TV lentai reikia interneto ryšio. Be jo gali rodyti telefoną per AirPlay / Chromecast.</p>
       <div class="cast-help">
         <h3 class="card-title">TV neturi naršyklės?</h3>
         <p>Rodyk telefono ekraną per AirPlay (iPhone) arba „Cast screen“ (Android), arba prijunk kompiuterį prie TV HDMI kabeliu ir atidaryk nuorodą jame.</p>
-        <p>Per TV siunčiami tik taškai ir pratimo pavadinimas – jokio kameros vaizdo.</p>
+        <p>Be kameros per TV siunčiami tik taškai ir pratimo pavadinimas. Įjungus „Kamera per TV“, vaizdas tiesiogiai (WebRTC) siunčiamas tik tam TV, kuris turi kodą.</p>
       </div>
       <p class="note" id="castNote" aria-live="polite"></p>
     </div>
