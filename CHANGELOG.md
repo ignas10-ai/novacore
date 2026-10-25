@@ -1,5 +1,15 @@
 # Pakeitimų žurnalas
 
+## 2026-10-25 — atpažinimas v3: pozų klasifikatorius (k-NN) pritūpimams ir įtūpstams (šaka `detect-v3`)
+
+- **Naujas skaitiklis:** Google MediaPipe „Pose classification“ (Apache-2.0) perkeltas į gryną JS `index.html` (`poseEmbed`, `poseClassify`): kūno pozų embedding'as → k-NN prieš pažymėtas pavyzdines pozas → EMA → pakartojimas, kai poza „įeina“ ir „išeina“ (6/4 balsai iš 10). Pavyzdžiai – `pose-samples.json` (~58 KB), generuojami `node tools/samples.cjs` iš `tools/samples-spec.json` (laiko intervalai fixture'uose). Naujas pratimas = nufilmuoti ir pažymėti pozas, ne derinti slenksčius.
+- **Gyvai:** `squat` ir `lunge` (įtūpstai lieka beta). Kiti pratimai – kaip buvo (`step()`); jei `pose-samples.json` neužsikrauna, irgi `step()`. `NEED`/`VIS`, `MIN_GAP` ir 2 žaidėjai veikia kaip anksčiau.
+- **Tikslumas (naujas `node tools/accuracy.cjs`, 10 naujų klipų, held-out = nemokyta ant jų):** pritūpimai – tikri pakartojimai 4 held-out klipuose 22/22 (buvo 21/22), klaidingi „pritūpimai“ kituose pratimuose 0 (buvo 18: atsilenkimai 9+5+1, įtūpstai 3); įtūpstai – held-out 7/7 (buvo 6/7), pritūpimas kampu nebeskaitomas kaip įtūpstas (buvo 3).
+- **Neperjungta:** aukšti keliai ir atsilenkimai – k-NN ant naujų žmonių ne geresnis už `step()` (2 bandymai); šuoliukai ir šoniniai žingsniai – embedding'as nemato šuolio/pasislinkimo. Žinomos spragos įrašytos į `replay-check.cjs`: „mini“ šuoliukai (`step()` 0 iš 6), žemi greiti keliai (7 iš 24).
+- **Modelis:** `full` palygintas su `lite` ant visų klipų – ne geresnis apskritai, 1,6× didesnis → liekame prie `lite`, URL vienoje konstantoje `POSE_MODEL`.
+- `tools/extract.cjs`: `--cpu` (~5× greičiau), `--model`, `--out`. 10 naujų fixture'ų (`squat2–4`, `squatjump3`, `knees2–3`, `crunch2–4`, `lunge5`). `sw.js` VERSION v2 + `pose-samples.json` kešuojamas.
+- Dar reikia: tikro telefono testo (portretas, 60 fps) pritūpimams ir įtūpstams prieš merge'inant į `master`.
+
 ## 2026-10-23 — UI po pilno prabėgimo su tikru žmogumi (fake-camera testas)
 
 Visas žaidimas (startas → paruošimas → 60 s → rezultatai → klipai) pervarytas headless Chrome su `--use-file-for-fake-video-capture` (tikro žmogaus įrašas kaip kamera), portretu ir landscape. Pataisyta tai, kas matėsi:

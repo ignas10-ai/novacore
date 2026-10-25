@@ -998,6 +998,8 @@ body.solo .bar.p2{display:none}
 
 <script type="module">
 import {PoseLandmarker, FilesetResolver} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+// lite on purpose: on the real-person fixtures `full` was not better overall (tools/README.md, 2026-10-25) and is a 1.6x larger download (9.4 vs 5.8 MB)
+const POSE_MODEL="https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 
 const $=s=>document.querySelector(s);
@@ -1154,13 +1156,52 @@ function clipSpec(videoW,videoH,frameRate,portrait){
   const bps=hd?(fast?8000000:5500000):(fast?4500000:3000000);
   return {w,h,fps:fast?60:30,bps,hd,fast,hq:hd&&fast};
 }
+// Pose classifier – plain-JS port of Google MediaPipe "Pose classification" (Apache-2.0,
+// github.com/google-ai-edge/mediapipe docs/solutions/pose_classification.md and its Colab): landmarks → normalized
+// pair-difference embedding → k-NN (top 30 by max distance, then top 10 by mean) against labelled sample poses →
+// EMA → RepetitionCounter with enter/exit hysteresis. Sample poses: tools/samples-spec.json → `node tools/samples.cjs`
+// → pose-samples.json (loaded into POSE at startup). An exercise without samples uses its hand-written branch in step().
+const POSE={}; // id → {flip, count:[class...], pairs?:[EMB index...], samples:[[class, ...embedding]]}
+const EMB=[[[23,24],[11,12]],[11,13],[12,14],[13,15],[14,16],[23,25],[24,26],[25,27],[26,28],[11,15],[12,16],[23,27],[24,28],[23,15],[24,16],[11,27],[12,28],[23,15],[24,16],[13,14],[25,26],[15,16],[27,28]]; // same 23 pairs as the Colab
+const CLS_ENTER=6, CLS_EXIT=4, CLS_TAU=150; // of 10 neighbours; EMA time constant (ms) ≈ Colab alpha 0.2 at 30 fps
+// ar = frame width/height: MediaPipe x and y are normalized to different pixel lengths
+function poseEmbed(lm,ar=1,flip=false){
+  const P=lm.map(p=>[(flip?-p.x:p.x)*ar,p.y,(p.z||0)*ar]);
+  const mid=(a,b)=>P[a].map((v,i)=>(v+P[b][i])/2), c=mid(23,24), sh=mid(11,12);
+  let size=Math.hypot(sh[0]-c[0],sh[1]-c[1])*2.5;
+  for(const p of P)size=Math.max(size,Math.hypot(p[0]-c[0],p[1]-c[1]));
+  const at=j=>Array.isArray(j)?mid(...j):P[j], e=[];
+  for(const [a,b] of EMB){const A=at(a),B=at(b);for(let i=0;i<3;i++)e.push((B[i]-A[i])/size*100)}
+  return e;
+}
+// → {class: votes of 10}
+function poseClassify(lm,cfg,ar){
+  const e=poseEmbed(lm,ar),f=cfg.flip?poseEmbed(lm,ar,true):null;
+  // cfg.pairs (optional): only these EMB pairs count, e.g. legs + torso for a squat so arm style does not matter
+  const dims=cfg.dims||(cfg.dims=(cfg.pairs||EMB.map((_,i)=>i)).flatMap(p=>[p*3,p*3+1,p*3+2]));
+  const dist=(s,q)=>{let mx=0,sum=0;for(const i of dims){const d=Math.abs(s[i+1]-q[i])*(i%3===2?0.2:1);sum+=d;if(d>mx)mx=d}return [mx,sum/dims.length]};
+  const near=cfg.samples.map(s=>{const a=dist(s,e),b=f?dist(s,f):a;return {c:s[0],mx:Math.min(a[0],b[0]),mean:Math.min(a[1],b[1])}})
+    .sort((a,b)=>a.mx-b.mx).slice(0,30).sort((a,b)=>a.mean-b.mean).slice(0,10);
+  const votes={};for(const n of near)votes[n.c]=(votes[n.c]||0)+1;
+  return votes;
+}
 // pure: mutates s, returns true when one rep completes
 function step(s,lm,ex,now){
-  if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.k3=null;s.last=0;s.base=null;s.baseOk=false;s.air=false;s.downAt=0;s.phase=null;s.cx0=0;s.closedW=null;s.stepAt=0}
+  if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.k3=null;s.last=0;s.base=null;s.baseOk=false;s.air=false;s.downAt=0;s.phase=null;s.cx0=0;s.closedW=null;s.stepAt=0;s.conf=null;s.in=null;s.clsAt=null}
   if(!visible(lm,ex)){s.lost=true;return false}
   s.lost=false;
   let rep=false;
-  if(ex==="squat"){
+  const cfg=POSE[ex];
+  if(cfg){
+    // classifier counter: a rep = entering a counted pose class (EMA votes > CLS_ENTER) and leaving it (< CLS_EXIT)
+    const votes=poseClassify(lm,cfg,s.ar||1), a=1-Math.exp(-Math.min(200,now-(s.clsAt??now-33))/CLS_TAU);
+    s.clsAt=now;s.conf=s.conf||{};s.in=s.in||{};
+    for(const c of cfg.count){
+      const v=s.conf[c]=(s.conf[c]??0)+((votes[c]||0)-(s.conf[c]??0))*a;
+      if(!s.in[c])s.in[c]=v>CLS_ENTER;
+      else if(v<CLS_EXIT){s.in[c]=false;rep=true}
+    }
+  }else if(ex==="squat"){
     // knee angle: hip(23/24) knee(25/26) ankle(27/28); EMA-smoothed avg of both legs, 2D + 3D
     const r2=knee2(lm),r3=knee3(lm);
     const k=s.k=s.k==null?r2:s.k*0.6+r2*0.4;
@@ -1259,6 +1300,7 @@ function step(s,lm,ex,now){
 }
 function detect(lm,i,ex,mult){
   const now=performance.now();
+  st[i].ar=detCv.width/detCv.height||1; // pose classifier needs the frame aspect (x/y are normalized separately)
   if(step(st[i],lm,ex,now)){
     const t=(now-t0)/1000;
     score[i]+=mult;
@@ -1267,7 +1309,9 @@ function detect(lm,i,ex,mult){
     flash(i);
   }
 }
-if(typeof module!=="undefined") module.exports={step,ang,armsUp,sideCue,highlightSegments,clipSpec}; // node self-check
+if(typeof module!=="undefined") module.exports={step,ang,armsUp,sideCue,highlightSegments,clipSpec,POSE,poseEmbed}; // node self-check
+// k-NN sample poses (tools/samples.cjs); until loaded, or if the fetch fails, step() uses the hand-written branches
+fetch("pose-samples.json").then(r=>r.ok?r.json():{}).then(d=>Object.assign(POSE,d)).catch(()=>{});
 // restore the last exercise selection (UI only; localStorage is unavailable in the node self-check)
 try{
   const saved=JSON.parse(localStorage.getItem("novacore.exercises")||"[]");
@@ -1690,7 +1734,7 @@ $("#go").onclick=async()=>{
     loadMsg.textContent=`Kamera ${sizeLabel} · ${Math.round(camFps)} fps · ruošiamas modelis`;
     console.info(`NovaCore kamera: ${cam.videoWidth}×${cam.videoHeight} @ ${Math.round(camFps)} fps`);
     const fs=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
-    landmarker=await PoseLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",delegate:"GPU"},runningMode:"VIDEO",numPoses:players});
+    landmarker=await PoseLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:POSE_MODEL,delegate:"GPU"},runningMode:"VIDEO",numPoses:players});
     const wait=700-(performance.now()-loadingSince);
     if(wait>0)await new Promise(r=>setTimeout(r,wait));
     $("#start").classList.add("hide");

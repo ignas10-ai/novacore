@@ -1,7 +1,7 @@
 // ponytail: vienas self-check – paleisti `node test-detect.cjs`
 const fs=require("fs");const html=fs.readFileSync(__dirname+"/index.html","utf8");
 const a=html.indexOf("const EX=["),b=html.indexOf("if(typeof module");
-const m={};new Function("module",html.slice(a,b)+"\nmodule.exports={step,armsUp,sideCue,highlightSegments,clipSpec};")(m);const {step,armsUp,sideCue,highlightSegments,clipSpec}=m.exports;
+const m={};new Function("module",html.slice(a,b)+"\nmodule.exports={step,armsUp,sideCue,highlightSegments,clipSpec,POSE,poseEmbed};")(m);const {step,armsUp,sideCue,highlightSegments,clipSpec,POSE,poseEmbed}=m.exports;
 const assert=require("assert");
 const P=(y=0.9,vis=1)=>({x:0.5,y,visibility:vis});
 function body(o={}){const lm=Array.from({length:33},()=>P());
@@ -133,6 +133,15 @@ assert.strictEqual(step(s,stand,"crunch",t+=400),false);
 assert.strictEqual(step(s,crossL,"crunch",t+=400),true,"cross crunch other side");
 const kneeOnly=body();kneeOnly[26]={x:0.55,y:0.44,visibility:1};
 assert.strictEqual(step({},kneeOnly,"crunch",0),false,"knee alone is not a crunch");
+// pose classifier (k-NN): embedding ignores position and size; stand -> deep -> stand with labelled samples = 1 rep
+const moved=body().map(p=>({...p,x:p.x*0.5+0.2,y:p.y*0.5+0.1}));
+assert(poseEmbed(body()).every((v,i)=>Math.abs(v-poseEmbed(moved)[i])<1e-6),"embedding is translation/scale invariant");
+POSE.squat={flip:true,count:["down"],samples:[...Array(10).fill(["down",...poseEmbed(deep)]),...Array(10).fill(["up",...poseEmbed(stand)])]};
+s={};t=0;reps=0;
+for(const f of [...Array(5).fill(stand),...Array(8).fill(deep),...Array(8).fill(stand)]) if(step(s,f,"squat",t+=50))reps++;
+assert.strictEqual(reps,1,"classifier squat rep");
+assert.strictEqual(step({},hidden,"squat",0),false,"classifier still gated by NEED visibility");
+delete POSE.squat;
 // debounce: two reps 100 ms apart -> second ignored
 s={};t=0;step(s,open,"jack",t);assert.strictEqual(step(s,stand,"jack",t+=400),true);step(s,open,"jack",t+=50);assert.strictEqual(step(s,stand,"jack",t+=50),false);
 console.log("OK");

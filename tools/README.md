@@ -4,16 +4,29 @@
 
 ```
 vaizdo įrašas (.mp4) ──extract.cjs──▶ fixtures/<vardas>.json ──replay.cjs──▶ kiek pakartojimų užskaitė step()
-                                                               └─replay-check.cjs─▶ OK / nukrypimai (regresija)
+                                                               ├─replay-check.cjs─▶ OK / nukrypimai (regresija)
+                                                               └─accuracy.cjs─────▶ tikra vs step() vs k-NN, held-out
+samples-spec.json (pažymėti laiko intervalai) ──samples.cjs──▶ ../pose-samples.json (žaidimo k-NN pavyzdinės pozos)
 ```
 
 ## Komandos
 
 | Komanda | Ką daro |
 |---|---|
-| `node tools/extract.cjs <video.mp4> <vardas> [--poses 2]` | Headless Chrome + MediaPipe Pose (tas pats modelis kaip žaidime) → `fixtures/<vardas>.json` (kas ~33 ms: 33 taškai × [x, y, visibility, z]). Reikia Chrome ir `puppeteer-core` (keliai `PUPPETEER_CORE` / `CHROME` env arba numatytieji faile). ~1–2 min 30 s įrašui. |
+| `node tools/extract.cjs <video.mp4> <vardas> [--poses 2] [--cpu] [--model full] [--out dir]` | Headless Chrome + MediaPipe Pose (tas pats modelis kaip žaidime) → `fixtures/<vardas>.json` (kas ~33 ms: 33 taškai × [x, y, visibility, z]). Reikia Chrome ir `puppeteer-core` (keliai `PUPPETEER_CORE` / `CHROME` env arba numatytieji faile). `--cpu` (XNNPACK) ~5× greičiau nei headless GPU (swiftshader); `squat` abiem būdais davė tuos pačius pakartojimus; `--model full` tik palyginimui. |
 | `node tools/replay.cjs <fixture> [pratimas\|all] [--from s --to s]` | Praleidžia fixture per `step()`; spausdina pakartojimus, jų laikus, „nematomų" kadrų skaičių. `all` – visi 7 detektoriai (matosi kryžminiai klaidingi užskaitymai). |
-| `node tools/replay-check.cjs` | Regresija: lentelė `CASES` su laukiamais skaičiais. Paleisti po kiekvieno `step()` / slenksčių keitimo. |
+| `node tools/replay-check.cjs` | Regresija: lentelė `CASES` su laukiamais skaičiais (kaip žaidime, su `pose-samples.json`). „ŽINOMA SPRAGA" eilutės fiksuoja dabartinį elgesį, tikras skaičius – 7-as laukas. Paleisti po kiekvieno `step()` / slenksčių / spec keitimo. |
+| `node tools/accuracy.cjs [--dir d] [--only squat,lunge]` | Kiekvienam atvejui: tikras skaičius, ranka rašytas `step()`, k-NN klasifikatorius (iš `samples-spec.json`), ar atvejis held-out (nepersidengia su mokymo intervalais). Pagal tai sprendžiama, kuris skaitiklis gyvas. |
+| `node tools/samples.cjs` | `samples-spec.json` → `../pose-samples.json` (tik `"live":true` pratimai). |
+
+## Naujas pratimas = pavyzdinės pozos, ne slenksčiai
+
+1. Nufilmuok 1–2 įrašus iš priekio, `extract.cjs` → fixture.
+2. `samples-spec.json`: pratimui `count` klasės (pvz. `down`, arba `L`/`R`), `flip` (ar kairė = dešinė), nebūtinai `pairs` (kurios kūno poros svarbios; kojos+liemuo = `[0,5,6,7,8,11,12,15,16,20,22]`), ir `sets`: `{"fx":"…","down":[[nuo,iki]…],"up":[…]}`. Intervalus imk iš kadrų lapo (ffmpeg tile) ar `replay.cjs` laikų – tik aiškias fazes, be perėjimų. `no` = kito pratimo kadrai (neigiami pavyzdžiai, mažina kryžminius užskaitymus); `every` – kas kelintą kadrą imti.
+3. Vieną įrašą (ar jo dalį) palik **ne** spec'e ir įrašyk į `replay-check.cjs` – tai held-out.
+4. `node tools/accuracy.cjs` – jei k-NN geresnis už `step()`, `"live":true` → `node tools/samples.cjs` → `replay-check.cjs` laukiami skaičiai.
+
+Intervalai 2026-10-25 parinkti iš signalų plato (3D kelio kampas, kelio pakilimas, kelių aukščių skirtumas) ir patikrinti kadrų lapuose; pereinamieji kadrai nežymėti.
 
 ## Pilnas žaidimo prabėgimas be telefono (`playthrough.cjs`)
 
@@ -32,7 +45,7 @@ Chrome vietoj kameros paima `cam.y4m`, žaidimas pereina startas → paruošimas
 3. `node tools/replay.cjs squat-ignas-2m squat` → palygink su tikru skaičiumi.
 4. Jei sutampa ±1 – pridėk eilutę į `replay-check.cjs` `CASES`, commit'ink fixture (JSON ~1 MB) – ne vaizdo įrašą.
 
-## Fixture'ai (2026-10-23, YouTube demonstracijos iš priekio)
+## Fixture'ai (YouTube demonstracijos iš priekio; 2026-10-25 nauji – `--cpu`)
 
 | Fixture | Pratimas | Tikras skaičius | Pastaba |
 |---|---|---|---|
@@ -43,7 +56,19 @@ Chrome vietoj kameros paima `cam.y4m`, žaidimas pereina startas → paruošimas
 | `knees` | aukšti keliai | ~25 (9–25 s) | |
 | `lunge` | atvirkštiniai įtūpstai | 7 (3+3+1 languose) | įraše kameros pjūviai, naudoti `--from/--to` |
 | `crunch` | įstriži atsilenkimai | 8 | |
-| `oblique-sidebend` | šoninis atsilenkimas (KITAS pratimas) | – | neigiamas atvejis cross-crunch'ui |
+| `oblique-sidebend` | šoninis atsilenkimas (KITAS pratimas) | – | neigiamas atvejis cross-crunch'ui; 0–17 s naudojama kaip `no` pavyzdžiai |
+| `squat2` | pritūpimai, kamera ~30° kampu | 3 | held-out |
+| `squat3` | pritūpimai, kojas dalinai dengia kamuolys | 6 | held-out; `step()` 5 |
+| `squat4` | pritūpimai, rankos į priekį | 4 | held-out (YT qtwh-kxcWmE) |
+| `squatjump3` | „mini" šuoliukai iš pusiau pritūpimo | 6 | apkirpta 0–17,4 s; `step()` 0 – žinoma spraga |
+| `knees2` | žemesni greiti pakėlimai su pašokimu | 24 | `step()` 7, k-NN 3 – žinoma spraga (YT DfjpR6dzLVg) |
+| `knees3` | bėgimas vietoje | 16 | YT VGb_fJ81yWc |
+| `crunch2`–`crunch4` | įstriži atsilenkimai, 3 kiti žmonės | 8 / 10 / 5 | held-out |
+| `lunge5` | atvirkštiniai įtūpstai, kitas žmogus | 3 | held-out (YT riVwQa0N-SU) |
+
+## Lite vs full modelis (2026-10-25)
+
+Visi klipai perekstraktuoti su `pose_landmarker_full` (`--cpu`). Rezultatas nevienareikšmis: `step()` atsilenkimai 8/8 (lite 7), `knees2` 9 (lite 7), bet daugiau klaidingų pritūpimų (atsilenkimuose 4 vs 1, šoninis vaizdas 2 vs 0), k-NN pritūpimai `squat2` 1/3 (lite 3/3). Greitis headless CPU – panašus (33–71 vs 30–47 ms/kadrą, triukšmingas matavimas), parsisiuntimas 9,4 MB vs 5,8 MB. Liekame prie **lite** (`POSE_MODEL` `index.html`).
 
 ## Ką išmokom (kodėl slenksčiai tokie)
 
@@ -51,3 +76,5 @@ Chrome vietoj kameros paima `cam.y4m`, žaidimas pereina startas → paruošimas
 - Pritūpimo gylis per klubų/pečių santykį iš priekio – triukšmo ribose (0,60 vs 0,58). Nenaudoti kaip varto.
 - Įtūpste iš priekio kulkšnys būna 1,5–3,5 klubų pločio – siauros stovėsenos reikalauti negalima; skiria kelių aukščių skirtumas.
 - Įstrižame atsilenkime alkūnė iš priekio lieka ~0,8 pečių pločio nuo kelio, bet nusileidžia iki kelio aukščio – tikrinti dy, ne dx.
+- Ranka rašytas pritūpimų `step()` skaičiuoja BET KOKĮ kelių sulenkimą: atsilenkimuose 5–9, įtūpstuose 3–12 „pritūpimų". k-NN su kojų+liemens embedding'u ir `no` pavyzdžiais – 0, o tikrus pritūpimus skaičiuoja taip pat tiksliai.
+- k-NN embedding'as nepriklauso nuo padėties kadre, todėl šuolio (`squatjump`) ir pasislinkimo į šoną (`sidestep`) jis nemato – ten lieka `step()`.
