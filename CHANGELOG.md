@@ -1,5 +1,16 @@
 # Pakeitimų žurnalas
 
+## 2026-10-25 — 2 etapas: slapyvardis, kompanijos, savaitės lentelė, iššūkiai (Supabase, šaka `app-v1`)
+
+- **Prisijungimas be el. pašto:** Supabase anoniminis prisijungimas + slapyvardis (2–20 simbolių). Pirmą kartą atsidaro langas „Tavo vardas“ (galima „Vėliau“). Starto ekrane – slapyvardžio mygtukas ir „Kompanijos“ su tavo vieta savaitės lentelėje (#2).
+- **Kompanijos:** sukurti (pavadinimas → 6 simbolių kodas), pakviesti (Web Share arba nukopijuota nuoroda `/?g=KODAS`), prisijungti kodu arba atsidarius nuorodą, būti keliose, išeiti (du paspaudimai). Lentelė – šios savaitės geriausias 3 min solo rezultatas, tavo eilutė paryškinta, dar nežaidę – „—“.
+- **Iššūkiai:** rezultatų ekrane „Mesti iššūkį“ → nuoroda `/?c=<žaidimo id>`. Ją atidarius starto ekrane rodoma „<vardas> surinko N tšk. per 3 min – įveik!“, parenkama ta pati trukmė, o po žaidimo – „Įveikei!“ / „Dar ne · trūko N tšk.“.
+- **Po kiekvieno žaidimo** rezultatas siunčiamas į `games` (solo – P1 taškai, dvikova – didesni taškai, pakartojimai pagal pratimą, pratimų sąrašas). Be interneto jis lieka telefone (`novacore.pending`) ir išsiunčiamas kitą kartą atidarius.
+- **Žaidimas veikia ir be interneto ar serverio** – internetinė dalis tik papildoma, klaidos rodomos trumpu lietuvišku užrašu. Vietinė istorija ir rekordai nepakeisti.
+- Kodas: `src/online/api.ts` (be DOM), `src/ui/social.ts`, langai naudoja tą patį `.ex-sheet` dizainą; priklausomybė `@supabase/supabase-js` 2.118.0. Duomenų bazės schema nekeista (`001_init.sql`).
+- Patikros: `node tools/social-check.mjs` (tikras serveris: 2 vartotojai, kompanija, lentelė, iššūkis, RLS), `playthrough.cjs --social` (netikras serveris naršyklėje → slapyvardžio, kompanijų, iššūkio kadrai portretu, 360 px ir landscape), `--size`.
+- **Dar reikia serveryje (Ignas):** paleisti `supabase/migrations/001_init.sql` ir įjungti „Allow anonymous sign-ins“ – 10-25 abiejų dar nebuvo, todėl `social-check` dar nepaleistas iki galo.
+
 ## 2026-10-25 — perkelta į Vite + TypeScript projektą (šaka `app-v1`, 1 etapas)
 
 - **Elgesys nepakeistas** – tik kodo sutvarkymas, kad žaidimą būtų galima auginti į pilną programėlę. Vienas 2 150 eilučių `index.html` išskaidytas: `index.html` liko tik žymėjimas (ekranai, demonstracijų SVG), CSS – `src/styles/main.css` (`:root` žetonai ir „Active Arcade“ išvaizda nepakeisti), JS – moduliai `src/detect/` (atpažinimas, be DOM), `src/clips/`, `src/camera/`, `src/game/`, `src/audio/`, `src/history/`, `src/ui/`. Struktūra – `AGENTS.md`.
