@@ -1,0 +1,228 @@
+// Recording (full clip, camera only) + highlight cut + the #clips screen (preview, download menu, share).
+import {S} from "../game/state.ts";
+import {cv,recCv,readCameraInfo,drawRecordFrame} from "../camera/camera.ts";
+import {clipSpec,type ClipProfile,type Segment} from "./highlight.ts";
+import {$} from "../ui/dom.ts";
+
+// prefer MP4 (universal playback); webm only as a last-resort fallback
+// H.264 level 4.2 is the first candidate because 1080p60 exceeds level 3.0
+const REC_MIME=(()=>{if(typeof MediaRecorder==="undefined")return "";for(const t of ["video/mp4;codecs=avc1.64002A","video/mp4;codecs=avc1.4D402A","video/mp4;codecs=avc1.42E02A","video/mp4;codecs=avc1.640028","video/mp4;codecs=avc1.42E01E","video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp8","video/webm"]){try{if(MediaRecorder.isTypeSupported(t))return t}catch(e){}}return ""})();
+const REC_EXT=REC_MIME.includes("mp4")?"mp4":"webm";
+let chunks:Blob[]=[];
+
+const clipsRoot=$("#clips"), previewBox=$("#preview"), previewVid=$<HTMLVideoElement>("#previewVid"), previewLoad=$("#previewLoad"), previewSpin=$("#previewSpin"), previewMsg=$("#previewMsg"), dlPrev=$<HTMLAnchorElement>("#dlPrev"), dlFull=$<HTMLAnchorElement>("#dlFull"), dlToggle=$("#dlToggle"), dlMenu=$("#dlMenu"), sharePrev=$("#sharePrev");
+dlPrev.download=`novacore-highlights.${REC_EXT}`;dlFull.download=`novacore-full.${REC_EXT}`;
+let fullBlob:Blob|null=null, fullURL:string|null=null, previewBlob:Blob|null=null, previewURL:string|null=null, clipState="idle", highlightPlan:Segment[]=[], highlightTotal=0, clipPortrait=false;
+let clipProfile:ClipProfile|null=null;
+
+function recorderOptions(profile:ClipProfile|null){
+  const opts:MediaRecorderOptions={};
+  if(REC_MIME)opts.mimeType=REC_MIME;
+  if(profile?.bps)opts.videoBitsPerSecond=profile.bps;
+  return opts;
+}
+function makeRecorder(stream:MediaStream,profile:ClipProfile|null){
+  try{return new MediaRecorder(stream,recorderOptions(profile))}
+  catch(e){return new MediaRecorder(stream,REC_MIME?{mimeType:REC_MIME}:undefined)}
+}
+
+export function startRec(){
+  clipPortrait=innerHeight>innerWidth;
+  const info=readCameraInfo();
+  S.camFps=info.fps;
+  clipProfile=clipSpec(info.w,info.h,info.fps,clipPortrait);
+  S.recFrameMs=clipProfile.fps>=60?15:28;
+  recCv.width=clipProfile.w;
+  recCv.height=clipProfile.h;
+  previewBox.classList.toggle("portrait",clipPortrait);
+  let stream:MediaStream|null=null;
+  try{
+    drawRecordFrame();
+    stream=recCv.captureStream(clipProfile.fps);
+    const rec=S.rec=makeRecorder(stream,clipProfile);
+    rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+    rec.start(1000);
+    console.info(`NovaCore klipas: ${clipProfile.w}×${clipProfile.h} @ ${clipProfile.fps} fps, ${(clipProfile.bps/1e6).toFixed(1)} Mbps`);
+  }catch(e){
+    stream?.getTracks().forEach(t=>t.stop());
+    S.rec=null;
+  }
+}
+
+function openClips(){
+  $("#end").classList.add("hide");
+  clipsRoot.classList.remove("hide");
+  if(clipState==="ready"){
+    previewVid.currentTime=0;
+    previewVid.play().catch(()=>{});
+  }
+}
+$("#toClips").onclick=openClips;
+previewVid.onerror=()=>{if(clipState==="ready")setClipState("error","Nepavyko atkurti peržiūros.")};
+
+function setDlOpen(open:boolean){
+  dlMenu.hidden=!open;
+  dlToggle.setAttribute("aria-expanded",String(open));
+}
+dlToggle.onclick=e=>{e.stopPropagation();setDlOpen(dlMenu.hidden as boolean)};
+document.addEventListener("click",e=>{if(!(e.target as Element).closest("#dlWrap"))setDlOpen(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")setDlOpen(false)});
+dlMenu.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>setTimeout(()=>setDlOpen(false),80)));
+
+async function sharePreviewClip(){
+  if(!previewBlob)return;
+  const type=(previewBlob.type||REC_MIME||"video/mp4").split(";")[0];
+  const ext=type.includes("mp4")?"mp4":"webm";
+  const file=new File([previewBlob],`novacore-highlights.${ext}`,{type});
+  try{
+    if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
+      await navigator.share({files:[file],title:"NovaCore",text:"Mano NovaCore geriausios akimirkos"});
+      return;
+    }
+  }catch(e){if((e as Error).name==="AbortError")return}
+  const a=document.createElement("a");a.href=previewURL!;a.download=`novacore-highlights.${ext}`;
+  document.body.appendChild(a);a.click();a.remove();
+}
+sharePrev.onclick=sharePreviewClip;
+
+function setClipState(state:string,message?:string){
+  clipState=state;
+  const ready=state==="ready";
+  // while the highlight is being cut (real-time replay, up to ~30 s) show the full clip instead of a black box
+  const showFull=state==="processing"&&!!fullURL;
+  previewVid.hidden=!(ready||showFull);
+  previewLoad.hidden=ready;
+  previewLoad.classList.toggle("over",showFull);
+  previewSpin.hidden=state!=="processing";
+  if(showFull&&previewVid.src!==fullURL){previewVid.src=fullURL!;if(!clipsRoot.classList.contains("hide"))previewVid.play().catch(()=>{})}
+  if(state==="processing")previewMsg.innerHTML=showFull?"Kerpamos geriausios akimirkos…<small id=\"previewEta\">kol kas – pilnas klipas</small>":"Kerpamos geriausios akimirkos…<small>15–20 s iš taškų karščiausių vietų</small>";
+  else if(state==="error")previewMsg.innerHTML=`${message||"Nepavyko paruošti peržiūros."}<small>Pilną klipą vis tiek galite atsisiųsti.</small>`;
+  else if(state==="unavailable")previewMsg.innerHTML="Klipas neįrašytas.<small>Ši naršyklė nepalaiko įrašymo.</small>";
+  if(fullURL){dlFull.href=fullURL;dlFull.hidden=false}else{dlFull.hidden=true;dlFull.removeAttribute("href")}
+  if(previewURL){dlPrev.href=previewURL;dlPrev.hidden=false}else{dlPrev.hidden=true;dlPrev.removeAttribute("href")}
+  dlToggle.hidden=!(fullURL||previewURL);
+  if(dlToggle.hidden)setDlOpen(false);
+  sharePrev.hidden=!previewBlob;
+  if(ready){
+    if(previewVid.src!==previewURL)previewVid.src=previewURL!;
+    if(!clipsRoot.classList.contains("hide"))previewVid.play().catch(()=>{});
+  }
+}
+
+let etaTimer=0;
+function preparePreview(){
+  if(!fullBlob||!fullBlob.size){setClipState("unavailable");return}
+  setClipState("processing");
+  const plan=highlightPlan.length?highlightPlan:[{start:0,end:Math.min(16,Math.max(1,highlightTotal))}];
+  // the cut replays the segments in real time, so the wait ≈ their total length – show it counting down
+  const total=plan.reduce((n,s)=>n+Math.max(0,s.end-s.start),0),startedAt=performance.now();
+  clearInterval(etaTimer);
+  etaTimer=setInterval(()=>{
+    const eta=document.getElementById("previewEta");
+    if(!eta||clipState!=="processing"){clearInterval(etaTimer);return}
+    const left=Math.max(1,Math.ceil(total-(performance.now()-startedAt)/1000));
+    eta.textContent=`kol kas – pilnas klipas · ištrauka už ~${left} s`;
+  },500);
+  makeHighlightClip(fullBlob,plan)
+    .then(blob=>{previewBlob=blob;previewURL=URL.createObjectURL(blob);setClipState("ready")})
+    .catch(err=>{console.error("Highlight preview:",err);setClipState("error")})
+    .finally(()=>clearInterval(etaTimer));
+}
+
+function seekVideo(video:HTMLVideoElement,time:number){
+  return new Promise<void>(resolve=>{
+    const target=Math.max(0,time);
+    if(Math.abs(video.currentTime-target)<0.02)return resolve();
+    let done=false;
+    const finish=()=>{if(done)return;done=true;clearTimeout(timer);video.removeEventListener("seeked",finish);resolve()};
+    const timer=setTimeout(finish,2500);
+    video.addEventListener("seeked",finish);
+    try{video.currentTime=target}catch(e){finish()}
+  });
+}
+
+function playSegment(video:HTMLVideoElement,c:CanvasRenderingContext2D,canvas:HTMLCanvasElement,start:number,end:number){
+  return new Promise<void>((resolve,reject)=>{
+    let done=false;
+    const finish=()=>{if(done)return;done=true;video.pause();resolve()};
+    const draw=()=>{
+      if(done)return;
+      if(video.ended||video.currentTime>=end){
+        c.drawImage(video,0,0,canvas.width,canvas.height);
+        finish();return;
+      }
+      c.drawImage(video,0,0,canvas.width,canvas.height);
+      requestAnimationFrame(draw);
+    };
+    try{video.currentTime=Math.max(0,start)}catch(e){}
+    video.play().then(()=>requestAnimationFrame(draw)).catch(reject);
+  });
+}
+
+function makeHighlightClip(source:Blob,segments:Segment[]){
+  return new Promise<Blob>((resolve,reject)=>{
+    const src=document.createElement("video");
+    src.muted=true;src.playsInline=true;src.preload="auto";src.setAttribute("aria-hidden","true");
+    src.style.cssText="position:fixed;left:-20px;top:0;width:2px;height:2px;opacity:0;pointer-events:none;display:block";
+    const srcURL=URL.createObjectURL(source);
+    src.src=srcURL;document.body.appendChild(src);
+    const out=document.createElement("canvas");
+    out.width=recCv.width||cv.width;out.height=recCv.height||cv.height;
+    const outCtx=out.getContext("2d")!;
+    const profile=clipProfile||{fps:30,bps:3000000} as ClipProfile;
+    const stream=out.captureStream(profile.fps);
+    let recorder:MediaRecorder,parts:Blob[]=[],settled=false,guard=0;
+    const cleanup=()=>{
+      clearTimeout(guard);
+      URL.revokeObjectURL(srcURL);
+      src.remove();
+      stream.getTracks().forEach(t=>t.stop());
+    };
+    const fail=(err:unknown)=>{
+      if(settled)return;
+      settled=true;
+      try{recorder&&recorder.stop()}catch(e){}
+      cleanup();reject(err);
+    };
+    try{recorder=makeRecorder(stream,profile)}catch(e){cleanup();reject(e);return}
+    recorder.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};
+    recorder.onerror=e=>fail((e as any).error||new Error("MediaRecorder error"));
+    recorder.onstop=()=>{
+      if(settled)return;
+      settled=true;cleanup();
+      const blob=new Blob(parts,{type:recorder.mimeType||REC_MIME||"video/webm"});
+      blob.size?resolve(blob):reject(new Error("Empty highlight clip"));
+    };
+    guard=setTimeout(()=>fail(new Error("Highlight preview timeout")),120000);
+    src.onerror=()=>fail(new Error("Could not load full clip"));
+    src.onloadeddata=async()=>{
+      if(settled)return;
+      try{
+        src.pause();
+        await seekVideo(src,segments[0].start);
+        outCtx.drawImage(src,0,0,out.width,out.height);
+        recorder.start(500);
+        for(const seg of segments){
+          await seekVideo(src,seg.start);
+          await playSegment(src,outCtx,out,seg.start,seg.end);
+        }
+        recorder.stop();
+      }catch(e){fail(e)}
+    };
+  });
+}
+
+// game over: finalize the full clip, then cut the highlight preview from it
+export function finishClips(plan:Segment[],total:number){
+  highlightTotal=total;highlightPlan=plan;
+  const rec=S.rec;
+  if(rec){
+    setClipState("processing");
+    rec.onstop=()=>{
+      fullBlob=new Blob(chunks,{type:rec.mimeType||REC_MIME||"video/webm"});
+      if(fullBlob.size){fullURL=URL.createObjectURL(fullBlob);preparePreview()}
+      else setClipState("unavailable");
+    };
+    rec.stop();
+  }else setClipState("unavailable");
+}
