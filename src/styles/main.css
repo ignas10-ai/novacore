@@ -1014,3 +1014,35 @@ body.solo .rpl.p2{display:none}
 .char-pick button[data-char="b"][aria-checked="true"]{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--blue)}
 .char-pick button:active{scale:var(--scale-press)}
 .char-pick img{width:100%;height:100%;object-fit:cover;scale:1.12;translate:0 6%}
+
+/* ---------- remote duel (src/duel/duel.ts): invite button, sheet, ready strip, HUD + results opponent ---------- */
+.lb-row:has(.lb-duel){grid-template-columns:40px minmax(0,1fr) auto auto}
+.lb-duel{background:var(--blue-tint);color:var(--blue-ink);--ic:20px}
+.duel-hint{display:flex;align-items:flex-start;gap:8px;margin-top:12px;--ic:16px}
+.duel-hint .ic{flex:none;margin-top:2px;color:var(--blue-ink)}
+.duel-hint[hidden]{display:none}
+.duel-vs{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px}
+.dv{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;padding:16px 10px;border-radius:var(--r-card);background:var(--surface-2);color:var(--fg-mute);
+  transition:background-color var(--duration-fast) var(--ease-ui),color var(--duration-fast) var(--ease-ui)}
+.dv b{max-width:100%;font-size:18px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dv small{font-size:13px;font-weight:700}
+.dv.p1[data-on="1"]{background:var(--red-deep);color:var(--on-color)}
+.dv.p2[data-on="1"]{background:var(--blue-ink);color:var(--on-color)}
+.dv-x{font-size:22px;color:var(--fg-faint)}
+.duel-pick[hidden]{display:none}
+.duel-pick .lbl{margin-bottom:8px}
+.duel-pick .help{margin-top:12px}
+.duel-sheet .ex-sheet-foot .go[hidden]{display:none}
+.duel-opp{display:none}
+body.duel .rpl.duel-opp{display:inline-flex}
+.duel-opp b{max-width:8em;font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.duel-opp small{font-size:12px;font-weight:700;opacity:.85}
+body.duel .pl.p2{visibility:visible}
+body.duel .pl .chip{max-width:min(36vw,180px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl.p2.gone .sc{opacity:.4}
+.pl.p2.gone .chip{background:var(--fg-mute)}
+body.duel .bar.p2{display:grid}
+body.duel .bar .chip{max-width:9em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.duel-res{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:var(--r-card);background:var(--surface);box-shadow:var(--sh-1)}
+.duel-res p{font-size:16px;font-weight:700}
+.duel-res[hidden]{display:none}

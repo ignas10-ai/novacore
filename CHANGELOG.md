@@ -1,5 +1,16 @@
 # Pakeitimų žurnalas
 
+## 2026-10-25 — dvikovos per atstumą (šaka `duel`, iš `ui-v3`; į master NEsujungta)
+
+- **Kas tai:** pakvieti draugą iš kompanijos, jis priima, ir abu žaidžiate tą patį žaidimą tuo pačiu metu iš skirtingų vietų, kiekvienas savo telefonu, matydami vienas kito taškus gyvai. Vaizdas niekur nesiunčiamas – per Supabase Realtime keliauja tik taškai ir keli valdymo pranešimai.
+- **Kaip:** Kompanijos → kompanija → kardų mygtukas prie draugo → trukmė (1 / 3 min) → „Kviesti“. Draugas gauna kvietimą iškart (jei programėlė atidaryta) arba mato jį Pradžioje („Ignas kviečia į dvikovą“ → Priimti / ✕). Po priėmimo – „Pasiruošk startui“ (matosi, ar draugas prisijungęs) → „Į kamerą“ → įprasti rankų vartai → „Laukiam“, kol draugas pasiruoš → abiem 3-2-1 vienu metu → tie patys pratimai ta pačia tvarka.
+- **Žaidime:** kairėje „Tu“ (raudona), dešinėje draugo vardas ir jo taškai (mėlyna), atsinaujina iki 4 kartų per sekundę. Jei draugas atsijungia – „Atsijungė“, žaidimas tęsiasi. **Rezultatai:** abu taškai, laimėtojas, „Revanšas“.
+- **Laikrodis:** startą skelbia kviečiantysis (+3 s), kviestasis pasitaiso pagal telefonų laikrodžių skirtumą (5 ping/pong), todėl startas sutampa, net jei laikrodžiai skiriasi.
+- **Saugumas:** nauja migracija `supabase/migrations/002_duels.sql` (001 nekeista): lentelę mato tik du dalyviai, rašoma tik per tikrinančias funkcijas (abu tos pačios kompanijos nariai, trukmė 60/180, taškai 0–2000, kvietimas galioja 10 min), Realtime kanalas privatus – trečias žmogus prisijungti negali. service_role raktas nenaudojamas.
+- **Solo ir dviese viename telefone – nepakito.** Be interneto dvikovos mygtukas paaiškina, kad reikia ryšio.
+- **Patikros:** `npm test`, `npm run build`, `nav-check` 14/14 – OK. `tools/duel-ui.cjs`: dvi atskiros naršyklės su netikromis kameromis ir netikru Realtime serveriu – kvietimas, priėmimas, fojė, sinchronizuotas startas, gyvi taškai abiem kryptimis, rezultatai sutampa, revanšas, atsijungimas (`--drop`) – 11/11 ir 9/9 OK, kadrai `Downloads/NovaCore/duel/`. `tools/duel-check.mjs` (tikras Supabase) laukia, kol Ignas paleis 002 (iki tol rašo „paleisk 002_duels.sql“). SQL patikrintas PGlite (Postgres) su Supabase schemų pakaitalais: visos funkcijos, klaidos ir pakartotinis paleidimas veikia.
+- **Pranešimų biudžetas** (nemokamas planas – 2 mln./mėn.): ~600–900 per 3 min dvikovą, blogiausiu atveju ~3 000 – žr. AGENTS.md.
+
 ## 2026-10-25 — ui-v3: 3D personažų diegimas, 1 dalis (šaka `ui-v3`, į master NEsujungta)
 
 - **Sujungta su master:** Android programėlė (Capacitor) ir klipų strigimo pataisymas dabar ir `ui-v3` šakoje, konfliktų nebuvo. `npm test`, `npm run build`, `nav-check` 14/14 – OK.

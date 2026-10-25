@@ -11,6 +11,7 @@ import {markBeat} from "../history/history.ts";
 import * as api from "../online/api.ts";
 import {Capacitor} from "@capacitor/core";
 import {Share} from "@capacitor/share";
+import {icon} from "./icons.ts";
 
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const chars=(s:string)=>[...s].length; // the DB checks char_length (code points), not UTF-16 units
@@ -132,6 +133,11 @@ function lbRow(r:api.LbRow,i:number,rank:number){
   const sm=document.createElement("small");sm.textContent=r.games?`${r.games} ${plural(r.games,["žaidimas","žaidimai","žaidimų"])}`:"dar nežaidė";who.append(sm);
   const best=document.createElement("b");best.className="lb-best d";best.textContent=r.best!=null?String(r.best):"—";
   li.append(n,who,best);
+  if(r.user_id!==me){ // remote duel invite (src/duel/duel.ts handles the click)
+    const d=document.createElement("button");d.type="button";d.className="icon-btn lb-duel tap";
+    d.dataset.duel=r.user_id;d.dataset.nick=r.nickname;d.setAttribute("aria-label",`Kviesti ${r.nickname} dvikovai`);d.innerHTML=icon("swords");
+    li.append(d);
+  }
   return li;
 }
 function renderGroup(){
@@ -145,6 +151,7 @@ function renderGroup(){
   if(!g&&loaded){lb.replaceChildren(Object.assign(document.createElement("li"),{className:"lb-empty",textContent:"Tu nebe šios kompanijos narys arba ji ištrinta."}));return}
   if(!rows){lb.replaceChildren(Object.assign(document.createElement("li"),{className:"lb-empty",textContent:loadErr||"Kraunama…"}));return}
   let rank=0;
+  $("#duelHint").hidden=rows.length<2;
   lb.replaceChildren(...rows.map((r,i)=>lbRow(r,i,r.best!=null?++rank:0)));
 }
 onView("groups",()=>{note(grpNote,"");renderGroups();loadGroups()});

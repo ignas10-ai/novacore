@@ -19,6 +19,7 @@ import "./ui/fullscreen.ts";
 import "./ui/wakelock.ts";
 import "./clips/clips.ts";
 import "./game/game.ts";
+import "./duel/duel.ts"; // remote duels (optional, online only)
 import {Capacitor} from "@capacitor/core";
 import {App} from "@capacitor/app";
 import "./sprint/sprint.ts";

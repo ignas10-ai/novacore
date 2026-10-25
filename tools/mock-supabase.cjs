@@ -26,6 +26,7 @@ async function mockSupabase(p){
       const meRow={user_id:ME,nickname:db.nick||"?",best:body.gid==="g2"?291:null,games:body.gid==="g2"?3:0};
       return send(200,body.gid==="g2"?[others[0],meRow,others[1],others[2]]:[meRow]);
     }
+    if(path==="/rest/v1/rpc/pending_duels")return send(200,[]); // dvikovų kvietimų nėra (tools/duel-ui.cjs turi savo netikrą serverį)
     if(path==="/rest/v1/rpc/get_challenge")return send(200,[{nickname:"Martynas",score:4,duration:60,players:1,exercises:["squat","jack","knees"],created_at:new Date().toISOString()}]);
     console.log("! nemokama užklausa",r.method(),path);send(404,{message:"mock"});
   });
