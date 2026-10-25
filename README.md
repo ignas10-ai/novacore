@@ -35,4 +35,20 @@ Be jų žaidimas veikia kaip anksčiau, tik be internetinės dalies. Serveryje v
 
 Telefonui per tą patį Wi-Fi kamera reikalauja https – paprasčiausia naudoti Vercel preview nuorodą. Projekto struktūra ir taisyklės – [AGENTS.md](AGENTS.md).
 
+## Android APK
+
+Ta pati programėlė kaip Android aplikacija (Capacitor). APK surenka GitHub Actions po kiekvieno `push` į `master` (ir `android`) – kompiuteryje Android SDK nereikia.
+
+Kaip parsisiųsti ir įsidiegti (pvz., Martynui):
+
+1. Prisijungti prie GitHub (bet kokia paskyra – be jos artefaktų atsisiųsti neleidžia).
+2. https://github.com/ignas10-ai/novacore/actions/workflows/android.yml → viršutinis žalias (✓) paleidimas → apačioje **Artifacts** → **novacore-debug-apk** (atsisiunčia `.zip`; laikomas 90 d.).
+3. Išarchyvuoti → `app-debug.apk` persiųsti į telefoną (arba atsisiųsti iškart telefone).
+4. Telefone atidaryti `app-debug.apk` → leisti diegti iš šio šaltinio („Nežinomi šaltiniai“ / „Install unknown apps“ naršyklei ar failų tvarkyklei) → Įdiegti. Play Protect gali perspėti („nežinomas kūrėjas“) – „Vis tiek įdiegti“.
+5. Pirmą kartą paleidus žaidimą programėlė paprašys leidimo kamerai – leisti.
+
+Naujesnę versiją diegti ant viršaus (ta pati debug versija, duomenys lieka). Žaidimui pirmą kartą reikia interneto (MediaPipe modelis kraunamas iš CDN).
+
+Rankiniu būdu (su Android SDK): `npm run build && npx cap sync android && cd android && ./gradlew assembleDebug`.
+
 Viso kūrimo seanso pakeitimai: [CHANGELOG.md](CHANGELOG.md).

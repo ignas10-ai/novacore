@@ -1,5 +1,13 @@
 # Pakeitimų žurnalas
 
+## 2026-10-25 — Android programėlė (APK) per GitHub Actions (šaka `android`)
+
+- **Capacitor 8.5.3:** tas pats žaidimas kaip Android aplikacija `lt.novacore.app` („NovaCore“). Pavadinimas ir ID – tik `capacitor.config.json`.
+- **APK renka GitHub Actions** po kiekvieno `push` į `master`: testai → `vite build` (su Supabase raktais iš repo paslapčių) → `cap sync` → `assembleDebug` → artefaktas `novacore-debug-apk`. Igno kompiuteryje Android SDK nereikia. Kaip įsidiegti – README „Android APK“.
+- **Kas kitaip programėlėje:** kamera prašo leidimo pirmą kartą paleidus žaidimą (tik vaizdas, be mikrofono); ekranas neužgęsta (Wake Lock WebView'e neveikia); Android „atgal“ veikia kaip ekrano „atgal“, pradžios ekrane uždaro programėlę; klipų „Atsisiųsti“ ir „Dalintis“ atidaro sistemos dalinimosi langą (išsaugoti į Failus / Nuotraukas, siųsti draugams); kvietimų ir iššūkių nuorodos veda į novacore-two.vercel.app; be service worker ir be viso ekrano mygtuko.
+- **Dar neveikia:** `/?g=` ir `/?c=` nuorodos atsidaro naršyklėje, ne programėlėje; pirmam paleidimui reikia interneto (MediaPipe modelis iš CDN); ikona ir užsklanda – standartinės Capacitor.
+- **Svetainė nepakito:** visi pakeitimai – tik `Capacitor.isNativePlatform()` šakose, Vercel renka tą patį `dist/`.
+
 ## 2026-10-25 — klipų peržiūra nebestringa (šaka `fix-clip-lag`)
 
 Komandos draugas pranešė: po žaidimo klipų ekrane peržiūros grotuvas stringa / trūkčioja.
