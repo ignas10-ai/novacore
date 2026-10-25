@@ -1,4 +1,4 @@
-// Kiekvieno programėlės ekrano kadras (portretas ir landscape), su netikru Supabase (kompanijos ir lentelės užpildytos)
+// Kiekvieno programėlės ekrano kadras (+ pabaigoje pratimo lapas) (portretas ir landscape), su netikru Supabase (kompanijos ir lentelės užpildytos)
 // ir netikra žaidimų istorija (statistika, serija, ženkliukai). Testuoja SURINKTĄ dist/ – pirma `npm run build`.
 // Naudojimas: node tools/screens.cjs [cam.y4m] [--out dir] [--landscape|--both] [--size 390x844] [--no-game] [--players 1|2]
 //   cam.y4m – „suvaidinta" kamera žaidimo ekranams (kaip playthrough.cjs: reikia ~4 s abiem riešais virš nosies);
@@ -98,6 +98,8 @@ function seed(now){
       await shot("home-after-game",1200);
       console.log("po žaidimo URL:",await p.evaluate(()=>location.hash+" d="+history.state?.d));
     }
+    await p.goto(base+"#/pratimai",{waitUntil:"networkidle0"});await sleep(800);
+    await tap('.ex-card[data-ex="squat"]');await shot("exercise-detail",900);
     console.log(errs.length?"KLAIDOS:\n  "+errs.join("\n  "):"klaidų nėra");
     await b.close();
   }
