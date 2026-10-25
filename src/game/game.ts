@@ -81,6 +81,7 @@ export async function startFlow(){
 $("#go").onclick=startFlow;
 // back into the app (router shows the screen of the current URL)
 function exitGame(){
+  S.duel?.end();
   document.body.classList.remove("ingame","playing");
   if(inGameEntry())history.back(); else render();
 }
@@ -98,7 +99,7 @@ function startGame(){
   document.body.classList.add("playing");
   lastRound=-1;
   // more selected exercises than 30 s rounds -> rotate the skipped one between games
-  exShift=S.activeEX.length>1?Math.floor(Math.random()*S.activeEX.length):0;
+  exShift=S.duel?S.duel.shift():S.activeEX.length>1?Math.floor(Math.random()*S.activeEX.length):0; // duel: same order on both phones
   startRec();
   S.lastRecDrawAt=performance.now();
   $("#recInd").hidden=!S.rec;
@@ -107,6 +108,7 @@ function startGame(){
 }
 
 function finishReady(){
+  if(S.duel){S.duel.ready(startGame);return} // remote duel: both phones start at the same moment
   rdCount.textContent="Pirmyn!";
   rdCount.classList.add("word");
   replay(rdCount,"pop");
@@ -117,6 +119,7 @@ function finishReady(){
 
 function backToSettings(){
   readying=false;
+  S.duel?.end();
   releaseWakeLock();
   clearTimeout(startTimer);startTimer=0;
   hideDemo();
@@ -143,6 +146,7 @@ $("#readyBack").onclick=()=>inGameEntry()?history.back():(backToSettings(),rende
 
 // a finished game -> clean state for the next one without reloading the page
 export function resetGame(){
+  S.duel?.end();
   S.score=[0,0];S.scoreEvents=[];S.lastPointAt=[0,0];S.st=[{},{}] as typeof S.st;S.fl=[0,0];S.rec=null;
   shown[0]=shown[1]="0";scoreEls.forEach(e=>e.textContent="0");
   stopCamera();cam.srcObject=null;resetTracking();
@@ -256,6 +260,7 @@ function finish(){
   document.body.classList.remove("playing");
   if(S.players===1)S.score[1]=0;
   const end=renderResults();
+  S.duel?.finish(); // remote duel: send the final score, show both on #end
   sfx.finish();
   const highlightTotal=Math.min(S.duration,Math.max(0,(performance.now()-S.t0)/1000));
   const highlightPlan=highlightSegments(S.scoreEvents,highlightTotal,4,16,S.activeEX.length);

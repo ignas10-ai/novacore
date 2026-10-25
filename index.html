@@ -261,6 +261,15 @@
         <button class="icon-btn tap" id="chalX" type="button" aria-label="Atsisakyti iššūkio"><span data-icon="x"></span></button>
       </div>
     </section>
+    <!-- remote duel invite (src/duel/duel.ts) -->
+    <section class="chal duel-inv" id="duelInv" aria-live="polite" hidden>
+      <span class="chal-ic" data-icon="swords"></span>
+      <div class="chal-body"><span class="chal-tag">Dvikova</span><p id="duelInvTxt"></p></div>
+      <div class="chal-acts">
+        <button class="pill accent tap" id="duelInvGo" type="button">Priimti</button>
+        <button class="icon-btn tap" id="duelInvX" type="button" aria-label="Atmesti kvietimą"><span data-icon="x"></span></button>
+      </div>
+    </section>
     <button class="hero tap" id="homePlay" type="button">
       <span class="hero-word">Žaisti</span>
       <span class="hero-stage" aria-hidden="true">
@@ -389,6 +398,7 @@
     <section aria-labelledby="lbLbl">
       <div class="row-between sec-head"><h2 class="sec-title" id="lbLbl">Šios savaitės lentelė</h2><small class="help" id="lbMeta"></small></div>
       <ol class="lb" id="lb" aria-label="Savaitės rezultatai"></ol>
+      <p class="help duel-hint" id="duelHint" hidden><span data-icon="swords"></span>Dvikova per atstumą: spausk kardus prie draugo – žaisite tuo pačiu metu, kiekvienas savo telefonu.</p>
     </section>
     <p class="note" id="grpNote2" aria-live="polite"></p>
     <button class="danger-link tap" id="grpLeave" type="button"><span data-icon="log-out"></span><span id="grpLeaveTxt">Išeiti iš kompanijos</span></button>
@@ -478,6 +488,7 @@
       <div class="ready-players" aria-label="Žaidėjų būsena">
         <span class="rpl p1" id="rd1" data-ok="0"><b class="d">P1</b><i></i></span>
         <span class="rpl p2" id="rd2" data-ok="0"><b class="d">P2</b><i></i></span>
+        <span class="rpl p2 duel-opp" id="rdOpp" data-ok="0"><b id="rdOppName">Draugas</b><small id="rdOppSt">jungiasi…</small><i></i></span>
       </div>
       <div class="cue ready-cue" id="readyCue" data-cue="none" aria-hidden="true">
         <svg class="cue-arrow" viewBox="0 0 60 60"><path class="cue-arrow-main" d="M30 10v28M16 26l14 14 14-14"/><path class="cue-trail" d="M20 4l10 8 10-8"/></svg>
@@ -511,6 +522,10 @@
       <div class="bar p1"><span class="chip">P1</span><span class="track"><i id="b1"></i></span><b class="d t-digit-group" id="r1">0</b></div>
       <div class="bar p2"><span class="chip">P2</span><span class="track"><i id="b2"></i></span><b class="d t-digit-group" id="r2">0</b></div>
     </div>
+    <section class="duel-res" id="duelRes" aria-live="polite" hidden>
+      <p id="duelResTxt"></p>
+      <button class="go" id="duelAgain" type="button"><span data-icon="swords"></span>Revanšas</button>
+    </section>
     <!-- per-exercise rep breakdown: filled by finish() from scoreEvents -->
     <section class="brk" id="brk" aria-label="Pakartojimai pagal pratimą" hidden>
       <h3 class="sec-title sm">Pakartojimai pagal pratimą</h3>
@@ -635,6 +650,40 @@
       <button class="go ex-done" id="nickSave" type="submit"><span data-icon="check"></span>Gerai</button>
     </footer>
   </form>
+</dialog>
+
+<!-- remote duel: invite / waiting / incoming / lobby (src/duel/duel.ts fills it per state) -->
+<dialog class="ex-sheet duel-sheet" id="duelSheet" aria-labelledby="duelTitle" aria-describedby="duelSub">
+  <div class="ex-sheet-panel">
+    <header class="ex-sheet-head">
+      <div class="ex-sheet-bar">
+        <span class="eyebrow" id="duelEye">Dvikova</span>
+        <button class="icon-btn" id="duelClose" type="button" aria-label="Uždaryti"><span data-icon="x"></span></button>
+      </div>
+      <h2 class="d ex-sheet-title" id="duelTitle">Dvikova <span>per atstumą</span></h2>
+      <p class="ex-sheet-sub" id="duelSub"></p>
+    </header>
+    <div class="sheet-body">
+      <div class="duel-vs" aria-label="Žaidėjai">
+        <span class="dv p1" id="dvMe" data-on="1"><b>Tu</b><small id="dvMeSt">prisijungęs</small></span>
+        <span class="dv-x d" aria-hidden="true">VS</span>
+        <span class="dv p2" id="dvOpp" data-on="0"><b id="dvOppName">Draugas</b><small id="dvOppSt">laukia</small></span>
+      </div>
+      <div class="duel-pick" id="duelPick">
+        <h3 class="lbl">Trukmė</h3>
+        <div class="seg dur" aria-label="Dvikovos trukmė">
+          <button type="button" data-dd="60" aria-pressed="false"><span><b class="d">1</b><small>min</small></span></button>
+          <button type="button" data-dd="180" class="on" aria-pressed="true"><span><b class="d">3</b><small>min</small></span></button>
+        </div>
+        <p class="help" id="duelEx"></p>
+      </div>
+    </div>
+    <footer class="ex-sheet-foot">
+      <p class="ex-sheet-note" id="duelNote" aria-live="polite"></p>
+      <button class="go alt sheet-alt" id="duelNo" type="button">Atšaukti</button>
+      <button class="go ex-done" id="duelYes" type="button"><span data-icon="swords"></span>Kviesti</button>
+    </footer>
+  </div>
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

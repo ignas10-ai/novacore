@@ -18,7 +18,6 @@ export const cancel=async(id:string)=>must(await c().rpc("cancel_duel",{p_id:id}
 export const start=async(id:string)=>must(await c().rpc("start_duel",{p_id:id})) as Duel;
 export const finish=async(id:string,score:number)=>must(await c().rpc("finish_duel",{p_id:id,p_score:Math.min(2000,Math.max(0,score|0))})) as Duel;
 export const pending=async()=>(must(await c().rpc("pending_duels")) as Invite[])||[];
-export const get=async(id:string)=>must(await c().from("duels").select("*").eq("id",id).maybeSingle()) as Duel|null;
 
 // LT message for a duel failure (falls back to the general online messages)
 export function duelErr(e:any,general:(e:any)=>string){

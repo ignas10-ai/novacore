@@ -103,3 +103,9 @@ Visi klipai perekstraktuoti su `pose_landmarker_full` (`--cpu`). Rezultatas nevi
 ## Internetinė dalis prieš tikrą Supabase (`social-check.mjs`)
 
 `node tools/social-check.mjs` – 2 anoniminiai vartotojai, profiliai, kompanija, prisijungimas kodu, žaidimai, savaitės lentelė, iššūkis ir RLS (B nemato A žaidimų ir svetimos kompanijos, negali įrašyti žaidimo A vardu, keisti A profilio ar trinti A kompanijos). Išeitis 2 = serveris neparuoštas (nepaleista `001_init.sql` arba išjungtas anoniminis prisijungimas). Testinė kompanija ištrinama, 2 anoniminiai vartotojai ir jų žaidimai lieka (Authentication → Users – galima ištrinti ranka).
+
+## Dvikovos per atstumą (`duel-check.mjs`, `duel-ui.cjs`)
+
+`node tools/duel-check.mjs` – prieš TIKRĄ Supabase: 3 anoniminiai vartotojai, kvietimo patikros, gyvas kvietimas (postgres_changes), RLS, privatus `duel:<id>` kanalas (pašalinis atmetamas), presence, laikrodžio ping/pong, sinchronizuotas startas, taškai, `finish_duel`. Išeitis 2 + „paleisk 002_duels.sql", kol migracija nepaleista.
+
+`npm run build && node tools/duel-ui.cjs [--drop] [--out dir]` – dvi headless naršyklės (du telefonai) su savo netikromis kameromis (ffmpeg MJPEG iš `src/art`; `FFMPEG` env arba PATH), netikras REST ir vietinis Realtime serveris; kadrai `_playthrough/duel/`, pabaigoje suskaičiuoti Realtime pranešimai. `--drop` – B atsijungia žaidimo viduryje.
