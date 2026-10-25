@@ -81,6 +81,7 @@ function seed(now){
     await tap("#exOpen");await shot("exercise-sheet",900);
     await tap("#exDone");await sleep(400);
     if(!noGame){
+      await scrollTo("#start",0);await sleep(300); // the sticky top bar would cover the buttons when scrolled
       await tap(`[data-p="${arg("--players","2")}"]`);await tap('[data-d="60"]');
       await p.click("#go");await shot("loading",500);
       for(let i=0;i<40;i++){await sleep(500);if(await p.evaluate(()=>!document.getElementById("ready").classList.contains("hide")&&document.getElementById("loading").classList.contains("hide")))break}
