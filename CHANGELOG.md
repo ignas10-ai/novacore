@@ -1,5 +1,20 @@
 # Pakeitimų žurnalas
 
+## 2026-10-25 — app-v3: šviesi sportinė išvaizda „raudonas kampas prieš mėlyną“ (šaka `ui-v2`)
+
+Ignas atmetė tamsų Volt: telefone atrodė kaip vienas puslapis, dominavo juoda + žalia. Informacinė architektūra ir funkcijos – tos pačios, pakeista išvaizda ir pojūtis.
+
+- **Paletė:** šiltai baltas fonas `#F7F5F2`, baltos kortelės su minkštais sluoksniuotais šešėliais (be rėmelių), tamsiai mėlynas tekstas `#14183A`. P1 ir pagrindiniai mygtukai – raudona `#FF3B3B` (mažam tekstui – `#CC1A27`, raudonoms plokštumoms su mažu baltu tekstu – `#E5252F`), P2 – mėlyna `#2F6BFF`, geltona `#FFC61A` – serijos, rekordai, daugiklis, šventė. Viskas `:root` žetonuose, juoda + oranžinė niekur.
+- **Kiekvienas pratimas turi savo spalvą:** pritūpimai raudona, pašokimai mėlyna, aukšti keliai geltona, su šuoliuku rožinė, šoniniai žingsniai mėtinė, įtūpstai violetinė, atsilenkimai žydra – plytelėse, pasirinkime, juostose, rezultatuose.
+- **Pradžia:** „VS“ kortelė – raudonas ir mėlynas žaidėjų kampai su animuotais žmogeliukais ir dideliu „Žaisti“; serija – geltona plytelė, vieta kompanijoje – mėlyna; greito starto plytelės savo spalvomis; savaitės tikslas geltonai. Landscape – du stulpeliai.
+- **Pratimai:** spalvotos plytelės su žmogeliuku ir rekordu; paspaudus – lapas iš apačios su „kaip daryti“, „ką tikrina kamera“, „iš viso“ ir „rekordas“.
+- **Profilis:** antraštės kortelė, 4 spalvotos statistikos plytelės, 7 dienų stulpeliai (šiandien – raudonai), juostos pratimų spalvomis, ženkliukai kaip spalvoti medaliai (neturimi – pilki).
+- **Įvadas:** kiekvienas žingsnis per visą ekraną savo spalva – raudona, mėlyna, geltona; iliustracijos baltoje kortelėje.
+- **Kaip programėlė, ne puslapis:** ekranai įslysta iš dešinės ir išslysta atgal (push/pop), tarp skirtukų – trumpas perėjimas be slydimo; viršuje lipni juosta, kurioje nuslinkus didelę antraštę atsiranda mažas pavadinimas; lapai išvažiuoja iš apačios su rankenėle; kiekvienas mygtukas paspaudus susitraukia (0,97); apatinis meniu baltas, aktyvus skirtukas raudonas su užpildyta ikona. `prefers-reduced-motion` išjungia animacijas.
+- **Kamera lieka tamsi** (pasiruošimas, žaidimas, klipai) – tamsiai mėlyna vietoj juodos: P1 raudona, P2 mėlyna, daugiklis ir laiko juosta geltoni, pasiruošimo rėmelio kampai raudoni/mėlyni. Rezultatai – šviesūs, laimėtojo kortelė jo spalva (lygiosios – geltona).
+- **PWA ikonos:** baltas „N.“ ant raudono su geltonu tašku, `sw.js` v5.
+- **Patikros:** `npm test`, `npm run build` – OK. Naujas `tools/nav-check.cjs` – 20/20 (skirtukai, gili nuoroda, push/pop, atgal iš kompanijos, lipni juosta, pratimo lapas, atgal pasiruošime / žaidime, „Žaisti dar kartą“, „Į pradžią“), naršyklės klaidų nėra. Visi ekranai portretu ir landscape – `Downloads\NovaCore\app-v3\` (tie patys pavadinimai kaip app-v2 + `29-exercise-detail`). Dizaino patikra (styleseed) ~86/100.
+
 ## 2026-10-25 — app-v2: NovaCore kaip tikra programėlė (šaka `ui-v2`)
 
 Vieno puslapio žaidimas tapo programėle su meniu apačioje. Žaidimas, atpažinimas ir klipai – kaip buvo.
