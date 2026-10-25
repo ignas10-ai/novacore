@@ -84,9 +84,9 @@ function seed(now){
       await scrollTo("#start",0);await sleep(300); // the sticky top bar would cover the buttons when scrolled
       await tap(`[data-p="${arg("--players","2")}"]`);await tap('[data-d="60"]');
       await p.click("#go");await shot("loading",500);
-      for(let i=0;i<40;i++){await sleep(500);if(await p.evaluate(()=>!document.getElementById("ready").classList.contains("hide")&&document.getElementById("loading").classList.contains("hide")))break}
+      for(let i=0;i<180;i++){await sleep(500);if(await p.evaluate(()=>!document.getElementById("ready").classList.contains("hide")&&document.getElementById("loading").classList.contains("hide")))break} // model + wasm from the CDN can take a while
       await shot("ready",250);
-      for(let i=0;i<30;i++){await sleep(500);if(await p.evaluate(()=>document.getElementById("hud").classList.contains("on")))break}
+      for(let i=0;i<90;i++){await sleep(500);if(await p.evaluate(()=>document.getElementById("hud").classList.contains("on")))break}
       await shot("game",9000);
       for(let i=0;i<120;i++){await sleep(500);if(await p.evaluate(()=>!document.getElementById("end").classList.contains("hide")))break}
       await shot("results",2200);
