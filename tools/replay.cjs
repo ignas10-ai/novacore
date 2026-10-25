@@ -1,15 +1,12 @@
-// Fixture (tools/fixtures/*.json) → step() iš index.html → kiek pakartojimų užskaitytų.
+// Fixture (tools/fixtures/*.json) → step() iš src/detect/step.ts → kiek pakartojimų užskaitytų.
 // Naudojimas: node tools/replay.cjs <fixture> [pratimas|all] [--person 0] [--from s] [--to s]
 //   node tools/replay.cjs squat squat      → tik pritūpimų detektorius
 //   node tools/replay.cjs squat all        → visi 7 detektoriai ant to paties įrašo (kryžminiai klaidingi užskaitymai)
 // Spausdina: pakartojimai, laikai, kiek kadrų „nematomas" (lost). Tikrą skaičių pasitikrink iš vaizdo.
 const fs=require("fs"),path=require("path");
-const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
-const a=html.indexOf("const EX=["),b=html.indexOf("if(typeof module");
-const m={};new Function("module",html.slice(a,b)+"\nmodule.exports={step,EX,NEED,POSE,poseEmbed};")(m);
-const {step,EX,POSE,poseEmbed}=m.exports;
-// same sample poses as the game (index.html fetches pose-samples.json)
-const SAMPLES=path.join(__dirname,"..","pose-samples.json");
+const {step}=require("../src/detect/step.ts"),{EX}=require("../src/detect/exercises.ts"),{POSE,poseEmbed}=require("../src/detect/classifier.ts");
+// same sample poses as the game (src/main.ts fetches pose-samples.json)
+const SAMPLES=path.join(__dirname,"..","public","pose-samples.json");
 if(fs.existsSync(SAMPLES))Object.assign(POSE,JSON.parse(fs.readFileSync(SAMPLES,"utf8")));
 const toLm=p=>p.map(([x,y,visibility,z=0])=>({x,y,z,visibility}));
 // pose: undefined = as in the game, null = hand-written step() branch, {…} = this classifier config

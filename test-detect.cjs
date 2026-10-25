@@ -1,7 +1,7 @@
 // ponytail: vienas self-check – paleisti `node test-detect.cjs`
-const fs=require("fs");const html=fs.readFileSync(__dirname+"/index.html","utf8");
-const a=html.indexOf("const EX=["),b=html.indexOf("if(typeof module");
-const m={};new Function("module",html.slice(a,b)+"\nmodule.exports={step,armsUp,sideCue,highlightSegments,clipSpec,POSE,poseEmbed};")(m);const {step,armsUp,sideCue,highlightSegments,clipSpec,POSE,poseEmbed}=m.exports;
+const {step,armsUp,sideCue}=require("./src/detect/step.ts");
+const {POSE,poseEmbed}=require("./src/detect/classifier.ts");
+const {highlightSegments,clipSpec}=require("./src/clips/highlight.ts");
 const assert=require("assert");
 const P=(y=0.9,vis=1)=>({x:0.5,y,visibility:vis});
 function body(o={}){const lm=Array.from({length:33},()=>P());

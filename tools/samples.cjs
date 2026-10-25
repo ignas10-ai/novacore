@@ -1,5 +1,5 @@
-// Pažymėti laiko intervalai fixture'uose (tools/samples-spec.json) → pose-samples.json (žaidimo k-NN pavyzdinės pozos).
-// Naudojimas: node tools/samples.cjs   → perrašo pose-samples.json pratimais, kurių spec turi "live":true
+// Pažymėti laiko intervalai fixture'uose (tools/samples-spec.json) → public/pose-samples.json (žaidimo k-NN pavyzdinės pozos).
+// Naudojimas: node tools/samples.cjs   → perrašo public/pose-samples.json pratimais, kurių spec turi "live":true
 // Spec: { pratimas: { live, flip, count:[klasės, kurios skaičiuojamos], every:N (kas N-tą kadrą; ir per set), pairs?:[EMB indeksai],
 //                     sets:[{fx:"fixture", <klasė>:[[nuo,iki],…], …}] } }
 // build() naudoja ir accuracy.cjs (palyginimas su step(), hold-out).
@@ -29,7 +29,7 @@ module.exports={SPEC,build};
 if(require.main===module){
   const out={};
   for(const ex of Object.keys(SPEC))if(SPEC[ex].live)out[ex]=build(ex);
-  const file=path.join(__dirname,"..","pose-samples.json");
+  const file=path.join(__dirname,"..","public","pose-samples.json");
   fs.writeFileSync(file,"{\n"+Object.entries(out).map(([ex,c])=>`${JSON.stringify(ex)}:{"flip":${c.flip},"count":${JSON.stringify(c.count)},${c.pairs?`"pairs":${JSON.stringify(c.pairs)},`:""}"samples":[\n${c.samples.map(s=>JSON.stringify(s)).join(",\n")}]}`).join(",\n")+"\n}\n");
   for(const [ex,c] of Object.entries(out))console.log(`${ex.padEnd(10)} ${c.samples.length} pozų (${[...new Set(c.samples.map(s=>s[0]))].map(k=>k+" "+c.samples.filter(s=>s[0]===k).length).join(", ")})`);
   console.log(`→ ${path.relative(process.cwd(),file)} ${(fs.statSync(file).size/1024).toFixed(0)} KB`);
