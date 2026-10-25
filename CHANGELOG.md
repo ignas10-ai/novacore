@@ -1,5 +1,15 @@
 # Pakeitimų žurnalas
 
+## 2026-10-26 — atpažinimas v5: kryžminiai klaidingi užskaitymai ir maži šuoliukai (šaka `detect-v5`)
+
+- **Įtūpstai (k-NN):** šoniniai žingsniai nebeskaičiuojami kaip įtūpstai – papildomi vartai: per „down" fazę kelių išsiskyrimas (EMA, liemens ilgiais) turi pasiekti `LG_STAG`=0,25 (tikri įtūpstai 0,30–0,88, šoniniai žingsniai ≤0,22). `sidestep` 17→0, `sidestep2` 6→0, held-out `sidestep3` 10→0, `sidestep-squat` 2→0, `squatjump5` 4→0; tikri įtūpstai nepakito (10/10).
+- **Įstriži atsilenkimai:** bėgimas vietoje / aukšti keliai nebeskaičiuojami – liečiančios rankos riešas turi būti laikomas virš peties (EMA 150 ms, `CC_WRIST`=-0,05): bėgant ranka pro peties aukštį praeina tik ~100 ms. `knees3` 17→0, held-out `knees2` 3→0, `knees` 2→0; tikri atsilenkimai nepakito (34/35, held-out 23/23).
+- **Šuoliukai:** „grindys" nebeseka kylančios pėdos (atsispyrimas trunka kelis kadrus ir anksčiau tempdavo grindis kartu), `SJ_AIR` 0,2→0,12, `SJ_FLIGHT` 200→150 ms, kojos ore turi būti kartu (įtūpsto žingsnis ≠ šuolis). Nauji tikri klipai iš priekio: `squatjump6` (1 min iššūkis, maži šuoliukai) 0→27/31, `squatjump7` (WatchFit) 4→24/24, held-out `squatjump8` 9/9, `squatjump9` 15/15, `squatjump10` (~45° kampu) 1→3/4. Seni `squatjump` ir `squatjump3` – tie patys šaltiniai kaip YGGq0AE5Uyc ir 5xv0DKqe5XQ (patikrinta pagal landmark'us), todėl jie nebe naudoti kaip nauji. Kituose pratimuose šuoliukų – 0 (`lunge` 1→0).
+- **Sprinto kadencija patikrinta:** keliai = žingsniai, dvigubų užskaitymų nėra (kojos kaitaliojasi, min. Δt 0,20–0,33 s): `knees` 26/24 (1,59 žingsn./s), `knees2` 25/24 (3,43), `knees3` 17/16 (2,58) – +4–8 %, ta pati paklaida kaip aukštų kelių režime. `src/sprint/` nekeista.
+- **Held-out ≥90 %:** pritūpimai, šuoliukai (35/37 = 95 %), šoniniai žingsniai, pašokimai, aukšti keliai, atsilenkimai, įtūpstai. Beta žymos nekeistos – reikia telefono testo.
+- Patikros: `replay-check.cjs` +16 atvejų (5 nauji šuoliukų klipai, 10 kryžminių neigiamų), `accuracy.cjs` `GATE_TUNED` (k-NN vartų derinimo klipai nebe held-out), `STEP_TUNED` papildytas; `test-detect.cjs`: rankos už galvos atsilenkime, bėgimo ranka ≠ atsilenkimas, k-NN įtūpstas be kelių išsiskyrimo ≠ įtūpstas, mažas šuoliukas su lėtu atsispyrimu. `npm test` – OK.
+- **Liko:** šuoliukas ~45° kampu skaičiuojamas kaip 1 įtūpstas (`squatjump10`); `oblique-sidebend` → 8 „aukštų kelių" ir 6 įtūpstų; `lunge` (su kameros pjūviais) → 12 šoninių žingsnių; tamsus pritūpimas `squatjump5` 23 s – VIS (2/3).
+
 ## 2026-10-25 — dvikovos per atstumą (šaka `duel`, iš `ui-v3`; į master NEsujungta)
 
 - **Kas tai:** pakvieti draugą iš kompanijos, jis priima, ir abu žaidžiate tą patį žaidimą tuo pačiu metu iš skirtingų vietų, kiekvienas savo telefonu, matydami vienas kito taškus gyvai. Vaizdas niekur nesiunčiamas – per Supabase Realtime keliauja tik taškai ir keli valdymo pranešimai.

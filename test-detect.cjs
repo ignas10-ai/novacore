@@ -90,6 +90,11 @@ assert.strictEqual(sjReps,0,"squat without hop is not a squat jump");
 sj={};sjT=0;sjReps=0;
 for(const f of [...Array(4).fill(stand),...Array(5).fill(jump),...Array(6).fill(stand)])if(step(sj,f,"squatjump",sjT+=50))sjReps++;
 assert.strictEqual(sjReps,0,"hop without squat is not a squat jump");
+// small hop with a gradual take-off (squatjump6: 1-min challenge): the floor must not follow the rising foot
+const lift=d=>body().map(p=>({...p,y:p.y-d}));
+sj={};sjT=0;sjReps=0;
+for(const f of [...Array(4).fill(stand),...Array(6).fill(sjDeep),lift(0.012),lift(0.024),...Array(4).fill(lift(0.03)),...Array(6).fill(stand)])if(step(sj,f,"squatjump",sjT+=50))sjReps++;
+assert.strictEqual(sjReps,1,"small hop counts");
 // round starting mid-squat: standing up must not look like a hop (the feet stay on the floor)
 const lowDeep=body();
 lowDeep[23]={x:0.4,y:0.58,visibility:1};lowDeep[24]={x:0.6,y:0.58,visibility:1};
@@ -141,14 +146,30 @@ squatLike[27]={x:0.4,y:0.86,visibility:1};squatLike[28]={x:0.6,y:0.86,visibility
 lu={};luT=0;luReps=0;
 for(const f of [...Array(4).fill(stand),...Array(8).fill(squatLike),...Array(6).fill(stand)])if(step(lu,f,"lunge",luT+=100))luReps++;
 assert.strictEqual(luReps,0,"level-knee squat is not a lunge");
+// k-NN lunge: a wide side-step stance classified as "down" still needs staggered knees
+POSE.lunge={flip:true,count:["down"],samples:[...Array(10).fill(["down",...poseEmbed(lunge)]),...Array(10).fill(["up",...poseEmbed(stand)])]};
+lu={};luT=0;luReps=0;
+for(const f of [...Array(4).fill(stand),...Array(6).fill(lunge),...Array(6).fill(stand)])if(step(lu,f,"lunge",luT+=100))luReps++;
+assert.strictEqual(luReps,1,"classifier lunge rep");
+POSE.lunge.samples.push(...Array(10).fill(["down",...poseEmbed(squatLike)]));
+lu={};luT=0;luReps=0;
+for(const f of [...Array(4).fill(stand),...Array(8).fill(squatLike),...Array(6).fill(stand)])if(step(lu,f,"lunge",luT+=100))luReps++;
+assert.strictEqual(luReps,0,"classifier lunge needs knee stagger");
+delete POSE.lunge;
 // standing cross-crunch: knee up + opposite elbow touch, must lower between reps
-const crossR=body();crossR[26]={x:0.55,y:0.44,visibility:1};crossR[13]={x:0.55,y:0.44,visibility:1};
-const crossL=body();crossL[25]={x:0.45,y:0.44,visibility:1};crossL[14]={x:0.45,y:0.44,visibility:1};
-s={};t=0;
+// hands behind the head (wrists above the shoulders), as in every real crunch clip
+const head=o=>{const b=body(o);b[15]={x:0.45,y:0.15,visibility:1};b[16]={x:0.55,y:0.15,visibility:1};return b};
+const crossR=head();crossR[26]={x:0.55,y:0.44,visibility:1};crossR[13]={x:0.55,y:0.44,visibility:1};
+const crossL=head();crossL[25]={x:0.45,y:0.44,visibility:1};crossL[14]={x:0.45,y:0.44,visibility:1};
+s={};t=0;step(s,head(),"crunch",t);
 assert.strictEqual(step(s,crossR,"crunch",t+=400),true,"cross crunch right knee");
 assert.strictEqual(step(s,crossR,"crunch",t+=400),false,"held crunch does not repeat");
-assert.strictEqual(step(s,stand,"crunch",t+=400),false);
+assert.strictEqual(step(s,head(),"crunch",t+=400),false);
 assert.strictEqual(step(s,crossL,"crunch",t+=400),true,"cross crunch other side");
+// running in place: the swinging elbow reaches the knee but the hand stays below the shoulder (knees3.json)
+const runR=body();runR[26]={x:0.55,y:0.44,visibility:1};runR[13]={x:0.55,y:0.44,visibility:1};
+s={};t=0;let ccRun=0;for(const f of [stand,runR,stand,runR,stand])if(step(s,f,"crunch",t+=400))ccRun++;
+assert.strictEqual(ccRun,0,"running arm swing is not a crunch");
 const kneeOnly=body();kneeOnly[26]={x:0.55,y:0.44,visibility:1};
 assert.strictEqual(step({},kneeOnly,"crunch",0),false,"knee alone is not a crunch");
 // pose classifier (k-NN): embedding ignores position and size; stand -> deep -> stand with labelled samples = 1 rep

@@ -5,7 +5,7 @@ import {POSE,poseClassify,CLS_ENTER,CLS_EXIT,CLS_TAU,type Lm} from "./classifier
 export interface StepState{
   ex?:string;lost?:boolean;ar?:number; // ar = detection frame width/height, set by the game
   down:boolean;open:boolean;leg:boolean[];k:number|null;k3:number|null;last:number;base:number|null;baseOk:boolean;air:boolean;
-  downAt:number;phase:string|null;cx0:number;closedW:number|null;floor?:number|null;airAt?:number;peak?:number;aw0?:number;conf:Record<string,number>|null;in:Record<string,boolean>|null;clsAt:number|null;
+  downAt:number;phase:string|null;cx0:number;closedW:number|null;floor?:number|null;airAt?:number;peak?:number;aw0?:number;stg?:number|null;stgMax?:number;wr?:number[]|null;wAt?:number;conf:Record<string,number>|null;in:Record<string,boolean>|null;clsAt:number|null;
 }
 
 export function ang(a:Lm,b:Lm,c:Lm){const v1=[a.x-b.x,a.y-b.y],v2=[c.x-b.x,c.y-b.y];const d=v1[0]*v2[0]+v1[1]*v2[1];const m=Math.hypot(...v1)*Math.hypot(...v2)||1;return Math.acos(Math.max(-1,Math.min(1,d/m)))*180/Math.PI}
@@ -18,11 +18,17 @@ export const knee3=(lm:Lm[])=>(ang3(lm[23],lm[25],lm[27])+ang3(lm[24],lm[26],lm[
 // squat depth gate shared by squat / squat jump: deep when EITHER angle says so, standing when both do
 const KNEE_DOWN3=95, KNEE_UP3=118, KNEE_DOWN2=110, KNEE_UP2=160;
 // squat jump: lower foot above / back near its squat height, in torso lengths
-const SJ_AIR=0.2, SJ_LAND=0.08, SJ_FLIGHT=200; // + minimum flight time, ms
+// detect-v5: 0.2/200 missed small hops (squatjump6 = 1-min challenge 0 of 47, squatjump7 6 of 38); see the floor note below
+const SJ_AIR=0.12, SJ_LAND=0.08, SJ_FLIGHT=150; // + minimum flight time, ms (120 lets lunge5's ~100 ms ankle swap through)
 // high knees: lifted knee above the other knee, in torso lengths (enter / leave)
 const KN_ON=0.5, KN_OFF=0.15, KN_FOOT=0.6, KN_HIP=-0.5;
 // side step: feet count as closed again below this fraction of the step's widest ankle spread
 const SS_CLOSE=0.55;
+// lunge (k-NN): smoothed knee stagger must reach this (torso lengths) while in the "down" class
+const LG_STAG=0.25;
+// cross-crunch: the touching arm's wrist (EMA, time constant CC_TAU ms) must stay above its shoulder by this much
+// (torso lengths; negative = above) = hand held at the head
+const CC_WRIST=-0.05, CC_TAU=150;
 
 export function visible(lm:Lm[],ex:string){return NEED[ex].every(j=>(lm[j].visibility??1)>VIS)}
 // ready gate: both wrists above the nose, all key points visible
@@ -42,7 +48,7 @@ export function sideCue(lm:Lm[]):""|"left"|"right"{
 }
 // pure: mutates s, returns true when one rep completes
 export function step(s:StepState,lm:Lm[],ex:string,now:number):boolean{
-  if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.k3=null;s.last=0;s.base=null;s.baseOk=false;s.air=false;s.downAt=0;s.phase=null;s.cx0=0;s.closedW=null;s.floor=null;s.conf=null;s.in=null;s.clsAt=null}
+  if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.k3=null;s.last=0;s.base=null;s.baseOk=false;s.air=false;s.downAt=0;s.phase=null;s.cx0=0;s.closedW=null;s.floor=null;s.conf=null;s.in=null;s.clsAt=null;s.stg=null;s.stgMax=0;s.wr=null}
   if(!visible(lm,ex)){s.lost=true;return false}
   s.lost=false;
   let rep=false;
@@ -55,6 +61,15 @@ export function step(s:StepState,lm:Lm[],ex:string,now:number):boolean{
       const v=conf[c]=(conf[c]??0)+((votes[c]||0)-(conf[c]??0))*a;
       if(!inside[c])inside[c]=v>CLS_ENTER;
       else if(v<CLS_EXIT){inside[c]=false;rep=true}
+    }
+    if(ex==="lunge"){
+      // The embedding sees a wide side-step / squat-walk stance as a lunge (sidestep.json: 17 false lunges). A lunge
+      // staggers the knees: EMA stagger peaks 0.30-0.88 torso per rep in lunge/lunge5 vs <=0.20 in sidestep/sidestep2.
+      const st=Math.abs(lm[25].y-lm[26].y)/(Math.abs(lm[23].y-lm[11].y)||0.3);
+      s.stg=s.stg==null?st:s.stg*0.6+st*0.4;
+      s.stgMax=Math.max(s.stgMax??0,s.stg);
+      if(rep&&s.stgMax<LG_STAG)rep=false;
+      if(rep||!inside.down)s.stgMax=0;
     }
   }else if(ex==="squat"){
     // knee angle: hip(23/24) knee(25/26) ankle(27/28); EMA-smoothed avg of both legs, 2D + 3D
@@ -80,7 +95,7 @@ export function step(s:StepState,lm:Lm[],ex:string,now:number):boolean{
     // The floor is the LOWER foot's height while squatting (feet planted), so no standing phase is needed:
     // tools/fixtures/squatjump3.json rests in a deep squat between jumps and only stands mid-air, which starved the
     // old standing hip baseline (0 of 6). The lower foot also keeps a lifted knee (high knees) from looking like a hop.
-    // A real hop lifts the ankles ~0.5 torso (0.12-0.13 of the frame in both squatjump clips).
+    // A high jump lifts the ankles ~0.5-1 torso; small fast hops only 0.12-0.2 (squatjump6/7), a stand-up without a hop <=0.08.
     const r2=knee2(lm),r3=knee3(lm);
     const k=s.k=s.k==null?r2:s.k*0.6+r2*0.4;
     const k3=s.k3=s.k3==null?r3:s.k3*0.6+r3*0.4;
@@ -91,8 +106,11 @@ export function step(s:StepState,lm:Lm[],ex:string,now:number):boolean{
     if(!s.air&&level&&(k<KNEE_DOWN2+5||k3<KNEE_DOWN3)&&!s.down){s.down=true;s.downAt=now;s.floor=ank}
     if(s.down&&!s.air){
       if(ank<(s.floor??ank)-h*SJ_AIR){s.air=true;s.airAt=now}
-      else s.floor=(s.floor??ank)*0.7+ank*0.3; // EMA, not max: one noisy ankle frame must not raise the floor for good
-    }else if(s.air&&(ank>(s.floor??ank)-h*SJ_LAND||r2<KNEE_DOWN2+5||r3<KNEE_DOWN3)){
+      // EMA, not max: one noisy ankle frame must not raise the floor for good. Only while the foot is near/below it:
+      // a take-off rises over several frames and used to drag the floor up with it, so a small hop never got SJ_AIR above.
+      else if(ank>(s.floor??ank)-h*SJ_LAND)s.floor=(s.floor??ank)*0.7+ank*0.3;
+    }else if(s.air&&!level){s.air=false;s.down=false} // legs apart in the air = a step (lunge.json 22.9 s), not a jump
+    else if(s.air&&(ank>(s.floor??ank)-h*SJ_LAND||r2<KNEE_DOWN2+5||r3<KNEE_DOWN3)){
       s.air=false;s.down=false;
       rep=now-(s.airAt??now)>=SJ_FLIGHT; // a real hop is airborne 350-500 ms; a left/right ankle swap glitch ~100 ms
     }
@@ -150,9 +168,16 @@ export function step(s:StepState,lm:Lm[],ex:string,now:number):boolean{
     const sw=Math.abs(lm[11].x-lm[12].x)||0.2;
     // Only ONE knee goes up: a squat filmed at an angle lifts both knees to hip height with the arms in front
     // (squat2.json: 3 false crunches); the knee gap there stays ≤0.31 torso, in a crunch it is ≥1.
+    // The ELBOW leads only with the hand held at the head. Running in place swings the opposite elbow to knee
+    // height too (knees3.json: 17 false crunches) and the swinging hand passes shoulder height for ~100 ms, so the
+    // wrist height is smoothed: EMA >= +0.05 torso below the shoulder at every frame of knees/knees2/knees3, while the
+    // touching arm reads -0.14..-0.50 (above the shoulder) at every rep in crunch..crunch4.
+    const a=1-Math.exp(-Math.min(200,now-(s.wAt??now-33))/CC_TAU);s.wAt=now;
+    const wr=s.wr=s.wr||[NaN,NaN];
+    [[15,11],[16,12]].forEach(([w,sh],j)=>{const v=(lm[w].y-lm[sh].y)/h;wr[j]=isNaN(wr[j])?v:wr[j]+(v-wr[j])*a});
     [[24,26,13,25],[23,25,14,26]].forEach(([hip,knee,elbow,other],j)=>{
       const lift=(lm[hip].y-lm[knee].y)/h, gap=(lm[other].y-lm[knee].y)/h;
-      const touch=Math.abs(lm[elbow].x-lm[knee].x)/sw<1.3&&Math.abs(lm[elbow].y-lm[knee].y)/h<0.8;
+      const touch=Math.abs(lm[elbow].x-lm[knee].x)/sw<1.3&&Math.abs(lm[elbow].y-lm[knee].y)/h<0.8&&wr[j]<CC_WRIST;
       if(lift>0.1&&gap>KN_ON&&touch&&!s.leg[j]){s.leg[j]=true;rep=true}
       else if(lift<0.03&&s.leg[j])s.leg[j]=false;
     });
