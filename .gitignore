@@ -2,3 +2,4 @@
 _playthrough/
 node_modules/
 dist/
+.env*.local
