@@ -1,6 +1,6 @@
 // NovaCore service worker. Bump VERSION whenever the icons or this file's logic change in a way that must reach
 // installed phones immediately; old caches are deleted on activate.
-const VERSION="novacore-v3";
+const VERSION="novacore-v4"; // v4: app-v2 icons (Volt)
 const PRECACHE=`${VERSION}-pre`, RUNTIME=`${VERSION}-rt`;
 const APP=["./","./index.html","./manifest.webmanifest","./pose-samples.json","./icons/icon-192.png","./icons/icon-512.png","./icons/maskable-512.png"];
 // MediaPipe wasm/model + fonts: network first, fall back to the last good copy so the game still loads offline
