@@ -6,6 +6,7 @@ export interface Game{
   t:number;players:number;duration:number;ex:string[];score:number[];reps:number[];
   exReps?:Record<string,number>[]; // per player, reps per exercise id (games recorded since app-v2)
   beat?:boolean; // this game beat an opened challenge
+  mode?:string; times?:(number|null)[]; splits?:number[][]; // sprint (src/sprint): 100 m time per player in s, 10 m splits
 }
 export const WEEK_GOAL=5;
 

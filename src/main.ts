@@ -18,6 +18,7 @@ import "./ui/fullscreen.ts";
 import "./ui/wakelock.ts";
 import "./clips/clips.ts";
 import "./game/game.ts";
+import "./sprint/sprint.ts";
 
 if(!firstRun())render();
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));

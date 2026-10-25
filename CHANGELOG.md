@@ -1,5 +1,16 @@
 # Pakeitimų žurnalas
 
+## 2026-10-25 — Sprintas 100 m: pirmas sporto mini žaidimas (šaka `sprint`)
+
+Bėgi vietoje prieš telefono kamerą – kuo dažniau keli kelius, tuo greičiau tavo personažas bėga 100 m takeliu. Raudonas prieš mėlyną arba vienas prieš šešėlį.
+
+- **Kur:** Pradžioje nauja geltona plytelė „Sprintas 100 m“ → nustatymai (2 – dvikova, 1 – prieš šešėlį, tavo rekordas, kaip bėgti, gyva bėgikų animacija) → „Į startą“ → įprastas pasiruošimas (rankos aukštyn) → „Į starto pozicijas… Dėmesio… Marš!“ su šūviu → bėgimas → finišas su konfeti → rezultatai (laikai, laimėtojas, didžiausias greitis km/h, žingsniai, žingsniai per sekundę, „Naujas rekordas!“) → „Bėgti dar kartą“ / „Į pradžią“. Pajudėjus prieš šūvį – „Per anksti!“ ir startas iš naujo.
+- **Greitis:** kiekvienas kelio pakėlimas (tas pats skaičiuoklis kaip pratime „Aukšti keliai“) = žingsnis; iš žingsnių dažnio skaičiuojamas greitis su įsibėgėjimu ir riba. Įprastas tempas (2,5–3,5 žingsnio/s) – 100 m per ~12–17 s, labai greitas (4,5+/s) – ~10 s. Sustojus personažas per sekundę sulėtėja.
+- **Šešėlis:** bėgant vienam šalia bėga permatomas šešėlis tavo geriausio bėgimo tempu (pirmą kartą – 15,2 s tikslas).
+- **Vaizdas:** šoninis stadionas – tribūnos su sirgaliais, reklamos lentos, du takeliai, 25/50/75 m žymės, finišo juosta ir arka, greičio linijos, dulkės, konfeti. Bėgikų galvos – iš patvirtintų Raudono ir Mėlyno lapų, kūnai animuojami kode (Gemini kreditai baigėsi; kai bus – 6 kadrų bėgimo ciklas aprašytas `tools/art/jobs-sprint.json` ir įsijungs automatiškai). Kampe – mažas kameros vaizdas su skeletais, kad matytum, jog kamera tave mato. Viršuje – laikas, kiekvieno atstumas ir greičio juosta, mini takas su abiem taškais; toli atsilikęs bėgikas rodomas ženkliuku krašte („Raudonas −14 m“).
+- **Istorija:** sprinto bėgimai saugomi kartu su kitais žaidimais (skaičiuojami serijai ir savaitės tikslui), istorijoje rodomi laikai.
+- **Patikros:** `npm test` (naujas `test-sprint.cjs` – greičio modelis), `npm run build`, `tools/nav-check.cjs` 20/20, naujas `tools/sprint-check.cjs` (solo ir dvikova, portretas ir landscape, atgal mygtukas) – naršyklės klaidų nėra. Kadrai: `Downloads\NovaCore\sprint\`. Greitis headless Chrome: solo ~56–60 fps, dvikova ~40–45 fps (lėtina dviejų žmonių atpažinimas), takelio piešimas ~0,2–0,5 ms kadrui.
+
 ## 2026-10-25 — app-v3: šviesi sportinė išvaizda „raudonas kampas prieš mėlyną“ (šaka `ui-v2`)
 
 Ignas atmetė tamsų Volt: telefone atrodė kaip vienas puslapis, dominavo juoda + žalia. Informacinė architektūra ir funkcijos – tos pačios, pakeista išvaizda ir pojūtis.
