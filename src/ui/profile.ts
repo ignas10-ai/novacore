@@ -19,7 +19,6 @@ const el=(tag:string,cls:string,text="")=>Object.assign(document.createElement(t
 
 function render(){
   const now=Date.now(), h=loadHist(), nick=cachedNick(), t=totals(h,now);
-  $("#profAv").textContent=nick?[...nick][0].toUpperCase():"?";
   $("#profNick").textContent=nick||"Be vardo";
   $("#profSub").textContent=!nick?"Įrašyk vardą – jį matys draugai":sb?"Rodomas draugams kompanijose":"Saugoma šiame telefone";
   $("#stGames").textContent=String(t.games);$("#stReps").textContent=String(t.reps);

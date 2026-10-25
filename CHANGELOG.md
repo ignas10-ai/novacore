@@ -1,5 +1,13 @@
 # Pakeitimų žurnalas
 
+## 2026-10-25 — ui-v3: 3D personažų diegimas, 1 dalis (šaka `ui-v3`, į master NEsujungta)
+
+- **Sujungta su master:** Android programėlė (Capacitor) ir klipų strigimo pataisymas dabar ir `ui-v3` šakoje, konfliktų nebuvo. `npm test`, `npm run build`, `nav-check` 14/14 – OK.
+- **Pradžia:** „ŽAISTI“ visada matosi visas – personažai stovi po žodžiu (jų aukštis = kortelė minus žodžio juosta), ne ant jo. Landscape – mažesnis žodis, kad Ž paukščiukas nenukirstų.
+- **Vienoda tipografija:** Anton – tik didelės antraštės (ekranų pavadinimai, „ŽAISTI“, įvado antraštės, laimėtojas, pasiruošimas, kraunama, klipai, lapų antraštės), visos didžiosiomis. Visa kita – Inter, skaičiai irgi (serija, vieta, savaitės tikslas, VS). Anton niekur nebe „paryškinamas“ dirbtinai. Lietuviškų raidžių tarpai (≥1,25) palikti.
+- **Profilio avataras = personažo galva** (Pradžioje ir Profilyje vietoj raidės). Profilis → Nustatymai → „Personažas“: Raudonas (numatytas) arba Mėlynas, saugoma telefone.
+- **Sustota: baigėsi Gemini kreditai** (402 „prepayment credits are depleted“, tas pats raktas visuose .env). Likę 16 paveikslėlių (5 pratimų pozos, telefono pastatymo, įvado 3 žingsnio, laimėjimo/pralaimėjimo, kompanijų, ikonos, 8 medaliai) aprašyti `tools/art/jobs.json` – papildžius kreditus paleisti `tools/art/batch.mjs` (žr. AGENTS „Adding an exercise pose“). Kol kas 5 pratimai, nustatymų, įvado ir žaidimo kortelės iliustracijos – dar žmogeliukai.
+
 ## 2026-10-25 — Android programėlė (APK) per GitHub Actions (šaka `android`)
 
 - **Capacitor 8.5.3:** tas pats žaidimas kaip Android aplikacija `lt.novacore.app` („NovaCore“). Pavadinimas ir ID – tik `capacitor.config.json`.

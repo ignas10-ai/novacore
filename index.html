@@ -247,7 +247,7 @@
 
 <section class="screen app hide" id="home" aria-labelledby="homeTitle">
   <div class="wrap">
-    <header class="nav"><div class="nav-in"><span class="wordmark">NovaCore</span><a class="avatar tap" id="homeAv" href="#/profilis" aria-label="Profilis">?</a></div></header>
+    <header class="nav"><div class="nav-in"><span class="wordmark">NovaCore</span><a class="avatar char tap" id="homeAv" href="#/profilis" aria-label="Profilis" data-avatar></a></div></header>
     <div class="col">
     <div class="hello">
       <span class="eyebrow" id="homeDate">Šiandien</span>
@@ -409,7 +409,7 @@
     <header class="nav"><div class="nav-in"><span class="nav-title" aria-hidden="true">Profilis</span></div></header>
     <h1 class="large-title" id="profTitle" tabindex="-1">Profilis</h1>
     <div class="card me-card">
-      <span class="avatar lg" id="profAv">?</span>
+      <span class="avatar lg char" id="profAv" data-avatar></span>
       <div class="me-txt"><b id="profNick">Be vardo</b><small id="profSub">Saugoma šiame telefone</small></div>
       <button class="pill sm tap" id="nickOpen" type="button" aria-haspopup="dialog" aria-controls="nickSheet"><span data-icon="pencil"></span>Keisti</button>
     </div>
@@ -439,6 +439,7 @@
     <section aria-labelledby="setLbl">
       <h2 class="sec-title" id="setLbl">Nustatymai</h2>
       <div class="card settings">
+        <div class="set-row"><span class="set-ic" data-tone="red" data-icon="user"></span><div class="set-txt"><b>Personažas</b><small>Tavo veidas Pradžioje ir Profilyje</small></div><div class="char-pick" role="radiogroup" aria-label="Personažas"><button class="tap" type="button" role="radio" data-char="r" aria-checked="true" aria-label="Raudonas"><img src="/src/art/raudonas-head.webp" srcset="/src/art/raudonas-head.webp 1x, /src/art/raudonas-head@2x.webp 2x" alt="" width="96" height="96" decoding="async"></button><button class="tap" type="button" role="radio" data-char="b" aria-checked="false" aria-label="Mėlynas"><img src="/src/art/melynas-head.webp" srcset="/src/art/melynas-head.webp 1x, /src/art/melynas-head@2x.webp 2x" alt="" width="96" height="96" decoding="async"></button></div></div>
         <div class="set-row"><span class="set-ic" data-tone="violet" data-icon="volume-2"></span><div class="set-txt"><b>Garsas</b><small>Už judesį, raundą ir finišą</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-snd aria-label="Garsas"><i></i></button></div>
         <div class="set-row"><span class="set-ic" data-tone="mint" data-icon="vibrate"></span><div class="set-txt"><b>Vibracija</b><small>Trumpas virptelėjimas už judesį</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-vibe aria-label="Vibracija"><i></i></button></div>
         <button class="set-row tap-row" id="onbAgain" type="button"><span class="set-ic" data-tone="blue" data-icon="info"></span><div class="set-txt"><b>Kaip žaisti</b><small>Parodyti įvadą dar kartą</small></div><span class="chev" data-icon="chevron-right"></span></button>

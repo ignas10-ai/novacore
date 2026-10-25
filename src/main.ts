@@ -14,6 +14,7 @@ import "./ui/social.ts";
 import "./ui/home.ts";
 import "./ui/library.ts";
 import "./ui/profile.ts";
+import "./ui/avatar.ts";
 import "./ui/fullscreen.ts";
 import "./ui/wakelock.ts";
 import "./clips/clips.ts";

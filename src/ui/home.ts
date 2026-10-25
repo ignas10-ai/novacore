@@ -16,7 +16,6 @@ function render(){
   const title=$("#homeTitle");
   title.replaceChildren(nick?"Labas, ":"Labas!");
   if(nick)title.append(Object.assign(document.createElement("span"),{textContent:nick}),"!");
-  $("#homeAv").textContent=nick?[...nick][0].toUpperCase():"?";
   const n=streak(h,now), today=h.some(g=>new Date(g.t).toDateString()===new Date(now).toDateString());
   $("#streakN").textContent=String(n);
   $("#streakTxt").textContent=!n?"Pradėk seriją šiandien":`${plural(n,["diena","dienos","dienų"])} iš eilės${today?"":" · žaisk šiandien"}`;
