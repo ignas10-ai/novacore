@@ -29,3 +29,12 @@ export function toast(msg:string){
 export function fillTpl(root:ParentNode){
   root.querySelectorAll<HTMLElement>("[data-tpl]").forEach(el=>{if(!el.firstElementChild)el.append((document.getElementById(el.dataset.tpl!) as HTMLTemplateElement).content.cloneNode(true))});
 }
+// bottom sheet on a native <dialog>: slides up, slides down on close (Esc, backdrop tap, close buttons)
+export function sheet(d:HTMLDialogElement){ // same open/close animation as the exercise and history sheets
+  let t=0;
+  const close=()=>{if(!d.open||d.classList.contains("closing"))return;d.classList.add("closing");clearTimeout(t);t=setTimeout(()=>{d.classList.remove("closing");if(d.open)d.close()},210)};
+  d.addEventListener("cancel",e=>{e.preventDefault();close()});
+  d.addEventListener("click",e=>{if(e.target===d)close()});
+  d.addEventListener("close",()=>{clearTimeout(t);d.classList.remove("closing")});
+  return {open(){clearTimeout(t);d.classList.remove("closing");if(!d.open)d.showModal()},close};
+}

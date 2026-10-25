@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0b0f">
+<meta name="theme-color" content="#F7F5F2">
 <title>NovaCore – 3 minutės judėjimo su draugais</title>
 <meta name="description" content="Judesio žaidimas 1–2 žaidėjams: telefono kamera skaičiuoja pritūpimus, pašokimus ir kitus pratimus. 3 minutės, taškai, daugiklis, klipas pabaigoje. Nieko diegti nereikia.">
 <meta property="og:type" content="website">
@@ -15,9 +15,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="NovaCore">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0b0f'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23d4ff3a'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FF3B3B'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23FFC61A'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -25,15 +25,15 @@
 </head>
 <body data-view="home">
 <a class="skip" href="#app">Pereiti prie turinio</a>
-<button class="fs" id="fs" type="button" aria-label="Visas ekranas" title="Visas ekranas" aria-pressed="false">
+<button class="fs cam" id="fs" type="button" aria-label="Visas ekranas" title="Visas ekranas" aria-pressed="false">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
     <path class="fs-in" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>
     <path class="fs-out" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>
   </svg>
 </button>
-<div id="stage"><video id="cam" playsinline muted autoplay></video><canvas id="cv" aria-label="Kameros vaizdas su žaidėjų skeletais"></canvas></div>
+<div id="stage" class="cam"><video id="cam" playsinline muted autoplay></video><canvas id="cv" aria-label="Kameros vaizdas su žaidėjų skeletais"></canvas></div>
 
-<div class="hud" id="hud" aria-live="off">
+<div class="hud cam" id="hud" aria-live="off">
   <div class="scrim"></div>
   <div class="edge p1" id="e1"></div><div class="edge p2" id="e2"></div>
   <div class="tbar"><i id="tbar"></i></div>
@@ -209,99 +209,107 @@
 <!-- app screens: one visible at a time, chosen by src/ui/router.ts from the URL hash (#/, #/kompanijos, #/kompanijos/<id>, #/pratimai, #/profilis, #/zaisti) -->
 <main id="app" tabindex="-1">
 
-<section class="screen app hide" id="onb" aria-labelledby="onbTitle1">
+<section class="screen app hide" id="onb" aria-labelledby="onbTitle1" data-step="0">
   <div class="wrap onb-wrap">
     <div class="onb-top">
       <div class="onb-dots" role="progressbar" aria-label="Įvado žingsnis" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1"><i></i><i></i><i></i></div>
-      <button class="link" id="onbSkip" type="button">Praleisti</button>
+      <button class="link tap" id="onbSkip" type="button">Praleisti</button>
     </div>
     <div class="onb-step" data-step="0">
-      <div class="onb-art coach-pair" aria-hidden="true"><span class="p1" data-coach="squat"></span><span class="p2" data-coach="jack"></span></div>
-      <span class="tag">Judesio žaidimas</span>
+      <div class="onb-art coach-pair" aria-hidden="true"><span class="p1" data-coach="squat"></span><span class="vs d">VS</span><span class="p2" data-coach="jack"></span></div>
+      <span class="eyebrow">Judesio žaidimas</span>
       <h1 class="d onb-title" id="onbTitle1">3 minutės. 2 žaidėjai. <em>Visas kūnas.</em></h1>
       <p class="onb-copy">Žaisk su draugu ar vienas. Telefono kamera skaičiuoja pritūpimus, pašokimus ir kitus judesius – kas 30 s keičiasi pratimas, o taškai dauginasi.</p>
     </div>
     <div class="onb-step" data-step="1" hidden>
       <div class="onb-art setup-art" data-tpl="tplSetup"></div>
-      <span class="tag">Pasiruošimas</span>
+      <span class="eyebrow">Pasiruošimas</span>
       <h2 class="d onb-title" id="onbTitle2">Pastatyk telefoną <em>ant žemės</em></h2>
       <p class="onb-copy">Prieš startą abu pakelkite rankas virš galvos ir palaikykite 3 sekundes – žaidimas prasidės pats.</p>
     </div>
     <div class="onb-step" data-step="2" hidden>
-      <span class="tag">Paskutinis žingsnis</span>
+      <span class="eyebrow">Paskutinis žingsnis</span>
       <h2 class="d onb-title" id="onbTitle3">Kaip tave <em>vadinti?</em></h2>
       <label class="field"><span class="lbl">Slapyvardis</span><input id="onbNick" type="text" minlength="2" maxlength="20" autocomplete="nickname" autocapitalize="words" enterkeyhint="done" spellcheck="false" placeholder="pvz. Ignas" aria-describedby="onbNickHelp"></label>
       <p class="help" id="onbNickHelp">Jį matys draugai kompanijos lentelėje. Jokio el. pašto ar slaptažodžio.</p>
       <div class="card perm">
-        <span class="perm-ic" data-icon="camera"></span>
+        <span class="perm-ic" data-tone="red" data-icon="camera"></span>
         <div><b>Kamera</b><p>Įsijungia tik žaidimo metu. Vaizdas apdorojamas telefone ir niekur nesiunčiamas.</p></div>
-        <button class="pill" id="onbCam" type="button">Leisti</button>
+        <button class="pill accent tap" id="onbCam" type="button">Leisti</button>
       </div>
     </div>
     <div class="onb-nav">
-      <button class="go alt" id="onbBack" type="button" hidden><span data-icon="chevron-left"></span>Atgal</button>
-      <button class="go" id="onbNext" type="button"><span id="onbNextTxt">Toliau</span><span data-icon="arrow-right"></span></button>
+      <button class="go alt tap" id="onbBack" type="button" hidden><span data-icon="chevron-left"></span>Atgal</button>
+      <button class="go tap" id="onbNext" type="button"><span id="onbNextTxt">Toliau</span><span data-icon="arrow-right"></span></button>
     </div>
   </div>
 </section>
 
 <section class="screen app hide" id="home" aria-labelledby="homeTitle">
   <div class="wrap">
-    <header class="appbar"><span class="wordmark">NovaCore</span><a class="avatar" id="homeAv" href="#/profilis" aria-label="Profilis">?</a></header>
+    <header class="nav"><div class="nav-in"><span class="wordmark">NovaCore</span><a class="avatar tap" id="homeAv" href="#/profilis" aria-label="Profilis">?</a></div></header>
+    <div class="col">
     <div class="hello">
-      <span class="tag" id="homeDate">Šiandien</span>
-      <h1 class="d hello-title" id="homeTitle" tabindex="-1">Labas!</h1>
+      <span class="eyebrow" id="homeDate">Šiandien</span>
+      <h1 class="large-title hello-title" id="homeTitle" tabindex="-1">Labas!</h1>
     </div>
     <section class="chal" id="chal" aria-live="polite" hidden>
-      <span class="chal-tag">Iššūkis</span>
-      <p id="chalTxt"></p>
+      <span class="chal-ic" data-icon="swords"></span>
+      <div class="chal-body"><span class="chal-tag">Iššūkis</span><p id="chalTxt"></p></div>
       <div class="chal-acts">
-        <button class="pill accent" id="chalGo" type="button">Priimti</button>
-        <button class="icon-btn" id="chalX" type="button" aria-label="Atsisakyti iššūkio"><span data-icon="x"></span></button>
+        <button class="pill accent tap" id="chalGo" type="button">Priimti</button>
+        <button class="icon-btn tap" id="chalX" type="button" aria-label="Atsisakyti iššūkio"><span data-icon="x"></span></button>
       </div>
     </section>
+    <button class="hero tap" id="homePlay" type="button">
+      <span class="hero-art" aria-hidden="true"><span class="hero-fig p1" data-coach="squat"></span><span class="hero-vs d">VS</span><span class="hero-fig p2" data-coach="jack"></span></span>
+      <span class="hero-txt"><small>Raudonas prieš mėlyną</small><b class="d">Žaisti</b><span>1–2 žaidėjai · 3 min</span></span>
+      <span class="hero-go" data-icon="play"></span>
+    </button>
+    </div>
+    <div class="col">
     <div class="tiles2">
-      <div class="card stat-card" id="streakCard">
+      <div class="stat-card solid" data-tone="yellow" id="streakCard">
         <span class="stat-ic" data-icon="flame"></span>
         <b class="d" id="streakN">0</b>
         <small id="streakTxt">dienų iš eilės</small>
       </div>
-      <a class="card stat-card link-card" id="rankCard" href="#/kompanijos">
+      <a class="stat-card solid link-card tap" data-tone="blue" id="rankCard" href="#/kompanijos">
         <span class="stat-ic" data-icon="trophy"></span>
         <b class="d" id="rankN">–</b>
         <small id="rankTxt">Kompanijos</small>
       </a>
     </div>
-    <button class="go play" id="homePlay" type="button"><span data-icon="play"></span>Žaisti</button>
     <section aria-labelledby="quickLbl">
-      <div class="lbl" id="quickLbl">Greitas startas</div>
+      <h2 class="sec-title" id="quickLbl">Greitas startas</h2>
       <div class="quick">
-        <button class="quick-tile" type="button" data-quick="2,180"><span data-icon="swords"></span><b>Dvikova</b><small>2 žaid. · 3 min</small></button>
-        <button class="quick-tile" type="button" data-quick="1,180"><span data-icon="user"></span><b>Solo</b><small>1 žaid. · 3 min</small></button>
-        <button class="quick-tile" type="button" data-quick="0,60"><span data-icon="timer"></span><b>Greitas</b><small id="quickFast">1 min</small></button>
+        <button class="quick-tile tap" type="button" data-quick="2,180" data-tone="red"><span class="q-ic" data-icon="swords"></span><b>Dvikova</b><small>3 min</small></button>
+        <button class="quick-tile tap" type="button" data-quick="1,180" data-tone="blue"><span class="q-ic" data-icon="user"></span><b>Solo</b><small>3 min</small></button>
+        <button class="quick-tile tap" type="button" data-quick="0,60" data-tone="yellow"><span class="q-ic" data-icon="timer"></span><b>Greitas</b><small id="quickFast">1 min</small></button>
       </div>
     </section>
     <section class="card goal" aria-labelledby="goalLbl">
-      <div class="row-between"><div class="lbl" id="goalLbl">Savaitės tikslas</div><b class="goal-n" id="goalN">0 / 5</b></div>
+      <div class="row-between"><h2 class="card-title" id="goalLbl">Savaitės tikslas</h2><b class="goal-n d" id="goalN">0 / 5</b></div>
       <div class="goal-bar" id="goalBar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
       <p class="help" id="goalTxt">5 žaidimai per savaitę</p>
     </section>
+    </div>
   </div>
 </section>
 
 <section class="screen app hide" id="start" aria-labelledby="setupTitle">
   <div class="wrap">
-    <header class="appbar"><a class="icon-btn" href="#/" data-back aria-label="Atgal"><span data-icon="chevron-left"></span></a><h1 class="appbar-title" id="setupTitle" tabindex="-1">Naujas žaidimas</h1></header>
+    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="Atgal"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="setupTitle" tabindex="-1">Naujas žaidimas</h1><span class="nav-spacer"></span></div></header>
     <section class="pick" aria-label="Nustatymai">
       <div>
-        <div class="lbl">Žaidėjai</div>
+        <h2 class="sec-title sm">Žaidėjai</h2>
         <div class="seg" role="group" aria-label="Žaidėjų skaičius">
           <button class="on" data-p="2" aria-pressed="true"><span><b class="d">2</b><small>dvikova</small></span></button>
           <button data-p="1" aria-pressed="false"><span><b class="d">1</b><small>solo</small></span></button>
         </div>
       </div>
       <div>
-        <div class="lbl">Trukmė</div>
+        <h2 class="sec-title sm">Trukmė</h2>
         <div class="seg dur" role="group" aria-label="Trukmė">
           <button class="on" data-d="180" aria-pressed="true"><span><b class="d">3:00</b><small>pilnas</small></span></button>
           <button data-d="60" aria-pressed="false"><span><b class="d">1:00</b><small>greitas</small></span></button>
@@ -311,10 +319,10 @@
     <section class="card exercises" aria-labelledby="exPickLabel">
       <div class="row-between">
         <div class="ex-info">
-          <div class="lbl" id="exPickLabel">Pratimai</div>
+          <h2 class="card-title" id="exPickLabel">Pratimai</h2>
           <p class="ex-summary" id="exSummary">Visi 7 pratimai</p>
         </div>
-        <button class="pill" id="exOpen" type="button" aria-haspopup="dialog" aria-controls="exSheet" aria-expanded="false">
+        <button class="pill tap" id="exOpen" type="button" aria-haspopup="dialog" aria-controls="exSheet" aria-expanded="false">
           <span class="n" id="exCount">7</span><b>Keisti</b><span data-icon="pencil"></span>
         </button>
       </div>
@@ -322,16 +330,16 @@
       <p class="help ex-note" id="exNote" aria-live="polite">Pasirinkti 7 pratimai. Raundai keisis tik tarp jų.</p>
     </section>
     <div class="card set-row">
-      <span class="set-ic" data-icon="volume-2"></span>
+      <span class="set-ic" data-tone="violet" data-icon="volume-2"></span>
       <div class="set-txt"><b>Garsas</b><small>Už judesį, raundą ir finišą</small></div>
       <button class="switch" type="button" role="switch" aria-checked="true" data-snd aria-label="Garsas"><i></i></button>
     </div>
     <section class="setup" aria-labelledby="setupLbl">
-      <div class="lbl" id="setupLbl">Kaip pastatyti telefoną</div>
-      <div class="setup-art" data-tpl="tplSetup"></div>
+      <h2 class="sec-title" id="setupLbl">Kaip pastatyti telefoną</h2>
+      <div class="card setup-art" data-tpl="tplSetup"></div>
     </section>
     <div class="cta">
-      <button class="go" id="go"><span id="goTxt">Pradėti</span><span data-icon="arrow-right"></span></button>
+      <button class="go tap" id="go"><span id="goTxt">Pradėti</span><span data-icon="arrow-right"></span></button>
       <p class="fine">Vaizdas apdorojamas tik telefone ir niekur nesiunčiamas.</p>
     </div>
   </div>
@@ -339,27 +347,28 @@
 
 <section class="screen app hide" id="groups" aria-labelledby="groupsTitle">
   <div class="wrap">
-    <header class="appbar"><h1 class="appbar-title big" id="groupsTitle" tabindex="-1">Kompanijos</h1></header>
+    <header class="nav"><div class="nav-in"><span class="nav-title" aria-hidden="true">Kompanijos</span></div></header>
+    <h1 class="large-title" id="groupsTitle" tabindex="-1">Kompanijos</h1>
     <p class="lead">Savaitės lentelė su draugais: geriausias 3 min solo rezultatas nuo pirmadienio.</p>
     <ul class="grp-list" id="grpList" aria-label="Tavo kompanijos" hidden></ul>
     <div class="empty" id="grpEmpty" hidden>
-      <span class="empty-ic" data-icon="users"></span>
+      <span class="empty-ic" data-tone="blue" data-icon="users"></span>
       <b>Dar neturi kompanijos</b>
       <p>Sukurk kompaniją klasei, komandai ar draugams, pasidalink kodu ir kas savaitę varžykitės, kas surinks daugiau.</p>
     </div>
     <div class="empty" id="grpOff" hidden>
-      <span class="empty-ic" data-icon="info"></span>
+      <span class="empty-ic" data-tone="yellow" data-icon="info"></span>
       <b id="grpOffTitle">Reikia interneto</b>
       <p id="grpOffTxt">Kompanijos ir lentelės veikia tik prisijungus. Žaisti gali ir be jų.</p>
     </div>
     <div class="grp-forms" id="grpForms">
       <form class="card grp-form" id="grpNewForm" novalidate>
         <label class="field"><span class="lbl">Nauja kompanija</span><input id="grpName" type="text" minlength="2" maxlength="30" placeholder="pvz. 10B klasė" enterkeyhint="go" autocomplete="off"></label>
-        <button class="pill accent" type="submit"><span data-icon="plus"></span>Sukurti</button>
+        <button class="pill accent tap" type="submit"><span data-icon="plus"></span>Sukurti</button>
       </form>
       <form class="card grp-form" id="grpJoinForm" novalidate>
         <label class="field"><span class="lbl">Turi kodą?</span><input id="grpCodeIn" type="text" minlength="6" maxlength="6" placeholder="AB12CD" autocapitalize="characters" enterkeyhint="go" autocomplete="off" spellcheck="false"></label>
-        <button class="pill" type="submit"><span data-icon="log-in"></span>Prisijungti</button>
+        <button class="pill blue tap" type="submit"><span data-icon="log-in"></span>Prisijungti</button>
       </form>
     </div>
     <p class="note" id="grpNote" aria-live="polite"></p>
@@ -368,66 +377,68 @@
 
 <section class="screen app hide" id="group" aria-labelledby="groupTitle">
   <div class="wrap">
-    <header class="appbar"><a class="icon-btn" href="#/kompanijos" data-back aria-label="Atgal į kompanijas"><span data-icon="chevron-left"></span></a><h1 class="appbar-title" id="groupTitle" tabindex="-1">Kompanija</h1></header>
-    <div class="card code-card">
-      <div><div class="lbl">Kodas</div><b class="d grp-code" id="grpCode">––––––</b></div>
-      <button class="pill accent" id="grpShare" type="button"><span data-icon="share-2"></span>Pakviesti</button>
+    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/kompanijos" data-back aria-label="Atgal į kompanijas"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="groupTitle" tabindex="-1">Kompanija</h1><span class="nav-spacer"></span></div></header>
+    <div class="code-card">
+      <div><div class="lbl">Kvietimo kodas</div><b class="d grp-code" id="grpCode">––––––</b></div>
+      <button class="pill tap" id="grpShare" type="button"><span data-icon="share-2"></span>Pakviesti</button>
     </div>
     <section aria-labelledby="lbLbl">
-      <div class="row-between"><div class="lbl" id="lbLbl">Šios savaitės lentelė</div><small class="help" id="lbMeta"></small></div>
+      <div class="row-between sec-head"><h2 class="sec-title" id="lbLbl">Šios savaitės lentelė</h2><small class="help" id="lbMeta"></small></div>
       <ol class="lb" id="lb" aria-label="Savaitės rezultatai"></ol>
     </section>
     <p class="note" id="grpNote2" aria-live="polite"></p>
-    <button class="danger-link" id="grpLeave" type="button"><span data-icon="log-out"></span><span id="grpLeaveTxt">Išeiti iš kompanijos</span></button>
+    <button class="danger-link tap" id="grpLeave" type="button"><span data-icon="log-out"></span><span id="grpLeaveTxt">Išeiti iš kompanijos</span></button>
   </div>
 </section>
 
 <section class="screen app hide" id="library" aria-labelledby="libTitle">
   <div class="wrap wide">
-    <header class="appbar"><h1 class="appbar-title big" id="libTitle" tabindex="-1">Pratimai</h1></header>
-    <p class="lead">Kamera skaičiuoja šiuos judesius. BETA – dar tikriname su tikrais žaidėjais.</p>
+    <header class="nav"><div class="nav-in"><span class="nav-title" aria-hidden="true">Pratimai</span></div></header>
+    <h1 class="large-title" id="libTitle" tabindex="-1">Pratimai</h1>
+    <p class="lead">Kamera skaičiuoja šiuos judesius. Paliesk pratimą – pamatysi, kaip daryti.</p>
     <div class="lib" id="lib"></div>
   </div>
 </section>
 
 <section class="screen app hide" id="profile" aria-labelledby="profTitle">
   <div class="wrap">
-    <header class="appbar"><h1 class="appbar-title big" id="profTitle" tabindex="-1">Profilis</h1></header>
+    <header class="nav"><div class="nav-in"><span class="nav-title" aria-hidden="true">Profilis</span></div></header>
+    <h1 class="large-title" id="profTitle" tabindex="-1">Profilis</h1>
     <div class="card me-card">
       <span class="avatar lg" id="profAv">?</span>
       <div class="me-txt"><b id="profNick">Be vardo</b><small id="profSub">Saugoma šiame telefone</small></div>
-      <button class="pill" id="nickOpen" type="button" aria-haspopup="dialog" aria-controls="nickSheet"><span data-icon="pencil"></span>Keisti</button>
+      <button class="pill sm tap" id="nickOpen" type="button" aria-haspopup="dialog" aria-controls="nickSheet"><span data-icon="pencil"></span>Keisti</button>
     </div>
-    <div class="ledger card" aria-label="Suvestinė">
-      <div><b class="d" id="stGames">0</b><small>žaidimai</small></div>
-      <div><b class="d" id="stReps">0</b><small>judesiai</small></div>
-      <div><b class="d" id="stBest">0</b><small>rekordas</small></div>
-      <div><b class="d" id="stStreak">0</b><small>serija</small></div>
+    <div class="ledger" aria-label="Suvestinė">
+      <div data-tone="red"><span class="led-ic" data-icon="play"></span><b class="d" id="stGames">0</b><small>žaidimai</small></div>
+      <div data-tone="blue"><span class="led-ic" data-icon="zap"></span><b class="d" id="stReps">0</b><small>judesiai</small></div>
+      <div data-tone="yellow"><span class="led-ic" data-icon="trophy"></span><b class="d" id="stBest">0</b><small>rekordas</small></div>
+      <div data-tone="violet"><span class="led-ic" data-icon="flame"></span><b class="d" id="stStreak">0</b><small>serija</small></div>
     </div>
     <section class="card" aria-labelledby="actLbl">
-      <div class="row-between"><div class="lbl" id="actLbl">7 dienos</div><small class="help" id="actSum"></small></div>
+      <div class="row-between"><h2 class="card-title" id="actLbl">7 dienos</h2><small class="help" id="actSum"></small></div>
       <div class="week" id="week"></div>
     </section>
     <section aria-labelledby="exTotLbl">
-      <div class="lbl" id="exTotLbl">Pagal pratimą</div>
+      <h2 class="sec-title" id="exTotLbl">Pagal pratimą</h2>
       <ul class="card ex-tot" id="exTot"></ul>
     </section>
     <section aria-labelledby="badgeLbl">
-      <div class="row-between"><div class="lbl" id="badgeLbl">Ženkliukai</div><small class="help" id="badgeN"></small></div>
+      <div class="row-between sec-head"><h2 class="sec-title" id="badgeLbl">Ženkliukai</h2><small class="help" id="badgeN"></small></div>
       <ul class="badges" id="badges"></ul>
     </section>
     <section aria-labelledby="histLbl">
-      <div class="row-between"><div class="lbl" id="histLbl">Paskutiniai žaidimai</div>
-        <button class="pill sm" id="histOpen" type="button" aria-haspopup="dialog" aria-controls="histSheet" aria-expanded="false"><span data-icon="history"></span>Visi</button></div>
+      <div class="row-between sec-head"><h2 class="sec-title" id="histLbl">Paskutiniai žaidimai</h2>
+        <button class="pill sm tap" id="histOpen" type="button" aria-haspopup="dialog" aria-controls="histSheet" aria-expanded="false"><span data-icon="history"></span>Visi</button></div>
       <ol class="hist-list inline" id="histMini"></ol>
     </section>
     <section aria-labelledby="setLbl">
-      <div class="lbl" id="setLbl">Nustatymai</div>
+      <h2 class="sec-title" id="setLbl">Nustatymai</h2>
       <div class="card settings">
-        <div class="set-row"><span class="set-ic" data-icon="volume-2"></span><div class="set-txt"><b>Garsas</b><small>Už judesį, raundą ir finišą</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-snd aria-label="Garsas"><i></i></button></div>
-        <div class="set-row"><span class="set-ic" data-icon="vibrate"></span><div class="set-txt"><b>Vibracija</b><small>Trumpas virptelėjimas už judesį</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-vibe aria-label="Vibracija"><i></i></button></div>
-        <button class="set-row" id="onbAgain" type="button"><span class="set-ic" data-icon="info"></span><div class="set-txt"><b>Kaip žaisti</b><small>Parodyti įvadą dar kartą</small></div><span class="chev" data-icon="chevron-right"></span></button>
-        <div class="set-row"><span class="set-ic" data-icon="shield-check"></span><div class="set-txt"><b>Privatumas</b><small>Vaizdas niekada nepalieka telefono. Serveriui siunčiamas tik slapyvardis ir taškai.</small></div></div>
+        <div class="set-row"><span class="set-ic" data-tone="violet" data-icon="volume-2"></span><div class="set-txt"><b>Garsas</b><small>Už judesį, raundą ir finišą</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-snd aria-label="Garsas"><i></i></button></div>
+        <div class="set-row"><span class="set-ic" data-tone="mint" data-icon="vibrate"></span><div class="set-txt"><b>Vibracija</b><small>Trumpas virptelėjimas už judesį</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-vibe aria-label="Vibracija"><i></i></button></div>
+        <button class="set-row tap-row" id="onbAgain" type="button"><span class="set-ic" data-tone="blue" data-icon="info"></span><div class="set-txt"><b>Kaip žaisti</b><small>Parodyti įvadą dar kartą</small></div><span class="chev" data-icon="chevron-right"></span></button>
+        <div class="set-row"><span class="set-ic" data-tone="red" data-icon="shield-check"></span><div class="set-txt"><b>Privatumas</b><small>Vaizdas niekada nepalieka telefono. Serveriui siunčiamas tik slapyvardis ir taškai.</small></div></div>
       </div>
       <p class="fine" id="appVer">NovaCore</p>
     </section>
@@ -443,11 +454,11 @@
 </nav>
 
 <!-- game flow (src/game/game.ts): not routed; the tab bar is hidden while body.ingame -->
-<section class="screen hide" id="ready" aria-labelledby="readyTitle">
+<section class="screen cam hide" id="ready" aria-labelledby="readyTitle">
   <div class="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
   <div class="wrap ready-wrap">
     <header class="ready-head">
-      <span class="tag">Pasiruošimas</span>
+      <span class="eyebrow">Pasiruošimas</span>
       <h2 class="d" id="readyTitle">Rankas <span>aukštyn</span></h2>
       <p>Laikykite abi rankas virš galvos 3 sekundes.</p>
     </header>
@@ -473,9 +484,9 @@
   </div>
 </section>
 
-<div class="screen hide" id="loading" role="status" aria-live="polite">
+<div class="screen cam hide" id="loading" role="status" aria-live="polite">
   <div class="wrap load-wrap">
-    <span class="tag">Judesio žaidimas</span>
+    <span class="eyebrow">Judesio žaidimas</span>
     <h2 class="d load-title">Kraunama</h2>
     <div class="loader" aria-hidden="true"><i></i><i></i><i></i></div>
     <p class="load-msg" id="loadMsg">Ruošiama kamera ir judesio modelis</p>
@@ -485,6 +496,7 @@
 <section class="screen hide" id="end" aria-labelledby="winner">
   <div class="wrap">
     <header class="res-head">
+      <span class="res-ic" data-icon="crown"></span>
       <span class="wl" id="wl">Laimėjo</span>
       <h2 class="d" id="winner">P1</h2>
       <p id="endsub">Puikus žaidimas</p>
@@ -496,7 +508,7 @@
     </div>
     <!-- per-exercise rep breakdown: filled by finish() from scoreEvents -->
     <section class="brk" id="brk" aria-label="Pakartojimai pagal pratimą" hidden>
-      <div class="lbl">Pakartojimai pagal pratimą</div>
+      <h3 class="sec-title sm">Pakartojimai pagal pratimą</h3>
       <ul class="brk-list" id="brkList"></ul>
     </section>
     <section class="chal-res" id="chalRes" hidden>
@@ -516,7 +528,7 @@
   </div>
 </section>
 
-<section class="screen hide" id="clips" aria-labelledby="clipsTitle">
+<section class="screen cam hide" id="clips" aria-labelledby="clipsTitle">
   <div class="wrap clips-wrap">
     <header class="res-head">
       <span class="wl">Jūsų klipas</span>
@@ -547,11 +559,25 @@
   </div>
 </section>
 
+<dialog class="ex-sheet" id="exDetail" aria-labelledby="exdName">
+  <div class="ex-sheet-panel">
+    <div class="exd-art" id="exdArt" aria-hidden="true"></div>
+    <button class="icon-btn exd-x tap" id="exdClose" type="button" aria-label="Uždaryti"><span data-icon="x"></span></button>
+    <div class="sheet-body exd">
+      <h2 class="d exd-name" id="exdName">Pratimas</h2>
+      <p class="exd-cue" id="exdCue"></p>
+      <div class="exd-tip"><span class="exd-tip-ic" data-icon="info"></span><p><b>Ką tikrina kamera</b><span id="exdTip"></span></p></div>
+      <dl class="exd-stats"><div><dt>Iš viso</dt><dd class="d" id="exdTotal">0</dd></div><div><dt>Rekordas per žaidimą</dt><dd class="d" id="exdBest">0</dd></div></dl>
+    </div>
+    <footer class="ex-sheet-foot"><button class="go ex-done wide tap" id="exdDone" type="button">Gerai</button></footer>
+  </div>
+</dialog>
+
 <dialog class="ex-sheet" id="exSheet" aria-labelledby="exSheetTitle" aria-describedby="exSheetSub">
   <div class="ex-sheet-panel">
     <header class="ex-sheet-head">
       <div class="ex-sheet-bar">
-        <span class="tag">Pratimai</span>
+        <span class="eyebrow">Pratimai</span>
         <button class="pill sm" id="exAll" type="button" aria-label="Pasirinkti visus pratimus" hidden>Visi</button>
         <button class="icon-btn" id="exClose" type="button" aria-label="Uždaryti"><span data-icon="x"></span></button>
       </div>
@@ -570,7 +596,7 @@
   <div class="ex-sheet-panel">
     <header class="ex-sheet-head">
       <div class="ex-sheet-bar">
-        <span class="tag">Istorija</span>
+        <span class="eyebrow">Istorija</span>
         <button class="icon-btn" id="histClose" type="button" aria-label="Uždaryti"><span data-icon="x"></span></button>
       </div>
       <h2 class="d ex-sheet-title" id="histTitle">Paskutiniai <span>žaidimai</span></h2>
@@ -589,7 +615,7 @@
   <form class="ex-sheet-panel" id="nickForm" novalidate>
     <header class="ex-sheet-head">
       <div class="ex-sheet-bar">
-        <span class="tag">Profilis</span>
+        <span class="eyebrow">Profilis</span>
         <button class="icon-btn" id="nickClose" type="button" aria-label="Uždaryti"><span data-icon="x"></span></button>
       </div>
       <h2 class="d ex-sheet-title" id="nickTitle">Tavo <span>vardas</span></h2>

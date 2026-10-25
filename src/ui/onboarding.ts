@@ -13,6 +13,7 @@ export const onbDone=new Promise<void>(r=>done=r);
 
 function step(n:number){
   i=n;
+  root.dataset.step=String(n); // full-bleed colour per step (red / blue / yellow)
   steps.forEach((s,k)=>s.hidden=k!==n);
   dots.setAttribute("aria-valuenow",String(n+1));
   dots.style.setProperty("--n",String(n));

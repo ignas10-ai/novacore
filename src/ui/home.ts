@@ -25,7 +25,7 @@ function render(){
   $("#goalN").textContent=`${Math.min(w,WEEK_GOAL)} / ${WEEK_GOAL}`;
   $("#goalBar").querySelectorAll("i").forEach((el,i)=>el.classList.toggle("on",i<w));
   $("#goalTxt").textContent=left<=0?"Tikslas pasiektas! Žaisk toliau.":`Liko ${left} ${plural(left,["žaidimas","žaidimai","žaidimų"])} iki savaitės tikslo`;
-  $("#quickFast").textContent=`${S.players} žaid. · 1 min`;
+  $("#quickFast").textContent=S.players===1?"1 min solo":"1 min";
   renderHomeRank();
 }
 onView("home",render);

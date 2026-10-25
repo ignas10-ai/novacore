@@ -4,7 +4,7 @@
 // The nickname is LOCAL first (novacore.nick, set in onboarding or the sheet) and synced to profiles when online.
 // Every network call is caught: offline or a backend that is not ready only shows a note, the game never waits.
 import {S} from "../game/state.ts";
-import {$,plural,toast} from "./dom.ts";
+import {$,plural,toast,sheet} from "./dom.ts";
 import {onView,go,current,refresh} from "./router.ts";
 import {onbDone} from "./onboarding.ts";
 import {markBeat} from "../history/history.ts";
@@ -13,6 +13,7 @@ import * as api from "../online/api.ts";
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const chars=(s:string)=>[...s].length; // the DB checks char_length (code points), not UTF-16 units
 const nick=()=>api.cachedNick();
+const TONES=["red","blue","violet","mint","pink","sky","yellow"];
 
 let serverNick:string|null=null, me:string|null=null;
 let groups:api.Group[]=[], boards:Record<string,api.LbRow[]|null>={}, loaded=false, loadErr="", gid="";
@@ -27,14 +28,6 @@ const NICK_SUB=nickSub.textContent!;
 
 function note(el:HTMLElement,text:string,warn=false){el.textContent=text;el.classList.toggle("warn",warn)}
 function strip(k:string){try{const u=new URL(location.href);u.searchParams.delete(k);history.replaceState(history.state,"",u)}catch(e){}}
-function sheet(d:HTMLDialogElement){ // same open/close animation as the exercise and history sheets
-  let t=0;
-  const close=()=>{if(!d.open||d.classList.contains("closing"))return;d.classList.add("closing");clearTimeout(t);t=setTimeout(()=>{d.classList.remove("closing");if(d.open)d.close()},210)};
-  d.addEventListener("cancel",e=>{e.preventDefault();close()});
-  d.addEventListener("click",e=>{if(e.target===d)close()});
-  d.addEventListener("close",()=>{clearTimeout(t);d.classList.remove("closing")});
-  return {open(){clearTimeout(t);d.classList.remove("closing");if(!d.open)d.showModal()},close};
-}
 async function share(url:string,text:string,noteEl:HTMLElement){
   try{if(navigator.share){await navigator.share({title:"NovaCore",text,url});return}}
   catch(e){if((e as Error).name==="AbortError")return}
@@ -100,6 +93,7 @@ function groupItem(g:api.Group){
   const li=document.createElement("li");
   const a=document.createElement("a");a.className="card grp-item";a.href=`#/kompanijos/${encodeURIComponent(g.id)}`;
   const av=document.createElement("span");av.className="grp-av d";av.textContent=[...g.name][0].toUpperCase();
+  av.dataset.tone=TONES[[...g.name].reduce((n,c)=>n+c.codePointAt(0)!,0)%TONES.length]; // stable colour per group
   const tx=document.createElement("span");tx.className="grp-txt";
   const b=document.createElement("b");b.textContent=g.name;
   const sm=document.createElement("small");sm.textContent=rows?`${rows.length} ${plural(rows.length,["narys","nariai","narių"])}`:"Kraunama…";

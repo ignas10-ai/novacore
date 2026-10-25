@@ -5,15 +5,17 @@ import {$,replay} from "./dom.ts";
 
 const DEMO_SHOW_MS=5100;
 // cue = what to do (shown in-game); tip = what the counter actually checks (exercise library)
-export const DEMO:Record<string,{name:string;cue:string;tip:string}>={
- squat:{name:"Pritūpimai",cue:"Sulenk kelius ir vėl atsistok",tip:"Leiskis lyg sėstum ant kėdės, kulnai lieka ant žemės."},
- jack:{name:"Pašokimai",cue:"Rankos aukštyn, kojos plačiau",tip:"Abi rankos virš galvos ir abi kojos į šonus – kitaip neužskaitoma."},
- knees:{name:"Aukšti keliai",cue:"Bėk vietoje ir kelk kelius aukštyn",tip:"Kelius kelk bent iki klubų aukščio."},
- squatjump:{name:"Pritūpimai su šuoliuku",cue:"Pritūpk ir šok aukštyn",tip:"Pirma gilus pritūpimas, tada tikras šuolis – vien atsistoti neužtenka."},
- sidestep:{name:"Šoniniai žingsniai",cue:"Pritūpk ir ženk į šoną, tada prikelk kitą koją",tip:"Likdamas pritūpęs judėk į šoną. Žingsnis ir atgal į vietą neskaičiuojamas."},
- lunge:{name:"Atvirkštiniai įtūpstai",cue:"Ženk viena koja atgal ir nusileisk",tip:"Nusileisk tiek, kad priekinis kelis sulinktų maždaug stačiu kampu."},
- crunch:{name:"Įstriži atsilenkimai stovint",cue:"Kelk kelį ir liesk jį priešingu alkūniu",tip:"Kelk kelį aukštai, alkūnę nuleisk iki jo aukščio, keisk puses."},
+// tone = the exercise's colour identity ([data-tone] in main.css): tiles, chips, bars, the detail sheet
+export const DEMO:Record<string,{name:string;cue:string;tip:string;tone:string}>={
+ squat:{name:"Pritūpimai",cue:"Sulenk kelius ir vėl atsistok",tip:"Leiskis lyg sėstum ant kėdės, kulnai lieka ant žemės.",tone:"red"},
+ jack:{name:"Pašokimai",cue:"Rankos aukštyn, kojos plačiau",tip:"Abi rankos virš galvos ir abi kojos į šonus – kitaip neužskaitoma.",tone:"blue"},
+ knees:{name:"Aukšti keliai",cue:"Bėk vietoje ir kelk kelius aukštyn",tip:"Kelius kelk bent iki klubų aukščio.",tone:"yellow"},
+ squatjump:{name:"Pritūpimai su šuoliuku",cue:"Pritūpk ir šok aukštyn",tip:"Pirma gilus pritūpimas, tada tikras šuolis – vien atsistoti neužtenka.",tone:"pink"},
+ sidestep:{name:"Šoniniai žingsniai",cue:"Pritūpk ir ženk į šoną, tada prikelk kitą koją",tip:"Likdamas pritūpęs judėk į šoną. Žingsnis ir atgal į vietą neskaičiuojamas.",tone:"mint"},
+ lunge:{name:"Atvirkštiniai įtūpstai",cue:"Ženk viena koja atgal ir nusileisk",tip:"Nusileisk tiek, kad priekinis kelis sulinktų maždaug stačiu kampu.",tone:"violet"},
+ crunch:{name:"Įstriži atsilenkimai stovint",cue:"Kelk kelį ir liesk jį priešingu alkūniu",tip:"Kelk kelį aukštai, alkūnę nuleisk iki jo aukščio, keisk puses.",tone:"sky"},
 };
+export const toneOf=(id:string)=>DEMO[id]?.tone||"red";
 export const demoRoot=$("#demo");
 const demoName=$("#demoName"), demoCue=$("#demoCue");
 let demoTimer=0;

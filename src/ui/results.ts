@@ -4,6 +4,7 @@ import {S} from "../game/state.ts";
 import {recordGame} from "../history/history.ts";
 import {$,setDigits} from "./dom.ts";
 import {afterGame} from "./social.ts";
+import {toneOf} from "./coach.ts";
 
 export function renderResults(){
   const {players,score,scoreEvents,duration}=S;
@@ -21,7 +22,7 @@ export function renderResults(){
   const order=[...new Set(scoreEvents.map(e=>e.ex).filter(Boolean))]; // e.ex = exercise id
   brkList.replaceChildren(...order.map(id=>{
     const ex=EX.find(e=>e.id===id);
-    const li=document.createElement("li");
+    const li=document.createElement("li");li.dataset.tone=toneOf(id);
     const name=document.createElement("span");name.className="brk-name";name.textContent=ex?ex.name:id;
     const n1=document.createElement("b");n1.className="d brk-n p1";n1.textContent=String(scoreEvents.filter(e=>e.player===0&&e.ex===id).length);
     const n2=document.createElement("b");n2.className="d brk-n p2";n2.textContent=String(scoreEvents.filter(e=>e.player===1&&e.ex===id).length);

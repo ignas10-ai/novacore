@@ -2,6 +2,7 @@
 import {EX,type Exercise} from "../detect/exercises.ts";
 import {S} from "../game/state.ts";
 import {$,replay} from "./dom.ts";
+import {toneOf} from "./coach.ts";
 
 document.querySelectorAll<HTMLElement>("[data-p]").forEach(b=>b.onclick=()=>{S.players=+b.dataset.p!;sel(b);document.body.classList.toggle("solo",S.players===1)});
 document.querySelectorAll<HTMLElement>("[data-d]").forEach(b=>b.onclick=()=>{S.duration=+b.dataset.d!;sel(b)});
@@ -20,7 +21,6 @@ const exOpen=$("#exOpen"), exSheet=$<HTMLDialogElement>("#exSheet"), exGrid=$("#
 const pickedEx=new Set(S.activeEX.map(e=>e.id));
 let exNoteTimer=0, exCloseTimer=0;
 const exPad=(n:number)=>String(n).padStart(2,"0");
-const exAccent=(e:Exercise)=>EX.indexOf(e)%2?"var(--p2)":"var(--p1)";
 function updateExUI(){
   const total=EX.length,n=pickedEx.size;
   exCount.textContent=String(n);
@@ -31,7 +31,7 @@ function updateExUI(){
   const chips=chosen.slice(0,4).map(e=>{
     const chip=document.createElement("span");
     chip.className="ex-chip";
-    chip.style.setProperty("--dot",exAccent(e));
+    chip.dataset.tone=toneOf(e.id);
     const label=document.createElement("span");
     label.textContent=e.name;
     chip.append(label);
@@ -73,7 +73,7 @@ function renderExGrid(){
     btn.className="ex-tile";
     btn.dataset.exPick=e.id;
     btn.style.setProperty("--i",String(i%8));
-    btn.style.setProperty("--accent",exAccent(e));
+    btn.dataset.tone=toneOf(e.id);
     btn.classList.toggle("on",on);
     btn.setAttribute("aria-pressed",String(on));
     btn.innerHTML=`<span class="ex-n" aria-hidden="true">${exPad(i+1)}</span><span class="ex-name"></span>${e.beta?'<span class="ex-beta">beta</span>':''}<span class="ex-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13l5 5 9-12"/></svg></span>`;

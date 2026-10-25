@@ -100,9 +100,9 @@ export function resetTracking(){
   landmarker=null;
 }
 
-// player colours come from the CSS tokens (--p1/--p2 in src/styles/main.css), read once on the first frame
+// player colours come from the CSS tokens (--skel-p1/--skel-p2 in src/styles/main.css), read once on the first frame
 let COL:string[]=[];
-const playerColors=()=>{const cs=getComputedStyle(document.documentElement);return ["--p1","--p2"].map(v=>cs.getPropertyValue(v).trim())};
+const playerColors=()=>{const cs=getComputedStyle(document.documentElement);return ["--skel-p1","--skel-p2"].map(v=>cs.getPropertyValue(v).trim())};
 const EDGES=[[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28]];
 export function draw(lm:Lm[],i:number){
   if(!COL.length)COL=playerColors();
