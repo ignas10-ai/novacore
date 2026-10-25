@@ -3,10 +3,22 @@
 Prototipas Samsung Solve for Tomorrow 2026 (tema: sportas ir technologijos).
 Komanda: Ignas Bagdanavičius, Martynas Ignatavičius, Stela Bujanauskaitė · mokytoja Rūta Sidaugienė.
 
-Vienas `index.html`: telefono kamera → MediaPipe Pose (veikia įrenginyje, vaizdas niekur nesiunčiamas) → prieš startą pasirenkami pratimai ir 3 s laikomos rankos virš galvos → skaičiuoja pasirinktus pratimus (pritūpimai, pašokimai, aukšti keliai, pritūpimai su šuoliuku, šoniniai žingsniai, atvirkštiniai įtūpstai, įstriži atsilenkimai stovint) 1–2 žaidėjams (su animuotu demonstravimu ir krypties rodyklėmis) → taškai, kas 30 s daugiklis auga → rezultatai → 15–30 s geriausių akimirkų peržiūra (iš visų pasirinktų pratimų, pagal žaidimo orientaciją, MP4) ir pilno klipo atsisiuntimas (be kūno linijų), vienas atsisiuntimo meniu ir peržiūros bendrinimas. Kamera ir klipai automatiškai naudoja iki 1080p60, jei telefonas tai palaiko. Žaidimo metu ekranas neužmiega (Screen Wake Lock).
+Telefono kamera → MediaPipe Pose (veikia įrenginyje, vaizdas niekur nesiunčiamas) → prieš startą pasirenkami pratimai ir 3 s laikomos rankos virš galvos → skaičiuoja pasirinktus pratimus (pritūpimai, pašokimai, aukšti keliai, pritūpimai su šuoliuku, šoniniai žingsniai, atvirkštiniai įtūpstai, įstriži atsilenkimai stovint) 1–2 žaidėjams (su animuotu demonstravimu ir krypties rodyklėmis) → taškai, kas 30 s daugiklis auga → rezultatai → 15–30 s geriausių akimirkų peržiūra (iš visų pasirinktų pratimų, pagal žaidimo orientaciją, MP4) ir pilno klipo atsisiuntimas (be kūno linijų), vienas atsisiuntimo meniu ir peržiūros bendrinimas. Kamera ir klipai automatiškai naudoja iki 1080p60, jei telefonas tai palaiko. Žaidimo metu ekranas neužmiega (Screen Wake Lock).
 
 Žaidimas veikia kaip PWA (galima įsidėti į telefono pradžios ekraną, kartą užkrautas veikia ir be interneto), turi sintezuotus garsus su vibracija ir vietinę žaidimų istoriją su rekordais (tik tame telefone).
 
-Paleisti: atidaryti per https (kamera), pvz. `npx serve` arba Vercel.
+## Paleisti lokaliai
+
+Reikia Node ≥ 22.18.
+
+```
+npm install
+npm run dev       # http://localhost:5173 (kamera veikia per localhost)
+npm test          # tipai + atpažinimo testai (sintetiniai ir tikrų žmonių įrašai)
+npm run build     # → dist/ (tai, ką publikuoja Vercel)
+npm run preview   # paleidžia surinktą dist/
+```
+
+Telefonui per tą patį Wi-Fi kamera reikalauja https – paprasčiausia naudoti Vercel preview nuorodą. Projekto struktūra ir taisyklės – [AGENTS.md](AGENTS.md).
 
 Viso kūrimo seanso pakeitimai: [CHANGELOG.md](CHANGELOG.md).

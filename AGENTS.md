@@ -1,23 +1,49 @@
 # AGENTS.md
 
-NovaCore is a Lithuanian-language, single-file browser game: phone camera -> MediaPipe Pose -> squat, jumping-jack, high-knee, squat-jump, side-step, reverse-lunge, and standing cross-crunch counting for 1-2 players. Everything (HTML, CSS, inline module JS) lives in `index.html`. There is no `package.json`, bundler, or installed dependency; MediaPipe and fonts load from CDNs at runtime.
+NovaCore is a Lithuanian-language browser game: phone camera -> MediaPipe Pose -> squat, jumping-jack, high-knee, squat-jump, side-step, reverse-lunge, and standing cross-crunch counting for 1-2 players. Since 2026-10-25 (branch `app-v1`) it is a **Vite + TypeScript** project (vanilla, no UI framework). Dependencies: `vite`, `typescript`, `@mediapipe/tasks-vision` pinned to **0.10.14** (JS bundled from npm; the wasm and the pose model still load from CDNs at runtime, fonts from Google Fonts).
+
+## Structure
+
+```
+index.html             markup shell: all screens, sheets, coach demo SVGs (data-ex); loads src/styles/main.css + src/main.ts
+src/main.ts            entry: imports the UI modules, registers sw.js, fetches pose-samples.json into POSE
+src/detect/            PURE (no DOM): exercises.ts (EX, NEED, VIS, MIN_GAP, ROUND_SECS), step.ts (ang/ang3/knee2/knee3,
+                       visible, armsUp, sideCue, step), classifier.ts (POSE, poseEmbed, poseClassify, CLS_*)
+src/clips/highlight.ts PURE: highlightSegments, clipSpec
+src/clips/clips.ts     MediaRecorder (startRec), highlight cut, #clips screen (preview, download menu, share)
+src/camera/camera.ts   getUserMedia, MediaPipe PoseLandmarker, sampleCamera, skeleton draw, record-frame drawing
+src/game/state.ts      S - the only mutable state shared between modules (players, duration, activeEX, score, st, rec...)
+src/game/game.ts       Start click, ready gate (readyLoop), loop(), rounds/scoring, finish(), backToSettings()
+src/audio/sound.ts     Web Audio tone()/sfx, sound toggle
+src/history/history.ts localStorage history, records card, history sheet, recordGame()
+src/ui/                dom.ts ($, replay, setDigits, setCue), start.ts (players/duration/exercise picker), coach.ts (DEMO,
+                       showDemo), results.ts (#end), fullscreen.ts, wakelock.ts
+src/styles/main.css    all CSS; design tokens in :root (unchanged "Active Arcade" look)
+public/                copied as-is: pose-samples.json, sw.js, manifest.webmanifest, icons/
+tools/, test-detect.cjs  checks (Node), not shipped
+```
 
 ## Run and verify
 
-- Camera requires a secure context: use `npx serve` and open `http://localhost:...`, or deploy over HTTPS (README uses Vercel). Opening `index.html` via `file://` will not work. Testing from a phone over LAN needs HTTPS.
-- Automated checks: `node test-detect.cjs` (synthetic poses, prints `OK`) and `node tools/replay-check.cjs` (real-person clips in `tools/fixtures/*.json`, prints `OK`; uses `pose-samples.json` exactly like the game). Run BOTH after changing `step()`, `armsUp()`, `highlightSegments()`, `clipSpec()`, `NEED`, landmark indices, detection thresholds, the classifier, or `tools/samples-spec.json`. `node tools/accuracy.cjs` prints per-case true count vs hand-written `step()` vs k-NN classifier and marks held-out cases – use it to decide which counter an exercise should use. The replay check is the one that catches "works on synthetic poses, fails on a real body" – see `tools/README.md` for how to add a clip.
-- UI changes to any screen after start: run `node tools/playthrough.cjs <cam.y4m> [--landscape]` (headless Chrome with a fake camera fed from a video file; screenshots of every screen land in `_playthrough/`, ignored by git). It is the only way to see the ready/game/end/clips screens without a phone. See `tools/README.md`.
-- There are no build, lint, typecheck, or formatter commands. Vercel deployment is static with no config in the repo; `.vercel` is ignored.
+- `npm install`, then `npm run dev` (Vite dev server, `http://localhost:5173`), `npm run build` (-> `dist/`), `npm run preview` (serves `dist/`). Camera requires a secure context: localhost works, a phone over LAN needs HTTPS (or use the Vercel preview).
+- `npm test` = `tsc` (typecheck) + `node test-detect.cjs` (synthetic poses, prints `OK`) + `node tools/replay-check.cjs` (real-person clips in `tools/fixtures/*.json`, prints `OK`; uses `public/pose-samples.json` exactly like the game). Needs **Node >= 22.18** (the `.cjs` checks `require()` the `.ts` modules directly: built-in type stripping + require(esm)). Run after changing anything in `src/detect/`, `highlightSegments()`, `clipSpec()`, the classifier, or `tools/samples-spec.json`. `node tools/accuracy.cjs` prints per-case true count vs hand-written `step()` vs k-NN classifier and marks held-out cases - use it to decide which counter an exercise should use. The replay check is the one that catches "works on synthetic poses, fails on a real body" - see `tools/README.md` for how to add a clip.
+- UI changes to any screen: `npm run build && node tools/playthrough.cjs <cam.y4m> [--landscape]` (headless Chrome with a fake camera fed from a video file, against the BUILT app in `dist/`; screenshots of every screen from `00-start` to `07-clips-menu` land in `_playthrough/`, ignored by git). It is the only way to see the ready/game/end/clips screens without a phone. See `tools/README.md`.
+- Vercel builds with `vite build` and serves `dist/` (`vercel.json` `buildCommand`/`outputDirectory`); `.vercel` is ignored. Only `dist/` is public now - `tools/`, `docs/` and fixtures are no longer served.
 
-## Test harness constraint
+## Module rules (replace the old "sliced index.html" test harness)
 
-`test-detect.cjs` reads `index.html`, slices from the literal `const EX=[` to `if(typeof module`, and evaluates that slice in Node via `new Function("module", ...)`. Keep both markers, keep `step` / `ang` / `armsUp` / `sideCue` / `highlightSegments` / `clipSpec` / `poseEmbed` / `poseClassify` pure, and keep the sliced region free of top-level DOM access and `import` / `export`; otherwise the self-check breaks. Preserve the `if(typeof module!=="undefined") module.exports={step,ang,armsUp,sideCue,highlightSegments,clipSpec,POSE,poseEmbed}` line. `POSE` is filled outside the slice (`fetch("pose-samples.json")` in the browser, `tools/replay.cjs` in Node).
+- `src/detect/*` and `src/clips/highlight.ts` stay PURE: no `document`/`window`/`navigator`/`localStorage`, no imports from `ui/`, `game/`, `camera/`. The Node checks import them directly; anything DOM there breaks `npm test`.
+- Relative imports use the `.ts` extension (`./step.ts`) - required by Node's type stripping; only erasable TypeScript syntax (no `enum`, `namespace`, parameter properties; `tsconfig` enforces `erasableSyntaxOnly`).
+- Cross-module mutable state lives only in `S` (`src/game/state.ts`); module-private state stays a local `let`. `lastPoses` in `camera.ts` is an exported live binding (read-only for importers).
+- Each UI module wires its own DOM on import (module scripts run after the markup is parsed); `main.ts` decides the import order.
+- `any` is acceptable at the MediaPipe / vendor-prefixed DOM boundary; pure detection code is typed.
+- `POSE` is filled outside the pure modules (`fetch("pose-samples.json")` in `main.ts`, `tools/replay.cjs` in Node).
 
 ## Detection and game logic
 
 - The camera is FRONT-facing, which changes what is measurable: the 2D knee angle barely moves in a real squat (180→150), so squat/squat-jump depth uses `knee3()` (3D angle via MediaPipe `z`, swings ~130→60, standing reads 125-150 not 180) OR the 2D angle, with `KNEE_DOWN3/UP3/DOWN2/UP2` constants. Crouch via hip/shoulder ratio is noise from the front (do not reintroduce). Lunges are separated from squats by knee stagger, not stance width (ankles are 1.5-3.5 hip widths apart from the front). Cross-crunch checks the elbow dropping to knee HEIGHT (dy), not horizontal proximity. All of this came from `tools/fixtures`; retune against them, not by intuition.
 
-- `step(s, lm, ex, now)` is the pure per-player state machine (`st=[{},{}]`); `detect()` sets `st[i].ar` (detection frame width/height) and adds `score[i] += multiplier`.
+- `step(s, lm, ex, now)` is the pure per-player state machine (`S.st`, one object per player); `detect()` sets `st[i].ar` (detection frame width/height) and adds `score[i] += multiplier`.
 - Two counters live in `step()`. If `POSE[ex]` exists, the k-NN pose classifier counts (port of Google MediaPipe "Pose classification", Apache-2.0: `poseEmbed()` 23 normalized pair differences → `poseClassify()` top-30 max / top-10 mean distance vs labelled sample poses → time-based EMA (`CLS_TAU`) → a rep when a `count` class rises above `CLS_ENTER` votes and falls below `CLS_EXIT`). Otherwise the hand-written branch runs; it is also the fallback when `pose-samples.json` fails to load. Visibility gating (`NEED`/`VIS`) and `MIN_GAP` apply to both.
 - Sample poses: `tools/samples-spec.json` lists, per exercise, labelled time ranges on fixtures (`down`/`up`/`L`/`R`, `no` = negatives from other exercises) plus `flip`, `count` and optional `pairs` (embedding pairs to use: squat and knees use legs+torso only so arm style does not matter). `node tools/samples.cjs` writes the `live:true` exercises to `pose-samples.json` (~60 KB). Adding or retuning an exercise = record a front-view clip, `tools/extract.cjs`, label time ranges, regenerate – not new thresholds. Keep held-out clips out of the spec so `accuracy.cjs` stays honest.
 - Live on the classifier (2026-10-25): `squat`, `lunge`. Hand-written: `jack` (no real clip), `knees`, `crunch` (classifier was not better on held-out clips), `squatjump` and `sidestep` (the embedding is translation-invariant, so a hop or sideways travel is invisible to it).
@@ -26,7 +52,7 @@ NovaCore is a Lithuanian-language, single-file browser game: phone camera -> Med
 - Tracking is camera-frame driven, not screen-refresh driven: `sampleCamera()` draws and infers only when `cam.currentTime` changes, lets inference follow the camera rate (target ~60 fps, `DETECT_TARGET=16`), and widens `detectGap` when a detection takes long so low-end phones keep rendering. Pose inference runs on `detCv`, a copy capped at 1280 px on its long side, so a 1080p preview does not force MediaPipe to upload a 1080p texture while 720p detection stays unchanged. Keep camera/pose work inside the fresh-frame branch of `loop()` / `readyLoop()`; HUD text and the progress bar are throttled separately (`lastHudSec`, `lastBarAt`).
 - The camera is requested with `width/height/frameRate` ideal at **1920×1080 / 60 fps**. After `getUserMedia()`, `getSettings().frameRate` plus the video dimensions determine the real mode; the browser is allowed to fall back. `clipSpec(videoW,videoH,fps,portrait)` then picks the clip tier: 1080p60 (`1080×1920`/`1920×1080`), 1080p30, 720p60, or 720p30. The live canvas always uses the camera's native dimensions. Recording draws on fresh camera frames with `recFrameMs` (15 ms at 60 fps, 28 ms at 30 fps), and the skeleton is one batched `stroke()` per player, not one per bone; line width and the P label scale from the 720px short-side baseline so 1080p previews do not get hairline overlays.
 - `EX` entries may carry `beta:true`: shown in the picker with a BETA badge but excluded from the default `activeEX`. Drop the flag once the detection has been verified on a real person; the four exercises added on 2026-10-22 are still beta.
-- Adding an exercise touches the `EX` table (the picker dialog renders its grid automatically from `EX`), `NEED`, a branch in `step()`, a `DEMO` entry plus SVG for the coach card, and cases in `test-detect.cjs`.
+- Adding an exercise touches the `EX` table and `NEED` (`src/detect/exercises.ts`; the picker dialog renders its grid automatically from `EX`), a branch in `step()` (`src/detect/step.ts`), a `DEMO` entry (`src/ui/coach.ts`) plus an SVG marked `data-ex` in `index.html` (and its selector in `main.css`), and cases in `test-detect.cjs`.
 - Poses are sorted by mirrored x (`1-lm[0].x`), so P1 is the leftmost player on screen. `numPoses` is fixed from the player count at start.
 - Rounds are 30 s, multiplier is `1+round`, exercises cycle through the start-screen selection (`activeEX`, a non-empty subset of `EX`) starting at a random selected exercise (`exShift`) so with seven exercises in a 3-minute game (six rounds) the skipped one rotates between games; duration is 180 s with a 60 s test option. `#exOpen` summarizes the choice and opens the native `#exSheet` dialog; its `#exGrid` is regenerated from `EX` on every open (for the staggered `zen-tile-in` animation). Selection is multi-select, keeps `activeEX` in sync, persists in `localStorage`, and refuses to deselect the last exercise (deny wobble + note warning).
 - Post-game flow is `#end` (results) -> `#toClips` -> `#clips` (highlight video + one download menu for preview/full + Web Share button + back to start). `#dlToggle` opens `#dlMenu`; `#sharePrev` shares the preview `File` via `navigator.share` and falls back to a download.
@@ -49,11 +75,11 @@ NovaCore is a Lithuanian-language, single-file browser game: phone camera -> Med
 
 - Sound is synthesized in `tone()` / `sfx` (Web Audio, no asset files). `ensureAudio()` creates the `AudioContext` only inside the `#go` click handler (user gesture); never create it on load. Hooks: `flash()` -> `sfx.rep`, round change -> `sfx.round`, last 10 s in `loop()` -> `sfx.tick`, `finish()` -> `sfx.finish`. Toggle `#snd` persists `novacore.sound`.
 - Game history lives in `localStorage` `novacore.history` (newest first, `HIST_MAX=50`); `recordGame()` runs in `finish()` and returns whether this game beat `bestScore()` for the same player count. `renderRecords()` fills the `#records` start card (hidden when empty); `#histSheet` reuses the `.ex-sheet` dialog chrome and shows `HIST_SHOW=10` games. All storage access is wrapped in try/catch so the game runs without `localStorage`.
-- PWA: `manifest.webmanifest`, `sw.js`, `icons/` (generated PNGs), `vercel.json` (no-cache for `sw.js`). `sw.js` registers only over https/localhost. Bump `VERSION` in `sw.js` when a change must reach already-installed phones immediately; old caches are dropped on activate. App shell is network-first (cache fallback), CDN assets (MediaPipe wasm/model, fonts) are network-first with a runtime cache.
+- PWA: `public/manifest.webmanifest`, `public/sw.js`, `public/icons/` (generated PNGs), `vercel.json` (no-cache for `sw.js`). `sw.js` registers only over https/localhost. App shell (`/`, `index.html`, manifest, `pose-samples.json`, icons) is network-first (cache fallback); Vite's content-hashed `/assets/*` are cache-first and precached at install by reading their URLs out of `index.html`, so the game works offline after the first visit; CDN assets (MediaPipe wasm/model, fonts) are network-first with a runtime cache. A normal deploy needs no `VERSION` bump; bump it when the icons or the SW logic change (old caches, including old hashed assets, are dropped on activate).
 
 ## Conventions
 
 - User-facing copy is Lithuanian; keep new UI text Lithuanian.
-- MediaPipe is pinned to `@mediapipe/tasks-vision@0.10.14` in both the import and `FilesetResolver`, plus the `pose_landmarker_lite/float16` model URL (`POSE_MODEL`). Update version references together; `tools/extract.html` must use the same model as the game (`--model` exists only for comparisons).
-- `sw.js` precaches `pose-samples.json`; bump `VERSION` when it changes.
-- Styling and design tokens live in `:root` in `index.html`; there are no separate CSS/JS assets.
+- MediaPipe is pinned to `@mediapipe/tasks-vision@0.10.14` in `package.json` (exact) and `MP_VERSION` in `src/camera/camera.ts` (wasm CDN URL for `FilesetResolver`), plus the `pose_landmarker_lite/float16` model URL (`POSE_MODEL`). Update version references together; `tools/extract.html` must use the same model as the game (`--model` exists only for comparisons).
+- `sw.js` precaches `pose-samples.json` but serves it network-first, so a regenerated file reaches phones on the next online open.
+- Styling and design tokens live in `:root` in `src/styles/main.css`. CSS ships unminified (`vite.config.ts` `cssMinify:false`) so no minifier can drop `-webkit-` prefixes; JS targets `esnext` (no down-levelling).

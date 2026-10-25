@@ -1,12 +1,12 @@
 # tools/ – atpažinimo testavimas ant tikrų vaizdo įrašų
 
-Žaidimo `step()` logika tikrinama ne tik sintetinėmis pozomis (`test-detect.cjs`), bet ir tikrais žmonių įrašais.
+Žaidimo `step()` logika (`src/detect/step.ts` – Node įrankiai ją importuoja tiesiogiai, reikia Node ≥ 22.18) tikrinama ne tik sintetinėmis pozomis (`test-detect.cjs`), bet ir tikrais žmonių įrašais.
 
 ```
 vaizdo įrašas (.mp4) ──extract.cjs──▶ fixtures/<vardas>.json ──replay.cjs──▶ kiek pakartojimų užskaitė step()
                                                                ├─replay-check.cjs─▶ OK / nukrypimai (regresija)
                                                                └─accuracy.cjs─────▶ tikra vs step() vs k-NN, held-out
-samples-spec.json (pažymėti laiko intervalai) ──samples.cjs──▶ ../pose-samples.json (žaidimo k-NN pavyzdinės pozos)
+samples-spec.json (pažymėti laiko intervalai) ──samples.cjs──▶ ../public/pose-samples.json (žaidimo k-NN pavyzdinės pozos)
 ```
 
 ## Komandos
@@ -17,7 +17,7 @@ samples-spec.json (pažymėti laiko intervalai) ──samples.cjs──▶ ../po
 | `node tools/replay.cjs <fixture> [pratimas\|all] [--from s --to s]` | Praleidžia fixture per `step()`; spausdina pakartojimus, jų laikus, „nematomų" kadrų skaičių. `all` – visi 7 detektoriai (matosi kryžminiai klaidingi užskaitymai). |
 | `node tools/replay-check.cjs` | Regresija: lentelė `CASES` su laukiamais skaičiais (kaip žaidime, su `pose-samples.json`). „ŽINOMA SPRAGA" eilutės fiksuoja dabartinį elgesį, tikras skaičius – 7-as laukas. Paleisti po kiekvieno `step()` / slenksčių / spec keitimo. |
 | `node tools/accuracy.cjs [--dir d] [--only squat,lunge]` | Kiekvienam atvejui: tikras skaičius, ranka rašytas `step()`, k-NN klasifikatorius (iš `samples-spec.json`), ar atvejis held-out (nepersidengia su mokymo intervalais). Pagal tai sprendžiama, kuris skaitiklis gyvas. |
-| `node tools/samples.cjs` | `samples-spec.json` → `../pose-samples.json` (tik `"live":true` pratimai). |
+| `node tools/samples.cjs` | `samples-spec.json` → `../public/pose-samples.json` (tik `"live":true` pratimai). |
 
 ## Naujas pratimas = pavyzdinės pozos, ne slenksčiai
 
@@ -32,6 +32,7 @@ Intervalai 2026-10-25 parinkti iš signalų plato (3D kelio kampas, kelio pakili
 
 ```
 ffmpeg -i klipas.mp4 -vf "scale=640:360,fps=30" -pix_fmt yuv420p cam.y4m
+npm run build                                   # playthrough testuoja surinktą dist/
 node tools/playthrough.cjs cam.y4m              # portretas 390×844
 node tools/playthrough.cjs cam.y4m --landscape  # 844×390
 ```
@@ -68,11 +69,11 @@ Chrome vietoj kameros paima `cam.y4m`, žaidimas pereina startas → paruošimas
 
 ## Lite vs full modelis (2026-10-25)
 
-Visi klipai perekstraktuoti su `pose_landmarker_full` (`--cpu`). Rezultatas nevienareikšmis: `step()` atsilenkimai 8/8 (lite 7), `knees2` 9 (lite 7), bet daugiau klaidingų pritūpimų (atsilenkimuose 4 vs 1, šoninis vaizdas 2 vs 0), k-NN pritūpimai `squat2` 1/3 (lite 3/3). Greitis headless CPU – panašus (33–71 vs 30–47 ms/kadrą, triukšmingas matavimas), parsisiuntimas 9,4 MB vs 5,8 MB. Liekame prie **lite** (`POSE_MODEL` `index.html`).
+Visi klipai perekstraktuoti su `pose_landmarker_full` (`--cpu`). Rezultatas nevienareikšmis: `step()` atsilenkimai 8/8 (lite 7), `knees2` 9 (lite 7), bet daugiau klaidingų pritūpimų (atsilenkimuose 4 vs 1, šoninis vaizdas 2 vs 0), k-NN pritūpimai `squat2` 1/3 (lite 3/3). Greitis headless CPU – panašus (33–71 vs 30–47 ms/kadrą, triukšmingas matavimas), parsisiuntimas 9,4 MB vs 5,8 MB. Liekame prie **lite** (`POSE_MODEL` `src/camera/camera.ts`).
 
 ## Ką išmokom (kodėl slenksčiai tokie)
 
-- **2D kelio kampas iš priekio beveik nejuda** (180°→150° gilaus pritūpimo metu). MediaPipe `z` duoda 3D kampą, kuris svyruoja ~130°→60°. Todėl `ang3()` ir `KNEE_*` slenksčiai `index.html`.
+- **2D kelio kampas iš priekio beveik nejuda** (180°→150° gilaus pritūpimo metu). MediaPipe `z` duoda 3D kampą, kuris svyruoja ~130°→60°. Todėl `ang3()` ir `KNEE_*` slenksčiai `src/detect/step.ts`.
 - Pritūpimo gylis per klubų/pečių santykį iš priekio – triukšmo ribose (0,60 vs 0,58). Nenaudoti kaip varto.
 - Įtūpste iš priekio kulkšnys būna 1,5–3,5 klubų pločio – siauros stovėsenos reikalauti negalima; skiria kelių aukščių skirtumas.
 - Įstrižame atsilenkime alkūnė iš priekio lieka ~0,8 pečių pločio nuo kelio, bet nusileidžia iki kelio aukščio – tikrinti dy, ne dx.

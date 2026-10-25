@@ -1,5 +1,15 @@
 # Pakeitimų žurnalas
 
+## 2026-10-25 — perkelta į Vite + TypeScript projektą (šaka `app-v1`, 1 etapas)
+
+- **Elgesys nepakeistas** – tik kodo sutvarkymas, kad žaidimą būtų galima auginti į pilną programėlę. Vienas 2 150 eilučių `index.html` išskaidytas: `index.html` liko tik žymėjimas (ekranai, demonstracijų SVG), CSS – `src/styles/main.css` (`:root` žetonai ir „Active Arcade“ išvaizda nepakeisti), JS – moduliai `src/detect/` (atpažinimas, be DOM), `src/clips/`, `src/camera/`, `src/game/`, `src/audio/`, `src/history/`, `src/ui/`. Struktūra – `AGENTS.md`.
+- Priklausomybės: `vite`, `typescript`, `@mediapipe/tasks-vision` **0.10.14** (ta pati versija; JS dabar iš npm, wasm ir modelis – iš CDN kaip anksčiau). Jokio React ar UI karkaso.
+- Komandos: `npm run dev`, `npm run build`, `npm test` (tipai + `test-detect.cjs` + `replay-check.cjs`). Vercel renka `vite build` ir publikuoja `dist/` (`vercel.json`).
+- **Testai nebe„pjausto“ `index.html`** – `test-detect.cjs`, `tools/replay.cjs`, `replay-check.cjs`, `accuracy.cjs` importuoja `src/detect/*.ts` tiesiogiai (Node ≥ 22.18). Rezultatai prieš ir po perkėlimo **sutampa simbolis į simbolį** (`OK`, `OK`, ta pati tikslumo lentelė); `samples.cjs` sugeneruoja identišką `pose-samples.json`.
+- `playthrough.cjs` dabar testuoja surinktą `dist/` ir daro papildomą kadrą `00-start`. Palyginta su `detect-v3` kadrais (portretas ir landscape): starto ekranas ir pratimų lapas – identiški pikselių tikslumu, žaidimo/rezultatų/klipų ekranai – ta pati išvaizda (skiriasi tik vaizdo įrašo momentas ir taškai).
+- PWA: `pose-samples.json`, `sw.js`, `manifest.webmanifest`, `icons/` perkelti į `public/`. `sw.js` v3: Vite failai su hash'u (`/assets/*`) kešuojami cache-first ir paimami iš `index.html` jau įdiegimo metu – žaidimas veikia be interneto po pirmo apsilankymo (patikrinta headless offline režimu).
+- Kas pasikeitė už žaidimo ribų: Vercel'yje nebepublikuojami `tools/`, `docs/` ir fixture'ai (tik `dist/`).
+
 ## 2026-10-25 — atpažinimas v3: pozų klasifikatorius (k-NN) pritūpimams ir įtūpstams (šaka `detect-v3`)
 
 - **Naujas skaitiklis:** Google MediaPipe „Pose classification“ (Apache-2.0) perkeltas į gryną JS `index.html` (`poseEmbed`, `poseClassify`): kūno pozų embedding'as → k-NN prieš pažymėtas pavyzdines pozas → EMA → pakartojimas, kai poza „įeina“ ir „išeina“ (6/4 balsai iš 10). Pavyzdžiai – `pose-samples.json` (~58 KB), generuojami `node tools/samples.cjs` iš `tools/samples-spec.json` (laiko intervalai fixture'uose). Naujas pratimas = nufilmuoti ir pažymėti pozas, ne derinti slenksčius.
