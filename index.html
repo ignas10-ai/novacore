@@ -247,7 +247,7 @@
 
 <section class="screen app hide" id="home" aria-labelledby="homeTitle">
   <div class="wrap">
-    <header class="nav"><div class="nav-in"><span class="wordmark">NovaCore</span><a class="avatar tap" id="homeAv" href="#/profilis" aria-label="Profilis">?</a></div></header>
+    <header class="nav"><div class="nav-in"><span class="wordmark">NovaCore</span><div class="nav-acts"><button class="icon-btn tap" id="homeCast" type="button" aria-label="Didelis ekranas" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button><a class="avatar tap" id="homeAv" href="#/profilis" aria-label="Profilis">?</a></div></div></header>
     <div class="col">
     <div class="hello">
       <span class="eyebrow" id="homeDate">Šiandien</span>
@@ -299,7 +299,7 @@
 
 <section class="screen app hide" id="start" aria-labelledby="setupTitle">
   <div class="wrap">
-    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="Atgal"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="setupTitle" tabindex="-1">Naujas žaidimas</h1><span class="nav-spacer"></span></div></header>
+    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="Atgal"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="setupTitle" tabindex="-1">Naujas žaidimas</h1><button class="icon-btn tap" id="setupCast" type="button" aria-label="Didelis ekranas" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
     <section class="pick" aria-label="Nustatymai">
       <div>
         <h2 class="sec-title sm">Žaidėjai</h2>
@@ -334,6 +334,11 @@
       <div class="set-txt"><b>Garsas</b><small>Už judesį, raundą ir finišą</small></div>
       <button class="switch" type="button" role="switch" aria-checked="true" data-snd aria-label="Garsas"><i></i></button>
     </div>
+    <button class="card set-row tap-row tap" id="castOpen" type="button" aria-haspopup="dialog" aria-controls="screenSheet">
+      <span class="set-ic" data-tone="sky" data-icon="cast"></span>
+      <span class="set-txt"><b>Didelis ekranas</b><small id="castState">Taškai per TV · nuoroda</small></span>
+      <span class="chev" data-icon="chevron-right"></span>
+    </button>
     <section class="setup" aria-labelledby="setupLbl">
       <h2 class="sec-title" id="setupLbl">Kaip pastatyti telefoną</h2>
       <div class="card setup-art" data-tpl="tplSetup"></div>
@@ -479,6 +484,7 @@
         <span class="cue-label" id="readyCueText"></span>
       </div>
       <p class="sr-only" id="readyHint" aria-live="polite">Atsistokite taip, kad matytųsi visas kūnas</p>
+      <p class="ready-cast" id="readyCast" hidden><span data-icon="cast"></span>Didelis ekranas<b class="d" id="readyCastCode"></b></p>
       <button class="go alt ready-back" id="readyBack" type="button"><span data-icon="chevron-left"></span>Atgal į nustatymus</button>
     </div>
   </div>
@@ -559,6 +565,62 @@
   </div>
 </section>
 
+<!-- big screen / TV (route #/ekranas/<code>): the scoreboard page, filled by src/cast/screen.ts -->
+<section class="screen cam hide" id="screen" data-phase="connect" aria-label="Didelis ekranas">
+  <div class="wrap bs-wrap">
+    <header class="bs-top">
+      <span class="wordmark">NovaCore</span>
+      <span class="bs-tag">Didelis ekranas</span>
+      <span class="bs-live" id="bsLive" data-on="0" aria-live="polite"><i></i><span id="bsLiveTxt">Neprijungta</span></span>
+      <button class="icon-btn bs-fs" id="bsFs" type="button" aria-label="Visas ekranas" title="Visas ekranas"><span data-icon="maximize"></span></button>
+    </header>
+
+    <div class="bs-wait" id="bsWait">
+      <span class="eyebrow">NovaCore · TV lenta</span>
+      <h1 class="d bs-title">Taškai per <span>visą ekraną</span></h1>
+      <p class="bs-lead">Telefone atidaryk <b>Nustatymai → Didelis ekranas</b> ir įvesk kodą. Telefonas lieka kamera.</p>
+      <form class="bs-connect" id="bsConnect" novalidate>
+        <input id="bsCodeIn" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="6" placeholder="ABC123" aria-label="Didelio ekrano kodas">
+        <button class="go" type="submit"><span data-icon="arrow-right"></span>Jungtis</button>
+      </form>
+      <p class="note bs-err" id="bsErr" aria-live="polite"></p>
+      <p class="bs-waiting" id="bsWaiting" hidden>Kodas <b class="d" id="bsWaitCode">------</b> · laukiama žaidimo…</p>
+    </div>
+
+    <div class="bs-game" id="bsGame">
+      <div class="bs-stage">
+        <div class="bs-side p1" id="bsSide1">
+          <span class="bs-chip" id="bsP1Label">P1</span>
+          <b class="d bs-score" id="bsS1">0</b>
+        </div>
+        <div class="bs-mid">
+          <span class="bs-round" id="bsRound">Pasiruošimas</span>
+          <div class="bs-time" id="bsTimer">3:00</div>
+          <div class="bs-ex-name d" id="bsEx">Pasiruošimas</div>
+          <span class="bs-mult d" id="bsMult" hidden>×1</span>
+        </div>
+        <div class="bs-side p2" id="bsSide2">
+          <span class="bs-chip">P2</span>
+          <b class="d bs-score" id="bsS2">0</b>
+        </div>
+      </div>
+      <div class="bs-demo" id="bsDemo" aria-hidden="true"></div>
+      <div class="bs-bar"><i id="bsBar"></i></div>
+      <div class="bs-verdict" id="bsVerdict" hidden>
+        <span class="eyebrow" id="bsVerdictTag">Pabaiga</span>
+        <b class="d" id="bsVerdictTxt"></b>
+        <span class="bs-reps" id="bsReps"></span>
+      </div>
+      <p class="bs-stale" id="bsStale" hidden>Ryšys su telefonu nutrūko · laukiama…</p>
+    </div>
+
+    <footer class="bs-foot">
+      <span class="bs-brand">NovaCore · 3 minutės judėjimo</span>
+      <span class="bs-code">Kodas <b class="d" id="bsFootCode">------</b></span>
+    </footer>
+  </div>
+</section>
+
 <dialog class="ex-sheet" id="exDetail" aria-labelledby="exdName">
   <div class="ex-sheet-panel">
     <div class="exd-art" id="exdArt" aria-hidden="true"></div>
@@ -630,6 +692,48 @@
       <button class="go ex-done" id="nickSave" type="submit"><span data-icon="check"></span>Gerai</button>
     </footer>
   </form>
+</dialog>
+
+<dialog class="ex-sheet" id="screenSheet" aria-labelledby="screenTitle" aria-describedby="screenSub">
+  <div class="ex-sheet-panel">
+    <header class="ex-sheet-head">
+      <div class="ex-sheet-bar">
+        <span class="eyebrow">Didelis ekranas</span>
+        <button class="icon-btn" id="screenClose" type="button" aria-label="Uždaryti"><span data-icon="x"></span></button>
+      </div>
+      <h2 class="d ex-sheet-title" id="screenTitle">Taškai per <span>TV</span></h2>
+      <p class="ex-sheet-sub" id="screenSub">Telefonas lieka kamera prie grindų, o televizorius ar monitorius rodo didelius taškus, laiką ir pratimą.</p>
+    </header>
+    <div class="sheet-body cast-body">
+      <div id="castOff">
+        <button class="go" id="castOn" type="button"><span data-icon="cast"></span>Įjungti didelį ekraną</button>
+        <p class="help">Sukursime trumpą kodą ir nuorodą. Atidaryk ją TV naršyklėje arba kompiuteryje, prijungtame prie televizoriaus.</p>
+      </div>
+      <div id="castOnBox" hidden>
+        <div class="cast-code-card">
+          <span class="lbl">Kodas</span>
+          <b class="d" id="castCode">------</b>
+          <span class="cast-live" id="castLive" data-on="0" aria-live="polite"><i></i><span id="castLiveTxt">Laukiama TV</span></span>
+        </div>
+        <div class="cast-link-row">
+          <input id="castUrl" type="text" readonly aria-label="Didelio ekrano nuoroda">
+          <button class="icon-btn" id="castCopy" type="button" aria-label="Kopijuoti nuorodą"><span data-icon="copy"></span></button>
+        </div>
+        <div class="cast-acts">
+          <button class="go alt" id="castShare" type="button"><span data-icon="share-2"></span>Bendrinti</button>
+          <button class="go alt" id="castOpenPage" type="button"><span data-icon="external-link"></span>Peržiūrėti</button>
+        </div>
+        <button class="danger-link" id="castOffBtn" type="button"><span data-icon="power"></span>Išjungti didelį ekraną</button>
+      </div>
+      <p class="help" id="castNet" hidden>TV lentai reikia interneto ryšio. Be jo gali rodyti telefoną per AirPlay / Chromecast.</p>
+      <div class="cast-help">
+        <h3 class="card-title">TV neturi naršyklės?</h3>
+        <p>Rodyk telefono ekraną per AirPlay (iPhone) arba „Cast screen“ (Android), arba prijunk kompiuterį prie TV HDMI kabeliu ir atidaryk nuorodą jame.</p>
+        <p>Per TV siunčiami tik taškai ir pratimo pavadinimas – jokio kameros vaizdo.</p>
+      </div>
+      <p class="note" id="castNote" aria-live="polite"></p>
+    </div>
+  </div>
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

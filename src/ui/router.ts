@@ -4,9 +4,9 @@
 // real history (Android back always does what the screen's back button does). Tabs replace each other; only Home
 // stays underneath, so back from any tab lands on Pradžia, then leaves the app.
 // The game flow (#ready/#end/#clips) and the onboarding are not routes: they claim back via setBackHandler().
-export type View="home"|"groups"|"group"|"library"|"profile"|"setup";
-const SCREEN:Record<View,string>={home:"home",groups:"groups",group:"group",library:"library",profile:"profile",setup:"start"};
-const TAB:Record<View,string>={home:"home",groups:"groups",group:"groups",library:"library",profile:"profile",setup:"home"};
+export type View="home"|"groups"|"group"|"library"|"profile"|"setup"|"screen";
+const SCREEN:Record<View,string>={home:"home",groups:"groups",group:"group",library:"library",profile:"profile",setup:"start",screen:"screen"};
+const TAB:Record<View,string>={home:"home",groups:"groups",group:"groups",library:"library",profile:"profile",setup:"home",screen:""};
 
 export function parse(hash:string):{v:View;arg:string}{
   const [a,b]=hash.replace(/^#\/?/,"").split("/");
@@ -14,6 +14,7 @@ export function parse(hash:string):{v:View;arg:string}{
   if(a==="pratimai")return {v:"library",arg:""};
   if(a==="profilis")return {v:"profile",arg:""};
   if(a==="zaisti")return {v:"setup",arg:""};
+  if(a==="ekranas")return {v:"screen",arg:b?decodeURIComponent(b):""};
   return {v:"home",arg:""}; // also #/zaidimas (game entry) after a reload
 }
 

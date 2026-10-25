@@ -7,6 +7,8 @@ Telefono kamera → MediaPipe Pose (veikia įrenginyje, vaizdas niekur nesiunči
 
 Nuo app-v2 tai programėlė su meniu apačioje: **Pradžia** (serija, savaitės tikslas, vieta lentelėje, greitas startas), **Kompanijos** (savaitės lentelė su draugais), **Pratimai** (visi pratimai su animacija ir patarimais) ir **Profilis** (statistika, 7 dienos, ženkliukai, istorija, nustatymai); pirmą kartą – trumpas įvadas.
 
+Nuo 2026-10-25 yra **„Didelis ekranas“**: telefone įjungi trumpą kodą, o televizoriuje ar nešiojamame kompiuteryje atidarai `#/ekranas/<kodas>` (arba įvedi kodą) – ten rodomi dideli taškai, laikas, pratimas ir rezultatai. Telefonas lieka kamera; per TV siunčiami tik taškai ir pratimo pavadinimas, jokio vaizdo. Veikia per Supabase Realtime (skirtingi įrenginiai) arba per BroadcastChannel (tas pats naršyklės langas / antras ekranas, veikia ir be interneto). TV be naršyklės atveju – AirPlay / Chromecast veidrodinimas arba HDMI.
+
 Žaidimas veikia kaip PWA (galima įsidėti į telefono pradžios ekraną, kartą užkrautas veikia ir be interneto), turi sintezuotus garsus su vibracija ir vietinę žaidimų istoriją su rekordais (tik tame telefone). Su slapyvardžiu (be el. pašto) – kompanijos su kodu, savaitės lentelė ir iššūkių nuorodos draugams; be interneto veikia viskas, išskyrus šią dalį.
 
 ## Paleisti lokaliai
@@ -34,6 +36,14 @@ VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 Be jų žaidimas veikia kaip anksčiau, tik be internetinės dalies. Serveryje vieną kartą: SQL Editor → `supabase/migrations/001_init.sql` → Run, ir Authentication → Sign In / Providers → **Allow anonymous sign-ins**. Patikra: `node tools/social-check.mjs`. `service_role` rakto nenaudoti niekur.
 
 Telefonui per tą patį Wi-Fi kamera reikalauja https – paprasčiausia naudoti Vercel preview nuorodą. Projekto struktūra ir taisyklės – [AGENTS.md](AGENTS.md).
+
+## Didelis ekranas (TV lenta)
+
+1. Telefone: **Pradžia** → TV ikona viršuje arba **Žaisti → Didelis ekranas** → **Įjungti didelį ekraną**.
+2. Televizoriuje arba kompiuteryje, prijungtame prie TV, atidaryk rodomą nuorodą (arba `.../#/ekranas` ir įvesk 6 simbolių kodą).
+3. Telefone spausk **Pradėti** – TV rodys pasiruošimą, didelius taškus, laiką, pratimą ir rezultatus. Kodas lieka matomas apatinėje eilutėje, jei reikia prijungti dar vieną ekraną.
+
+Kodas sukuriamas tik paspaudus „Įjungti“ ir galioja tol, kol uždarai programėlės kortelę. Duomenų bazės keisti nereikia: skirtingiems įrenginiams naudojamas Supabase Realtime viešas kanalas, tam pačiam naršyklės langui – BroadcastChannel. Jei televizorius neturi naršyklės, naudok AirPlay / Chromecast ekrano veidrodinimą arba prijunk kompiuterį HDMI kabeliu. Per TV siunčiami tik taškai, laikas ir pratimo pavadinimas – kameros vaizdas niekada nepalieka telefono.
 
 ## Android APK
 

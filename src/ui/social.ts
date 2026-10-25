@@ -31,8 +31,8 @@ const NICK_SUB=nickSub.textContent!;
 function note(el:HTMLElement,text:string,warn=false){el.textContent=text;el.classList.toggle("warn",warn)}
 function strip(k:string){try{const u=new URL(location.href);u.searchParams.delete(k);history.replaceState(history.state,"",u)}catch(e){}}
 // in the Android app the page lives on https://localhost, so invite/challenge links must point at the web app
-const WEB=Capacitor.isNativePlatform()?"https://novacore-two.vercel.app":location.origin;
-async function share(url:string,text:string,noteEl:HTMLElement){
+export const WEB=Capacitor.isNativePlatform()?"https://novacore-two.vercel.app":location.origin;
+export async function share(url:string,text:string,noteEl:HTMLElement){
   // Android WebView has no navigator.share -> the native share sheet
   if(Capacitor.isNativePlatform())try{await Share.share({title:"NovaCore",text,url});return}catch(e){if(/cancel/i.test(String(e)))return}
   try{if(navigator.share){await navigator.share({title:"NovaCore",text,url});return}}

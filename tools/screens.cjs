@@ -44,7 +44,7 @@ function seed(now){
     const p=await b.newPage();
     await p.setViewport({width:vw,height:vh,deviceScaleFactor:2,isMobile:true,hasTouch:true});
     await p.emulateMediaFeatures([{name:"prefers-reduced-motion",value:"no-preference"}]);
-    const errs=[];p.on("pageerror",e=>errs.push("PAGEERROR "+e.message));p.on("console",m=>{if(m.type()==="error"&&!/favicon|Failed to load resource/.test(m.text()))errs.push(m.text().slice(0,200))});
+    const errs=[];p.on("pageerror",e=>errs.push("PAGEERROR "+e.message));p.on("console",m=>{if(m.type()==="error"&&!/favicon|Failed to load resource|WebSocket|realtime/i.test(m.text()))errs.push(m.text().slice(0,200))});
     let n=0;
     const shot=async(name,wait=700)=>{await sleep(wait);const f=`${String(++n).padStart(2,"0")}-${name}${suf}.png`;await p.screenshot({path:path.join(out,f)});console.log("•",f)};
     const scrollTo=(sel,y)=>p.$eval(sel,(el,y)=>el.scrollTop=y==="end"?el.scrollHeight:y,y);
@@ -77,7 +77,13 @@ function seed(now){
     await p.keyboard.press("Escape");await sleep(400);
     await p.goto(base+"#/",{waitUntil:"networkidle0"});await sleep(800);
     await tap("#homePlay");await shot("setup",900);
+    await tap(landscape?"#setupCast":"#castOpen");await shot("setup-cast-sheet",900);
+    await tap("#castOn");await shot("cast-on",700);
+    const castCode=await p.$eval("#castCode",el=>el.textContent.trim());
+    console.log("TV kodas:",castCode);
+    await p.keyboard.press("Escape");await sleep(400);
     await scrollTo("#start","end");await shot("setup-bottom",500);
+    await p.$eval("#exOpen",e=>e.scrollIntoView({block:"center"}));await sleep(300); // stay clear of the sticky bar
     await tap("#exOpen");await shot("exercise-sheet",900);
     await tap("#exDone");await sleep(400);
     if(!noGame){
@@ -100,6 +106,24 @@ function seed(now){
     }
     await p.goto(base+"#/pratimai",{waitUntil:"networkidle0"});await sleep(800);
     await tap('.ex-card[data-ex="squat"]');await shot("exercise-detail",900);
+    // TV lenta: antrasis langas su netikromis būsenomis. Telefono langą uždarome (about:blank), kad jo
+    // periodinis „idle" siuntimas neperrašytų vaizduojamų kadrų.
+    await p.goto("about:blank");
+    const tv=await b.newPage();
+    await tv.setViewport({width:vw,height:vh,deviceScaleFactor:2});
+    const tvErr=[];tv.on("pageerror",e=>tvErr.push("PAGEERROR "+e.message));
+    const tvShot=async(name,wait=500)=>{await sleep(wait);const f=`${String(++n).padStart(2,"0")}-${name}${suf}.png`;await tv.screenshot({path:path.join(out,f)});console.log("•",f)};
+    await tv.goto(base+"#/ekranas",{waitUntil:"load"});await tvShot("tv-connect",900);
+    if(/^[A-Z0-9]{6}$/.test(castCode)){
+      await tv.goto(base+"#/ekranas/"+castCode,{waitUntil:"load"});await tvShot("tv-wait",900);
+      const post=s=>tv.evaluate(({code,state})=>{const c=new BroadcastChannel("novacore-screen");c.postMessage({code,state});c.close()},{code:castCode,state:s});
+      const sent=Date.now(),baseState={v:1,code:castCode,players:2,duration:180,round:0,mult:1,sent};
+      await post({...baseState,phase:"ready",left:180,ex:null,score:[0,0],reps:0,winner:0});await tvShot("tv-ready",500);
+      await post({...baseState,phase:"play",left:92,round:2,mult:3,ex:{id:"squat",name:"Pritūpimai"},score:[148,131],reps:98,winner:0});await tvShot("tv-live",700);
+      await post({...baseState,players:1,phase:"play",left:41,round:4,mult:5,ex:{id:"jack",name:"Pašokimai"},score:[212,0],reps:120,winner:0});await tvShot("tv-live-solo",700);
+      await post({...baseState,phase:"done",left:0,ex:null,score:[148,131],reps:98,winner:1});await tvShot("tv-done",900);
+    }
+    if(tvErr.length)console.log("TV KLAIDOS:\n  "+tvErr.join("\n  "));
     console.log(errs.length?"KLAIDOS:\n  "+errs.join("\n  "):"klaidų nėra");
     await b.close();
   }

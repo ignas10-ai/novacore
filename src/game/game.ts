@@ -14,12 +14,13 @@ import {keepScreenAwake,releaseWakeLock} from "../ui/wakelock.ts";
 import {demoRoot,showDemo,hideDemo} from "../ui/coach.ts";
 import {renderResults} from "../ui/results.ts";
 import {$,replay,setDigits,setCue,toast} from "../ui/dom.ts";
+import {screenPhase} from "../cast/cast.ts";
 import {S} from "./state.ts";
 
 const IDLE_DEMO_SECS=5; // re-show the coach card after this long without points
 const READY_MS=3000, READY_GRACE=300; // hold arms up this long before the game starts
 let readying=false, readyRaf=0, holdStart=0, lastReady=0, lastReadyDigit="", raf=0;
-let lastRound=0, exShift=0, startTimer=0, nudgedRound=-1;
+let lastRound=0, startTimer=0, nudgedRound=-1;
 let lastHudSec=-1, lastBarAt=0;
 const shown=["0","0"];
 
@@ -60,12 +61,14 @@ export async function startFlow(){
     if(!inGameEntry())history.pushState({d:depth()+1,game:1},"","#/zaidimas");
     document.body.classList.toggle("solo",S.players===1);
     readyRoot.classList.remove("hide");
+    screenPhase("ready"); // the TV/laptop shows "Rankos aukštyn" while the gate runs
     keepScreenAwake();
     loadingRoot.classList.add("hide");
     readying=true;
     readyLoop();
   }catch(e){
     console.error("Nepavyko paleisti žaidimo:",e);
+    screenPhase("idle");
     releaseWakeLock();
     stopCamera();
     cam.srcObject=null;
@@ -98,11 +101,12 @@ function startGame(){
   document.body.classList.add("playing");
   lastRound=-1;
   // more selected exercises than 30 s rounds -> rotate the skipped one between games
-  exShift=S.activeEX.length>1?Math.floor(Math.random()*S.activeEX.length):0;
+  S.exShift=S.activeEX.length>1?Math.floor(Math.random()*S.activeEX.length):0;
   startRec();
   S.lastRecDrawAt=performance.now();
   $("#recInd").hidden=!S.rec;
   S.running=true;S.t0=performance.now();
+  screenPhase("play");
   loop();
 }
 
@@ -137,6 +141,7 @@ function backToSettings(){
   $("#goTxt").textContent="Pradėti";
   $("#go").removeAttribute("aria-busy");
   document.body.classList.remove("ingame");
+  screenPhase("idle");
 }
 // the on-screen back button and Android back take the same path (popstate -> handler below)
 $("#readyBack").onclick=()=>inGameEntry()?history.back():(backToSettings(),render());
@@ -152,11 +157,11 @@ export function resetGame(){
 }
 const afterGameShown=()=>!$("#end").classList.contains("hide")||!$("#clips").classList.contains("hide");
 document.querySelectorAll<HTMLElement>("[data-again]").forEach(b=>b.onclick=()=>{resetGame();startFlow()});
-document.querySelectorAll<HTMLElement>("[data-home]").forEach(b=>b.onclick=()=>{resetGame();document.body.classList.remove("ingame");home()});
+document.querySelectorAll<HTMLElement>("[data-home]").forEach(b=>b.onclick=()=>{resetGame();screenPhase("idle");document.body.classList.remove("ingame");home()});
 setBackHandler(()=>{
   if(S.running){history.pushState({d:depth()+1,game:1},"","#/zaidimas");return true} // ponytail: no exit mid-game (max 3 min)
   if(readying||!readyRoot.classList.contains("hide")){backToSettings();return false}
-  if(afterGameShown()){resetGame();document.body.classList.remove("ingame");return false}
+  if(afterGameShown()){resetGame();screenPhase("idle");document.body.classList.remove("ingame");return false}
   return false;
 });
 
@@ -215,7 +220,7 @@ function loop(){
   const {players,duration,score,st,lastPointAt}=S;
   const now=performance.now();
   const el=(now-S.t0)/1000, left=Math.max(0,duration-el);
-  const round=Math.floor(el/ROUND_SECS), mult=1+round, ex:Exercise=S.activeEX[(round+exShift)%S.activeEX.length];
+  const round=Math.floor(el/ROUND_SECS), mult=1+round, ex:Exercise=S.activeEX[(round+S.exShift)%S.activeEX.length];
   const sec=Math.floor(left);
   if(sec!==lastHudSec){lastHudSec=sec;timerEl.textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`;if(sec>0&&sec<=10)sfx.tick()}
   if(now-lastBarAt>=100){lastBarAt=now;tbarEl.style.transform=`scaleX(${left/duration})`}
@@ -256,6 +261,7 @@ function finish(){
   document.body.classList.remove("playing");
   if(S.players===1)S.score[1]=0;
   const end=renderResults();
+  screenPhase("done"); // final scoreboard on the TV before the clips are cut
   sfx.finish();
   const highlightTotal=Math.min(S.duration,Math.max(0,(performance.now()-S.t0)/1000));
   const highlightPlan=highlightSegments(S.scoreEvents,highlightTotal,4,16,S.activeEX.length);
