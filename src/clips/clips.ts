@@ -14,6 +14,7 @@ const clipsRoot=$("#clips"), previewBox=$("#preview"), previewVid=$<HTMLVideoEle
 dlPrev.download=`novacore-highlights.${REC_EXT}`;dlFull.download=`novacore-full.${REC_EXT}`;
 let fullBlob:Blob|null=null, fullURL:string|null=null, previewBlob:Blob|null=null, previewURL:string|null=null, clipState="idle", highlightPlan:Segment[]=[], highlightTotal=0, clipPortrait=false;
 let clipProfile:ClipProfile|null=null;
+let gen=0; // bumped by resetClips(): late results of a previous game's recorder/highlight cut are ignored
 
 function recorderOptions(profile:ClipProfile|null){
   const opts:MediaRecorderOptions={};
@@ -27,6 +28,7 @@ function makeRecorder(stream:MediaStream,profile:ClipProfile|null){
 }
 
 export function startRec(){
+  chunks=[];
   clipPortrait=innerHeight>innerWidth;
   const info=readCameraInfo();
   S.camFps=info.fps;
@@ -123,9 +125,10 @@ function preparePreview(){
     const left=Math.max(1,Math.ceil(total-(performance.now()-startedAt)/1000));
     eta.textContent=`kol kas – pilnas klipas · ištrauka už ~${left} s`;
   },500);
+  const g=gen;
   makeHighlightClip(fullBlob,plan)
-    .then(blob=>{previewBlob=blob;previewURL=URL.createObjectURL(blob);setClipState("ready")})
-    .catch(err=>{console.error("Highlight preview:",err);setClipState("error")})
+    .then(blob=>{if(g!==gen)return;previewBlob=blob;previewURL=URL.createObjectURL(blob);setClipState("ready")})
+    .catch(err=>{if(g!==gen)return;console.error("Highlight preview:",err);setClipState("error")})
     .finally(()=>clearInterval(etaTimer));
 }
 
@@ -218,11 +221,23 @@ export function finishClips(plan:Segment[],total:number){
   const rec=S.rec;
   if(rec){
     setClipState("processing");
+    const g=gen;
     rec.onstop=()=>{
+      if(g!==gen)return;
       fullBlob=new Blob(chunks,{type:rec.mimeType||REC_MIME||"video/webm"});
       if(fullBlob.size){fullURL=URL.createObjectURL(fullBlob);preparePreview()}
       else setClipState("unavailable");
     };
     rec.stop();
   }else setClipState("unavailable");
+}
+
+// "Žaisti dar kartą" / "Į pradžią": drop this game's clips (object URLs freed) so the next game starts clean
+export function resetClips(){
+  gen++;clearInterval(etaTimer);
+  try{if(S.rec&&S.rec.state!=="inactive")S.rec.stop()}catch(e){}
+  for(const u of [fullURL,previewURL])if(u)URL.revokeObjectURL(u);
+  chunks=[];fullBlob=previewBlob=null;fullURL=previewURL=null;highlightPlan=[];
+  previewVid.pause();previewVid.removeAttribute("src");previewVid.load();
+  setDlOpen(false);setClipState("idle");
 }

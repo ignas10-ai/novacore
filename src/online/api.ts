@@ -15,6 +15,7 @@ export const sb:SupabaseClient|null=(()=>{try{return env.VITE_SUPABASE_URL&&env.
 const NICK_KEY="novacore.nick", PENDING_KEY="novacore.pending", PENDING_MAX=20;
 const ls={get(k:string){try{return localStorage.getItem(k)}catch(e){return null}},set(k:string,v:string){try{localStorage.setItem(k,v)}catch(e){}}};
 export const cachedNick=()=>ls.get(NICK_KEY);
+export const setCachedNick=(n:string)=>ls.set(NICK_KEY,n);
 
 // PURE: one games row from a finished game. 1 player -> P1; 2 players -> the higher score (and that player's reps).
 export function gameRow(players:number,duration:number,score:number[],events:{player:number;ex:string}[],exercises:string[],id:string,at:Date):GameRow{
@@ -52,7 +53,6 @@ export async function loadNick(){
   const id=await userId();
   if(!id)return null;
   const p=must(await client().from("profiles").select("nickname").eq("id",id).maybeSingle()) as {nickname:string}|null;
-  if(p)ls.set(NICK_KEY,p.nickname);
   return p?.nickname||null;
 }
 export async function saveNick(nick:string){

@@ -1,15 +1,19 @@
-// Game flow: Start → #loading → #ready (arm-hold gate, readyLoop) → loop() with rounds/scoring → finish() → #end → #clips.
+// Game flow: startFlow() → #loading → #ready (arm-hold gate, readyLoop) → loop() with rounds/scoring → finish() → #end → #clips.
+// Not routed: entering #ready pushes one history entry (#/zaidimas, state.game) so Android back = "Atgal į nustatymus";
+// back mid-game is swallowed, back on results/clips returns to the app. resetGame() makes "Žaisti dar kartą" reload-free.
 import {ROUND_SECS,type Exercise} from "../detect/exercises.ts";
 import {step,armsUp,sideCue} from "../detect/step.ts";
 import type {Lm} from "../detect/classifier.ts";
 import {highlightSegments} from "../clips/highlight.ts";
 import {startRec,finishClips} from "../clips/clips.ts";
 import {cam,detCv,openCamera,loadModel,sampleCamera,lastPoses,resetTracking,stopCamera,draw} from "../camera/camera.ts";
+import {resetClips} from "../clips/clips.ts";
+import {leaveApp,render,home,setBackHandler,depth} from "../ui/router.ts";
 import {ensureAudio,sfx} from "../audio/sound.ts";
 import {keepScreenAwake,releaseWakeLock} from "../ui/wakelock.ts";
 import {demoRoot,showDemo,hideDemo} from "../ui/coach.ts";
 import {renderResults} from "../ui/results.ts";
-import {$,replay,setDigits,setCue} from "../ui/dom.ts";
+import {$,replay,setDigits,setCue,toast} from "../ui/dom.ts";
 import {S} from "./state.ts";
 
 const IDLE_DEMO_SECS=5; // re-show the coach card after this long without points
@@ -37,8 +41,10 @@ function detect(lm:Lm[],i:number,ex:string,mult:number){
   }
 }
 
-$("#go").onclick=async()=>{
+const inGameEntry=()=>!!history.state?.game;
+export async function startFlow(){
   $("#goTxt").textContent="Kraunama…";$("#go").setAttribute("aria-busy","true");
+  document.body.classList.add("ingame"); // hides the tab bar; the current screen stays under #loading
   ensureAudio(); // user gesture: the only place an AudioContext may be created
   loadMsg.textContent="Ruošiama kamera ir judesio modelis";
   loadingRoot.classList.remove("hide");
@@ -50,7 +56,8 @@ $("#go").onclick=async()=>{
     await loadModel(S.players);
     const wait=700-(performance.now()-loadingSince);
     if(wait>0)await new Promise(r=>setTimeout(r,wait));
-    $("#start").classList.add("hide");
+    leaveApp();
+    if(!inGameEntry())history.pushState({d:depth()+1,game:1},"","#/zaidimas");
     document.body.classList.toggle("solo",S.players===1);
     readyRoot.classList.remove("hide");
     keepScreenAwake();
@@ -67,8 +74,16 @@ $("#go").onclick=async()=>{
     loadingRoot.classList.add("hide");
     $("#go").removeAttribute("aria-busy");
     $("#goTxt").textContent="Bandykite dar kartą";
+    toast((e as Error)?.name==="NotAllowedError"?"Kamera neleista – leisk ją naršyklės nustatymuose.":"Nepavyko įjungti kameros ar modelio. Bandyk dar kartą.");
+    exitGame();
   }
-};
+}
+$("#go").onclick=startFlow;
+// back into the app (router shows the screen of the current URL)
+function exitGame(){
+  document.body.classList.remove("ingame","playing");
+  if(inGameEntry())history.back(); else render();
+}
 
 function startGame(){
   if(S.running)return;
@@ -119,12 +134,31 @@ function backToSettings(){
   stopCamera();
   cam.srcObject=null;
   resetTracking();
-  $("#start").classList.remove("hide");
-  $("#start").scrollTop=0;
   $("#goTxt").textContent="Pradėti";
   $("#go").removeAttribute("aria-busy");
+  document.body.classList.remove("ingame");
 }
-$("#readyBack").onclick=backToSettings;
+// the on-screen back button and Android back take the same path (popstate -> handler below)
+$("#readyBack").onclick=()=>inGameEntry()?history.back():(backToSettings(),render());
+
+// a finished game -> clean state for the next one without reloading the page
+export function resetGame(){
+  S.score=[0,0];S.scoreEvents=[];S.lastPointAt=[0,0];S.st=[{},{}] as typeof S.st;S.fl=[0,0];S.rec=null;
+  shown[0]=shown[1]="0";scoreEls.forEach(e=>e.textContent="0");
+  stopCamera();cam.srcObject=null;resetTracking();
+  resetClips();
+  $("#end").classList.add("hide");$("#clips").classList.add("hide");
+  $("#goTxt").textContent="Pradėti";$("#go").removeAttribute("aria-busy");
+}
+const afterGameShown=()=>!$("#end").classList.contains("hide")||!$("#clips").classList.contains("hide");
+document.querySelectorAll<HTMLElement>("[data-again]").forEach(b=>b.onclick=()=>{resetGame();startFlow()});
+document.querySelectorAll<HTMLElement>("[data-home]").forEach(b=>b.onclick=()=>{resetGame();document.body.classList.remove("ingame");home()});
+setBackHandler(()=>{
+  if(S.running){history.pushState({d:depth()+1,game:1},"","#/zaidimas");return true} // ponytail: no exit mid-game (max 3 min)
+  if(readying||!readyRoot.classList.contains("hide")){backToSettings();return false}
+  if(afterGameShown()){resetGame();document.body.classList.remove("ingame");return false}
+  return false;
+});
 
 function readyLoop(){
   if(!readying)return;
