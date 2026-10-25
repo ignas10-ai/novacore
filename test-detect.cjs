@@ -50,6 +50,8 @@ assert.deepStrictEqual([smooth.w,smooth.h,smooth.fps,smooth.hq],[1280,720,60,fal
 const standard=clipSpec(1280,720,30,true);
 assert.deepStrictEqual([standard.w,standard.h,standard.fps,standard.hq],[720,1280,30,false],"720p30 clip");
 assert(standard.bps>0&&hqPortrait.bps>standard.bps,"hq bitrate higher");
+// highlight re-encode = clipSpec(clip w, clip h, 30): same size as the full clip, 30 fps tier (makeHighlightClip)
+for(const p of [hqPortrait,hqLandscape,smooth]){const h=clipSpec(p.w,p.h,30,p.h>p.w);assert.deepStrictEqual([h.w,h.h,h.fps,h.bps],[p.w,p.h,30,p.hd?5500000:3000000],"highlight 30 fps tier")}
 // squat: stand -> deep -> stand = 1 rep (needs several frames for EMA)
 let s={},t=0,reps=0;const stand=body();const deep=body();deep[25]={x:0.4,y:0.62,visibility:1};deep[26]={x:0.6,y:0.62,visibility:1};deep[27]={x:0.6,y:0.64,visibility:1};deep[28]={x:0.4,y:0.64,visibility:1};
 for(const f of [...Array(5).fill(stand),...Array(8).fill(deep),...Array(8).fill(stand)]) if(step(s,f,"squat",t+=50))reps++;
