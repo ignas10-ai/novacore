@@ -1,18 +1,25 @@
-// Profile character (ui-v3): the avatar is the head of Raudonas (default) or Mėlynas, picked in Profilis → Nustatymai.
-// ponytail: local only (novacore.char); add a profiles column if friends should see it in Kompanijos.
+// Mascot art in the markup + the profile character (Claude Design). paintArt() fills placeholders once:
+//   [data-mascot="r:idle"] / "b:vs:anim" = full-body mascot (who:pose[:anim]), [data-mascots="vs"] = the face-off pair,
+//   [data-head="r|b"] = head avatar, [data-avatar] = the player's own character head (Raudonas default, Mėlynas).
+// ponytail: the character is local only (novacore.char); add a profiles column if friends should see it in Kompanijos.
+import {mascot,avatar,vsPair,type Who,type Pose} from "./mascots.ts";
+
 const KEY="novacore.char";
-const HEAD={
-  r:[new URL("../art/raudonas-head.webp",import.meta.url).href,new URL("../art/raudonas-head@2x.webp",import.meta.url).href],
-  b:[new URL("../art/melynas-head.webp",import.meta.url).href,new URL("../art/melynas-head@2x.webp",import.meta.url).href],
-};
-export type Char="r"|"b";
+export type Char=Who;
 export function getChar():Char{try{return localStorage.getItem(KEY)==="b"?"b":"r"}catch(e){return "r"}}
+export function paintArt(root:ParentNode=document){
+  root.querySelectorAll<HTMLElement>("[data-mascot]:empty").forEach(el=>{
+    const [w,p,a]=el.dataset.mascot!.split(":");
+    el.innerHTML=mascot(w as Who,(p||"idle") as Pose,{anim:a==="anim"});
+  });
+  root.querySelectorAll<HTMLElement>("[data-mascots]:empty").forEach(el=>{el.innerHTML=vsPair()});
+  root.querySelectorAll<HTMLElement>("[data-head]:empty").forEach(el=>{el.innerHTML=avatar(el.dataset.head as Who)});
+}
 export function paintAvatars(){
-  const c=getChar(), [x1,x2]=HEAD[c];
+  const c=getChar();
   document.querySelectorAll<HTMLElement>("[data-avatar]").forEach(el=>{
-    el.dataset.char=c;
-    const img=el.querySelector("img")||el.appendChild(Object.assign(document.createElement("img"),{alt:"",width:96,height:96,decoding:"async"}));
-    if(img.getAttribute("src")!==x1){img.src=x1;img.srcset=`${x1} 1x, ${x2} 2x`}
+    if(el.dataset.char===c&&el.firstElementChild)return;
+    el.dataset.char=c;el.innerHTML=avatar(c);
   });
   document.querySelectorAll<HTMLElement>("[data-char][role=radio]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.char===c)));
 }
@@ -20,4 +27,5 @@ document.querySelectorAll<HTMLElement>("[data-char][role=radio]").forEach(b=>b.o
   try{localStorage.setItem(KEY,b.dataset.char!)}catch(e){}
   paintAvatars();
 });
+paintArt();
 paintAvatars();

@@ -12,11 +12,13 @@ import * as api from "../online/api.ts";
 import {Capacitor} from "@capacitor/core";
 import {Share} from "@capacitor/share";
 import {icon} from "./icons.ts";
+import {weekStart} from "../history/stats.ts";
 
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const chars=(s:string)=>[...s].length; // the DB checks char_length (code points), not UTF-16 units
 const nick=()=>api.cachedNick();
-const TONES=["red","blue","violet","mint","pink","sky","yellow"];
+const TONES=["red","blue","yellow","ink"];
+const toneFor=(name:string)=>TONES[[...name].reduce((n,c)=>n+c.codePointAt(0)!,0)%TONES.length]; // stable colour per name
 
 let serverNick:string|null=null, me:string|null=null;
 let groups:api.Group[]=[], boards:Record<string,api.LbRow[]|null>={}, loaded=false, loadErr="", gid="";
@@ -92,15 +94,15 @@ export function renderHomeRank(){
   const n=$("#rankN"), t=$("#rankTxt");
   let best=0, where:api.Group|null=null;
   for(const g of groups){const r=rankOf(boards[g.id]);if(r&&(!best||r<best)){best=r;where=g}}
-  n.textContent=best?`#${best}`:"–";
-  t.textContent=!api.sb?"Kompanijos":!nick()||!groups.length?"Sukurk kompaniją":best?`vieta · ${where!.name}`:"Šią savaitę dar nežaidei";
+  n.textContent=best?`#${best} vieta`:"Kompanijos";
+  t.textContent=!api.sb?"Savaitės lyga su draugais":!nick()||!groups.length?"Sukurk kompaniją":best?where!.name:"Šią savaitę dar nežaidei";
 }
 function groupItem(g:api.Group){
   const rows=boards[g.id], r=rankOf(rows);
   const li=document.createElement("li");
-  const a=document.createElement("a");a.className="card grp-item";a.href=`#/kompanijos/${encodeURIComponent(g.id)}`;
+  const a=document.createElement("a");a.className="box grp-item tap";a.href=`#/kompanijos/${encodeURIComponent(g.id)}`;
   const av=document.createElement("span");av.className="grp-av d";av.textContent=[...g.name][0].toUpperCase();
-  av.dataset.tone=TONES[[...g.name].reduce((n,c)=>n+c.codePointAt(0)!,0)%TONES.length]; // stable colour per group
+  av.dataset.tone=toneFor(g.name);
   const tx=document.createElement("span");tx.className="grp-txt";
   const b=document.createElement("b");b.textContent=g.name;
   const sm=document.createElement("small");sm.textContent=rows?`${rows.length} ${plural(rows.length,["narys","nariai","narių"])}`:"Kraunama…";
@@ -121,39 +123,94 @@ function renderGroups(){
   list.replaceChildren(...groups.map(groupItem));
   empty.hidden=unavailable||!!groups.length||(!!nick()&&!loaded&&!loadErr);
 }
+// ---------- group detail: podium (top 3) + rows with trend arrows; week countdown; group switcher ----------
+const letter=(n:string)=>([...n.trim()][0]||"?").toUpperCase();
+function lAv(nick:string,cls="lb-av"){const a=document.createElement("span");a.className=cls+" d";a.dataset.tone=toneFor(nick);a.textContent=letter(nick);return a}
+function duelBtn(r:api.LbRow){ // remote duel invite (src/duel/duel.ts handles the click on #lb)
+  const d=document.createElement("button");d.type="button";d.className="icon-btn lb-duel tap";
+  d.dataset.duel=r.user_id;d.dataset.nick=r.nickname;d.setAttribute("aria-label",`Kviesti ${r.nickname} dvikovai`);d.innerHTML=icon("swords");
+  return d;
+}
+// trend = rank change since this group was last opened (localStorage snapshot; ponytail: per phone, not per week)
+const RK="novacore.ranks.";
+const prevRanks:Record<string,Record<string,number>>={};
+function trend(uid:string,rank:number){
+  const p=prevRanks[gid]?.[uid];
+  if(!rank||!p||p===rank)return null;
+  const t=document.createElement("span");t.className="lb-trend "+(rank<p?"up":"down");
+  t.innerHTML=icon(rank<p?"chevron-up":"chevron-down");t.setAttribute("aria-label",rank<p?"pakilo":"nukrito");t.setAttribute("role","img");
+  return t;
+}
 function lbRow(r:api.LbRow,i:number,rank:number){
   const li=document.createElement("li");
   li.className="lb-row";li.style.setProperty("--i",String(i%10));
   if(r.user_id===me)li.classList.add("me");
-  if(rank===1)li.classList.add("first");
   const n=document.createElement("span");n.className="lb-n d";n.textContent=r.best!=null?String(rank):"–";
   const who=document.createElement("span");who.className="lb-name";
   const nm=document.createElement("b");nm.textContent=r.nickname;who.append(nm);
   if(r.user_id===me){const t=document.createElement("i");t.textContent="tu";nm.append(t)}
   const sm=document.createElement("small");sm.textContent=r.games?`${r.games} ${plural(r.games,["žaidimas","žaidimai","žaidimų"])}`:"dar nežaidė";who.append(sm);
   const best=document.createElement("b");best.className="lb-best d";best.textContent=r.best!=null?String(r.best):"—";
-  li.append(n,who,best);
-  if(r.user_id!==me){ // remote duel invite (src/duel/duel.ts handles the click)
-    const d=document.createElement("button");d.type="button";d.className="icon-btn lb-duel tap";
-    d.dataset.duel=r.user_id;d.dataset.nick=r.nickname;d.setAttribute("aria-label",`Kviesti ${r.nickname} dvikovai`);d.innerHTML=icon("swords");
-    li.append(d);
+  li.append(n,lAv(r.nickname),who);
+  const tr=trend(r.user_id,rank);li.append(tr||Object.assign(document.createElement("span"),{className:"lb-trend"}));
+  li.append(best);
+  if(r.user_id!==me)li.append(duelBtn(r));
+  return li;
+}
+function podium(top:api.LbRow[]){
+  const li=document.createElement("li");li.className="podium";li.setAttribute("aria-label","Trys geriausi");
+  const order=[1,0,2]; // 2nd left, 1st centre (tallest), 3rd right
+  for(const k of order){
+    const r=top[k];
+    const col=document.createElement("div");col.className=`pod p${k+1}`;
+    if(!r){col.classList.add("empty");col.innerHTML=`<span class="pod-block d">${k+1}</span>`;li.append(col);continue}
+    const av=lAv(r.nickname,"pod-av");
+    if(k===0)av.insertAdjacentHTML("afterbegin",`<span class="pod-crown" aria-hidden="true">${icon("crown")}</span>`);
+    if(r.user_id===me)av.insertAdjacentHTML("beforeend",'<span class="pod-me">tu</span>');
+    const nm=document.createElement("b");nm.className="pod-name";nm.textContent=r.nickname;
+    const sc=document.createElement("b");sc.className="pod-score d";sc.textContent=String(r.best);
+    const blk=document.createElement("span");blk.className="pod-block d";blk.textContent=String(k+1);
+    col.append(av,nm,sc);
+    if(r.user_id!==me)av.append(duelBtn(r));
+    col.append(blk);
+    col.setAttribute("aria-label",`${k+1} vieta: ${r.nickname}, ${r.best} tšk.`);
+    li.append(col);
   }
   return li;
 }
+let showAll=false, lastGid="";
+const SHOW=6;
+function weekLeft(){ // the board resets on Monday 00:00 (date_trunc('week')), shown in local time
+  const ms=weekStart(Date.now())+7*864e5-Date.now(), h=Math.floor(ms/36e5), d=Math.floor(h/24);
+  return d?`${d} d. ${h%24} val.`:h?`${h} val. ${Math.floor(ms/6e4)%60} min`:`${Math.max(1,Math.floor(ms/6e4))} min`;
+}
 function renderGroup(){
   const g=groups.find(x=>x.id===gid), rows=boards[gid];
-  $("#groupTitle").textContent=g?.name||(loaded?"Kompanija nerasta":"Kompanija");
+  if(gid!==lastGid){lastGid=gid;showAll=false;try{prevRanks[gid]??=JSON.parse(localStorage.getItem(RK+gid)||"{}")}catch(e){prevRanks[gid]={}}}
+  $("#groupTitle").textContent=$("#groupNav").textContent=g?.name||(loaded?"Kompanija nerasta":"Kompanija");
   $("#grpCode").textContent=g?.code||"––––––";
   ($("#grpShare") as HTMLButtonElement).disabled=!g;
   grpLeave.hidden=!g;
   resetLeave();
-  $("#lbMeta").textContent=rows?`${rows.length} ${plural(rows.length,["narys","nariai","narių"])}`:"";
+  $("#weekLeft").textContent=weekLeft();
+  const sw=$<HTMLSelectElement>("#grpSwitch");
+  $("#grpSwitchWrap").hidden=groups.length<2;
+  sw.replaceChildren(...groups.map(x=>Object.assign(document.createElement("option"),{value:x.id,textContent:x.name,selected:x.id===gid})));
+  $("#lbMeta").textContent=rows?`${rows.length} ${plural(rows.length,["narys","nariai","narių"])} · Savaitės lyga`:"Savaitės lyga";
+  const more=$<HTMLButtonElement>("#lbMore");more.hidden=true;
   if(!g&&loaded){lb.replaceChildren(Object.assign(document.createElement("li"),{className:"lb-empty",textContent:"Tu nebe šios kompanijos narys arba ji ištrinta."}));return}
   if(!rows){lb.replaceChildren(Object.assign(document.createElement("li"),{className:"lb-empty",textContent:loadErr||"Kraunama…"}));return}
-  let rank=0;
   $("#duelHint").hidden=rows.length<2;
-  lb.replaceChildren(...rows.map((r,i)=>lbRow(r,i,r.best!=null?++rank:0)));
+  let rank=0;
+  const ranked=rows.map(r=>({r,rank:r.best!=null?++rank:0}));
+  const top=ranked.filter(x=>x.rank&&x.rank<=3).map(x=>x.r), rest=ranked.filter(x=>!(x.rank&&x.rank<=3));
+  const mine=rest.findIndex(x=>x.r.user_id===me), cut=showAll||rest.length<=SHOW-3||mine>=SHOW-3?rest.length:SHOW-3;
+  lb.replaceChildren(...(top.length?[podium(top)]:[]),...rest.slice(0,cut).map((x,i)=>lbRow(x.r,i,x.rank)));
+  if(cut<rest.length){more.hidden=false;more.innerHTML=`Rodyti visus ${rows.length}${icon("chevron-right")}`}
+  try{localStorage.setItem(RK+gid,JSON.stringify(Object.fromEntries(ranked.filter(x=>x.rank).map(x=>[x.r.user_id,x.rank]))))}catch(e){}
 }
+$("#lbMore").onclick=()=>{showAll=true;renderGroup()};
+$<HTMLSelectElement>("#grpSwitch").onchange=e=>go(`#/kompanijos/${encodeURIComponent((e.target as HTMLSelectElement).value)}`,true);
 onView("groups",()=>{note(grpNote,"");renderGroups();loadGroups()});
 onView("group",id=>{gid=id;note(grpNote2,"");renderGroup();loadGroups()});
 onView("home",renderHomeRank);
@@ -216,7 +273,7 @@ async function loadChallenge(id:string){
     box.hidden=false;
     if(!c){txt.textContent="Šis iššūkis nerastas.";goBtn.hidden=true;return}
     challenge={...c,id};goBtn.hidden=false;
-    txt.replaceChildren(Object.assign(document.createElement("b"),{textContent:c.nickname}),` surinko ${c.score} tšk. per ${mins(c.duration)}${c.players===2?" (dvikova)":""}. Įveik!`);
+    txt.replaceChildren(Object.assign(document.createElement("b"),{textContent:`${c.nickname} meta tau iššūkį`}),Object.assign(document.createElement("span"),{textContent:`${c.score} tšk. · ${mins(c.duration)}${c.players===2?" · dvikova":""} · įveik!`}));
     // same settings as the challenger, so the comparison is fair
     document.querySelector<HTMLElement>(`[data-d="${c.duration}"]`)?.click();
     if(c.players===1)document.querySelector<HTMLElement>('[data-p="1"]')?.click();

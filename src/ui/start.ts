@@ -1,8 +1,9 @@
 // Start screen settings: player count, duration, exercise picker sheet.
 import {EX,type Exercise} from "../detect/exercises.ts";
 import {S} from "../game/state.ts";
-import {$,replay} from "./dom.ts";
+import {$,replay,sheet} from "./dom.ts";
 import {toneOf} from "./coach.ts";
+import {exIcon} from "./mascots.ts";
 
 document.querySelectorAll<HTMLElement>("[data-p]").forEach(b=>b.onclick=()=>{S.players=+b.dataset.p!;sel(b);document.body.classList.toggle("solo",S.players===1)});
 document.querySelectorAll<HTMLElement>("[data-d]").forEach(b=>b.onclick=()=>{S.duration=+b.dataset.d!;sel(b)});
@@ -76,7 +77,7 @@ function renderExGrid(){
     btn.dataset.tone=toneOf(e.id);
     btn.classList.toggle("on",on);
     btn.setAttribute("aria-pressed",String(on));
-    btn.innerHTML=`<span class="ex-n" aria-hidden="true">${exPad(i+1)}</span><span class="ex-name"></span>${e.beta?'<span class="ex-beta">beta</span>':''}<span class="ex-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13l5 5 9-12"/></svg></span>`;
+    btn.innerHTML=`<span class="ex-n d" aria-hidden="true">${exPad(i+1)}</span><span class="ex-pose" aria-hidden="true">${exIcon(e.id)}</span><span class="ex-name"></span>${e.beta?'<span class="ex-beta">beta</span>':''}<span class="ex-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13l5 5 9-12"/></svg></span>`;
     btn.querySelector(".ex-name")!.textContent=e.name;
     return btn;
   }));
@@ -150,3 +151,8 @@ exSheet.addEventListener("close",()=>{
 renderExGrid();
 updateExUI();
 syncExNotes(false);
+
+// "Rodyti per TV" (setup + Profilis): how to mirror the phone to a TV; instructions only, no casting API
+const tv=sheet($<HTMLDialogElement>("#tvSheet"));
+document.querySelectorAll<HTMLElement>("[data-tv]").forEach(b=>b.onclick=tv.open);
+$("#tvClose").onclick=tv.close;$("#tvDone").onclick=tv.close;

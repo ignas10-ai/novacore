@@ -28,6 +28,14 @@ const loadingRoot=$("#loading"), loadMsg=$("#loadMsg");
 const readyCue=$("#readyCue"), readyCueText=$("#readyCueText"), hintCue=$("#hintCue"), hintCueText=$("#hintCueText");
 const hudRoot=$("#hud"), timerEl=$("#timer"), tbarEl=$("#tbar"), multEl=$("#mult"), exNameEl=$("#exName"), roundEl=$("#round"), hintEl=$("#hint"), scoreEls=[$("#s1"),$("#s2")];
 
+// bottom strip (Claude Design): "Raundas 2 / 6", "Kitas: …" and chips for the previous / current / next round
+const roundN=$("#roundN"), roundNext=$("#roundNext"), roundChips=$("#roundChips");
+function paintRounds(round:number){
+  const total=Math.ceil(S.duration/ROUND_SECS), n=S.activeEX.length, exAt=(r:number)=>S.activeEX[(r+exShift)%n].name;
+  roundN.textContent=`Raundas ${round+1} / ${total}`;
+  roundNext.replaceChildren(...(round+1<total?["Kitas: ",Object.assign(document.createElement("b"),{textContent:exAt(round+1)})]:["Paskutinis raundas!"]));
+  roundChips.replaceChildren(...[round-1,round,round+1].filter(r=>r>=0&&r<total).map(r=>Object.assign(document.createElement("li"),{className:r<round?"done":r===round?"now":"",textContent:exAt(r)})));
+}
 function flash(i:number){S.fl[i]=performance.now();const f=$(`#f${i+1}`);f.textContent=`+${S.curMult}`;replay(f,"go-pop");replay($(`#e${i+1}`),"go-pop");sfx.rep(i)}
 function detect(lm:Lm[],i:number,ex:string,mult:number){
   const now=performance.now();
@@ -155,7 +163,7 @@ export function resetGame(){
   flowMode?.reset();
   S.duel?.end();
   S.score=[0,0];S.scoreEvents=[];S.lastPointAt=[0,0];S.st=[{},{}] as typeof S.st;S.fl=[0,0];S.rec=null;
-  shown[0]=shown[1]="0";scoreEls.forEach(e=>e.textContent="0");
+  shown[0]=shown[1]="0";scoreEls.forEach(e=>{e.textContent="0";e.dataset.len="1"});hudRoot.dataset.lead="0";
   stopCamera();cam.srcObject=null;resetTracking();
   resetClips();
   $("#end").classList.add("hide");$("#clips").classList.add("hide");
@@ -231,7 +239,7 @@ function loop(){
   if(sec!==lastHudSec){lastHudSec=sec;timerEl.textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`;if(sec>0&&sec<=10)sfx.tick()}
   if(now-lastBarAt>=100){lastBarAt=now;tbarEl.style.transform=`scaleX(${left/duration})`}
   S.curMult=mult;
-  if(round!==lastRound){lastRound=round;multEl.textContent=`×${mult}`;exNameEl.textContent=ex.name;roundEl.textContent=`${ex.name} · ×${mult}`;replay(roundEl,"go-pop");showDemo(ex);sfx.round()}
+  if(round!==lastRound){lastRound=round;multEl.textContent=`×${mult}`;exNameEl.textContent=ex.name;roundEl.textContent=`${ex.name} · ×${mult}`;replay(roundEl,"go-pop");paintRounds(round);showDemo(ex);sfx.round()}
   // the camera is slower than the screen: skip all pose work until a new frame arrives
   const poses=sampleCamera(now);
   if(poses){
@@ -248,7 +256,9 @@ function loop(){
     }else if(lost.length)setCue(hintCue,hintCueText,"back",`P${lost.join(" ir P")} · atsitrauk`);
     else setCue(hintCue,hintCueText,"","");
   }
-  [0,1].forEach(i=>{const v=String(score[i]);if(v!==shown[i]){shown[i]=v;setDigits(scoreEls[i],v)}});
+  let moved=false;
+  [0,1].forEach(i=>{const v=String(score[i]);if(v!==shown[i]){shown[i]=v;scoreEls[i].dataset.len=String(v.length);setDigits(scoreEls[i],v);moved=true}});
+  if(moved)hudRoot.dataset.lead=players===1||score[0]===score[1]?"0":score[0]>score[1]?"1":"2"; // crown on the leader
   const roundStart=round*ROUND_SECS;
   if(nudgedRound!==round&&el-roundStart>IDLE_DEMO_SECS&&!demoRoot.classList.contains("on")){
     let idle=false;

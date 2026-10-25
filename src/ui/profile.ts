@@ -14,7 +14,7 @@ export const APP_VERSION="2.0"; // ponytail: bump by hand with user-visible rele
 const DAY=["Sk","Pr","An","Tr","Kt","Pn","Š"];
 const DAY_LONG=["sekmadienis","pirmadienis","antradienis","trečiadienis","ketvirtadienis","penktadienis","šeštadienis"];
 // medal colour per badge (locked badges are grey)
-const BADGE_TONE:Record<string,string>={first:"mint",duel:"blue",streak3:"yellow",squat100:"red",pts100:"pink",beat:"violet",games10:"sky",allex:"yellow"};
+const BADGE_TONE:Record<string,string>={first:"yellow",duel:"blue",streak3:"red",squat100:"red",pts100:"yellow",beat:"blue",games10:"red",allex:"yellow"};
 const el=(tag:string,cls:string,text="")=>Object.assign(document.createElement(tag),{className:cls,textContent:text});
 
 function render(){
@@ -50,7 +50,7 @@ function render(){
     const li=el("li","badge"+(b.on?" on":""));li.dataset.tone=BADGE_TONE[b.id]||"red";
     li.style.setProperty("--i",String(i));
     li.setAttribute("aria-label",`${b.name} – ${b.on?"gautas":"dar negautas"}. ${b.desc}`);
-    const ic=el("span","badge-ic");ic.innerHTML=icon(b.on?b.icon:"lock");
+    const ic=el("span","badge-ic medal");ic.innerHTML=`<i class="medal-ribbon"></i><span class="medal-disc">${icon(b.on?b.icon:"lock")}</span>`;
     li.append(ic,el("b","",b.name),el("small","",b.desc));
     return li;
   }));

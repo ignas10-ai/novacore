@@ -1,62 +1,17 @@
-/// <reference types="vite/client" />
-// Side-view runner. The profile head is a real render cut from the approved turnaround sheet (tools/art/sprint-heads.py);
-// the body is a small canvas rig (capsule limbs with cylinder shading) so the run cycle follows the player's real cadence.
-// ponytail: rig instead of generated run-cycle frames (Gemini credits were empty on 2026-10-25). Drop-in later: put
-// src/art/sprint/<raudonas|melynas>-run-<1..6>.webp (frames listed in tools/art/jobs-sprint.json) and drawRunner() plays
-// them by phase automatically (import.meta.glob below finds them at build time), keeping bob/lean/squash.
-// Units: 1 = character height (hair top to sole), origin = hip joint, +x = running direction, +y = down.
+// Side-view runner in the Claude Design mascot style (2026-10-26): round head with the headband and flying knot tails,
+// a small body, floating boxing gloves on the arm swing, short navy legs with sneakers, thick navy outline – drawn in
+// canvas so the run cycle follows the player's real cadence. Same pose rig as before (thigh/knee/foot, shoulder/elbow).
+// Units: 1 = character height (head top to sole), origin = hip joint, +x = running direction, +y = down.
 
-export interface Look{
-  name:string; head:HTMLImageElement; headW:number; headH:number; neckX:number; // head size in units, neck at this fraction of its width
-  top:string[]; sleeve:string[]; arm:string[]; band:string; legTop:string[]; leg:string[]; sock:string|null;
-  shoeUp:string; shoeToe:string; sole:string; lace:string; stripe:string|null; hemY:number; short:boolean;
-  frames:HTMLImageElement[]; // optional generated run cycle (empty = rig)
-}
-const img=(u:string)=>{const i=new Image();i.decoding="async";i.src=u;return i};
-const FRAMES=import.meta.glob("../art/sprint/*-run-*.webp",{eager:true,query:"?url",import:"default"}) as Record<string,string>;
-const framesOf=(name:string)=>Object.keys(FRAMES).filter(k=>k.includes(`/${name}-run-`)).sort().map(k=>img(FRAMES[k]));
-// colour triples = [light, base, dark]
+export interface Look{name:string;body:string;dark:string;band:string;bandEdge:string}
 export const LOOKS:Look[]=[
-  { // Raudonas: red track jacket with yellow stripes, red shorts, white socks, red sneakers on yellow soles
-    name:"raudonas",head:img(new URL("../art/sprint/raudonas-side.webp",import.meta.url).href),headW:.334,headH:.407,neckX:.6,
-    top:["#FF6A5E","#F23B36","#C42029"],sleeve:["#FF6A5E","#F23B36","#C42029"],arm:["#FAD3B6","#F2BD9C","#D9977A"],band:"#FFC61A",
-    legTop:["#F0414A","#D61F2C","#A8121E"],leg:["#FAD3B6","#F2BD9C","#D9977A"],sock:"#F6F4F0",
-    shoeUp:"#EE3434",shoeToe:"#F7F4EE",sole:"#FFC61A",lace:"#FFFFFF",stripe:"#FFC61A",hemY:.03,short:false,frames:framesOf("raudonas"),
-  },
-  { // Mėlynas: boxy blue tee with yellow collar, short sleeves + yellow wristbands, blue joggers, blue sneakers on white soles
-    name:"melynas",head:img(new URL("../art/sprint/melynas-side.webp",import.meta.url).href),headW:.329,headH:.396,neckX:.62,
-    top:["#6492FF","#2F6BFF","#1B4AC9"],sleeve:["#6492FF","#2F6BFF","#1B4AC9"],arm:["#BD7E57","#A4683F","#7A4728"],band:"#FFC61A",
-    legTop:["#4D7BFF","#2457E6","#163BB0"],leg:["#4D7BFF","#2457E6","#163BB0"],sock:null,
-    shoeUp:"#2F6BFF",shoeToe:"#F7F4EE",sole:"#F7F4EE",lace:"#FFC61A",stripe:null,hemY:.04,short:true,frames:framesOf("melynas"),
-  },
+  {name:"raudonas",body:"#FF3B3B",dark:"#C9202B",band:"#FFC61A",bandEdge:"#E0A800"},
+  {name:"melynas",body:"#2F6BFF",dark:"#1B4AC9",band:"#FFFFFF",bandEdge:"#D9DEEA"},
 ];
-
-// proportions measured on sheet-r3 / sheet-b3 (side figure), in units
-const HIP_H=.33, TORSO=.27, BACK=-.1, CHEST=.08, THIGH=.105, SHIN=.15, SOLE=.08, UARM=.12, FARM=.1;
-const TW=.12, LW=.085, AW=.07; // thigh / shin / arm thickness
-const INK=[20,24,58];
-// far-side limbs: the same colours pulled toward the navy ink, so the two legs / arms read apart without overlays
-function shade(hex:string,k:number){const n=parseInt(hex.slice(1),16),c=[n>>16,n>>8&255,n&255].map((v,i)=>Math.round(v+(INK[i]-v)*k));return `rgb(${c[0]},${c[1]},${c[2]})`}
-interface Paint{torso:CanvasGradient;thigh:CanvasGradient;skinLeg:CanvasGradient;shin:CanvasGradient;sleeve:CanvasGradient;arm:CanvasGradient;
-  skin:string;skinDark:string;sock:string;shoeUp:string;shoeToe:string;sole:string;lace:string;band:string;stripe:string;legDark:string;shorts:string}
-function grad(ctx:CanvasRenderingContext2D,w:number,c:string[]){
-  const g=ctx.createLinearGradient(-w/2,0,w/2,0);
-  g.addColorStop(0,c[0]);g.addColorStop(.45,c[1]);g.addColorStop(1,c[2]);return g;
-}
-// gradients live in unit space, so one set per look is reused under every transform (no per-frame allocation)
-function paint(ctx:CanvasRenderingContext2D,L:Look,k:number):Paint{
-  const f=(c:string)=>k?shade(c,k):c, fa=(a:string[])=>a.map(f);
-  const top=fa(L.top),t=ctx.createLinearGradient(BACK,0,CHEST,0);
-  t.addColorStop(0,top[2]);t.addColorStop(.35,top[1]);t.addColorStop(.85,top[0]);t.addColorStop(1,top[1]);
-  return {torso:t,thigh:grad(ctx,TW,fa(L.legTop)),skinLeg:grad(ctx,LW,fa(L.arm)),shin:grad(ctx,LW,fa(L.leg)),sleeve:grad(ctx,AW,fa(L.sleeve)),arm:grad(ctx,AW*.86,fa(L.arm)),
-    skin:f(L.arm[1]),skinDark:f(L.arm[2]),sock:f(L.sock||"#FFFFFF"),shoeUp:f(L.shoeUp),shoeToe:f(L.shoeToe),sole:f(L.sole),lace:f(L.lace),band:f(L.band),
-    stripe:f(L.stripe||"#FFFFFF"),legDark:f(L.leg[2]),shorts:f(L.legTop[1])};
-}
-const paints=new Map<Look,Paint[]>();
-// capsule from (0,0) down to (0,len), width w
-function cap(ctx:CanvasRenderingContext2D,len:number,w:number){
-  const r=w/2;ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(-r,len);ctx.arc(0,len,r,Math.PI,0,true);ctx.lineTo(r,0);ctx.arc(0,0,r,0,Math.PI,true);ctx.fill();
-}
+const INK="#14183A", OL=.024;      // outline width in units
+const HIP_H=.3, THIGH=.15, SHIN=.14, LW=.1, UARM=.13, FARM=.1, GLOVE=.075, BODY_W=.27, BODY_H=.24, HEAD_R=.25;
+const HEAD_Y=-BODY_H-.15;          // head centre above the hip
+const SHOULDER_Y=-BODY_H+.06;
 const D=Math.PI/180;
 
 export interface Pose{th:number[];kn:number[];sh:number[];el:number[];ft:number[];lean:number;bob:number;p:number}
@@ -76,81 +31,87 @@ export function runPose(o:Pose,p:number,a:number){
 }
 export function setPose(o:Pose,t:number){ // "Dėmesio": crouched sprint start, weight forward
   o.th[0]=64;o.kn[0]=100;o.ft[0]=-4;o.th[1]=-14;o.kn[1]=58;o.ft[1]=-22;
-  o.sh[0]=48;o.el[0]=70;o.sh[1]=-34;o.el[1]=60;o.lean=28;o.bob=.003*Math.sin(t*9);o.p=0;
+  o.sh[0]=48;o.el[0]=70;o.sh[1]=-34;o.el[1]=60;o.lean=24;o.bob=.003*Math.sin(t*9);o.p=0;
 }
-export function standPose(o:Pose,t:number){ // idle breathing
-  o.th[0]=6;o.th[1]=-4;o.kn[0]=8;o.kn[1]=6;o.ft[0]=o.ft[1]=0;o.sh[0]=10;o.sh[1]=-6;o.el[0]=24;o.el[1]=18;o.lean=2;o.bob=.004*Math.sin(t*2.4);o.p=0;
+export function standPose(o:Pose,t:number){ // idle breathing, gloves up in guard
+  o.th[0]=6;o.th[1]=-4;o.kn[0]=8;o.kn[1]=6;o.ft[0]=o.ft[1]=0;o.sh[0]=30;o.sh[1]=10;o.el[0]=100;o.el[1]=110;o.lean=2;o.bob=.004*Math.sin(t*2.4);o.p=t;
 }
-export function winPose(o:Pose,t:number){ // arms up, little hops
+export function winPose(o:Pose,t:number){ // gloves up, little hops
   standPose(o,t);o.sh[0]=165;o.sh[1]=150;o.el[0]=-14;o.el[1]=-20;o.bob=.035*Math.abs(Math.sin(t*5));
 }
 
 // lowest sole point below the hip (units, +down): forward kinematics hip -> knee -> ankle -> heel / toe
 function footDrop(th:number,kn:number,ft:number){
-  const a1=-th*D,a2=a1+kn*D,a3=a2-ft*D,y=THIGH*Math.cos(a1)+SHIN*Math.cos(a2),c=SOLE*Math.cos(a3),s=Math.sin(a3);
-  return y+Math.max(c-.07*s,c+.155*s);
+  const a1=-th*D,a2=a1+kn*D,a3=a2-ft*D,y=THIGH*Math.cos(a1)+SHIN*Math.cos(a2),c=.05*Math.cos(a3),s=Math.sin(a3);
+  return y+Math.max(c-.05*s,c+.12*s);
 }
-function leg(ctx:CanvasRenderingContext2D,L:Look,P:Paint,j:number,o:Pose){
+function capsule(ctx:CanvasRenderingContext2D,len:number,w:number){
+  const r=w/2;ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(-r,len);ctx.arc(0,len,r,Math.PI,0,true);ctx.lineTo(r,0);ctx.arc(0,0,r,0,Math.PI,true);ctx.closePath();
+}
+function leg(ctx:CanvasRenderingContext2D,j:number,o:Pose,far:boolean){
   ctx.save();
   ctx.rotate(-o.th[j]*D);
-  if(L.sock){
-    ctx.fillStyle=P.skinLeg;cap(ctx,THIGH,TW*.8);
-    ctx.fillStyle=P.thigh;ctx.beginPath();ctx.roundRect(-TW*.56,-.03,TW*1.12,THIGH*.6+.03,[.02,.02,.035,.035]);ctx.fill(); // shorts leg
-  }else{ctx.fillStyle=P.thigh;cap(ctx,THIGH,TW);ctx.fillStyle="#fff";ctx.fillRect(-.006,-.01,.012,THIGH)} // jogger + piping
+  ctx.fillStyle=far?"#0B0E26":INK;
+  capsule(ctx,THIGH,LW);ctx.fill();
   ctx.translate(0,THIGH);ctx.rotate(o.kn[j]*D);
-  ctx.fillStyle=L.sock?P.skinLeg:P.shin;cap(ctx,SHIN,LW);
-  if(L.sock){ctx.fillStyle=P.sock;ctx.beginPath();ctx.roundRect(-LW*.56,SHIN*.5,LW*1.12,SHIN*.5+.01,.02);ctx.fill()}
-  else{ctx.fillStyle="#fff";ctx.fillRect(-.006,0,.012,SHIN*.8);ctx.fillStyle=P.legDark;ctx.beginPath();ctx.roundRect(-LW*.6,SHIN*.78,LW*1.2,.04,.015);ctx.fill()}
-  // chunky toy sneaker, toe forward (+x)
+  capsule(ctx,SHIN,LW*.92);ctx.fill();
+  // chunky sneaker, toe forward (+x): white sole + coloured upper
   ctx.translate(0,SHIN);ctx.rotate(-o.ft[j]*D);
-  ctx.fillStyle=P.sole;ctx.beginPath();ctx.roundRect(-.075,.03,.235,.05,.022);ctx.fill();
-  ctx.fillStyle=P.shoeUp;ctx.beginPath();ctx.moveTo(-.07,.04);ctx.lineTo(-.065,-.025);ctx.quadraticCurveTo(-.02,-.05,.03,-.02);ctx.quadraticCurveTo(.13,-.005,.15,.04);ctx.closePath();ctx.fill();
-  ctx.fillStyle=P.shoeToe;ctx.beginPath();ctx.moveTo(.06,.04);ctx.quadraticCurveTo(.075,-.01,.11,-.005);ctx.quadraticCurveTo(.15,.005,.155,.04);ctx.closePath();ctx.fill();
-  ctx.strokeStyle=P.lace;ctx.lineWidth=.009;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(0,-.028);ctx.lineTo(.025,-.012);ctx.moveTo(.025,-.03);ctx.lineTo(.05,-.012);ctx.stroke();
+  ctx.beginPath();ctx.roundRect(-.06,-.035,.19,.085,.04);ctx.fillStyle=far?"#2A2F5A":INK;ctx.fill();
+  ctx.beginPath();ctx.roundRect(-.06,.025,.19,.03,.015);ctx.fillStyle=far?"#C9CCE3":"#fff";ctx.fill();
+  ctx.lineWidth=OL*.8;ctx.strokeStyle=INK;ctx.beginPath();ctx.roundRect(-.06,-.035,.19,.09,.04);ctx.stroke();
   ctx.restore();
 }
-function arm(ctx:CanvasRenderingContext2D,L:Look,P:Paint,j:number,o:Pose){
-  const sh=L.short;
-  ctx.save();
-  ctx.rotate(-o.sh[j]*D);
-  if(sh){ctx.fillStyle=P.arm;cap(ctx,UARM,AW*.86)}
-  ctx.fillStyle=P.sleeve;cap(ctx,sh?UARM*.6:UARM,AW*(sh?1.3:1));
-  if(L.stripe){ctx.fillStyle=P.stripe;ctx.fillRect(-.013,0,.008,UARM);ctx.fillRect(.002,0,.008,UARM)}
-  ctx.translate(0,UARM);ctx.rotate(-o.el[j]*D);
-  ctx.fillStyle=sh?P.arm:P.sleeve;cap(ctx,FARM,sh?AW*.86:AW);
-  if(L.stripe){ctx.fillStyle=P.stripe;ctx.fillRect(-.013,0,.008,FARM*.72);ctx.fillRect(.002,0,.008,FARM*.72)}
-  ctx.fillStyle=P.band;ctx.beginPath();ctx.roundRect(-AW*.6,FARM*.72,AW*1.2,.032,.012);ctx.fill();
-  ctx.fillStyle=P.skin;ctx.beginPath();ctx.ellipse(.004,FARM+.045,.036,.042,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle=P.skinDark;ctx.beginPath();ctx.ellipse(.016,FARM+.05,.018,.03,0,0,Math.PI*2);ctx.fill();
+// gloves float on the arm swing (no drawn arm, like the mascot art)
+function glove(ctx:CanvasRenderingContext2D,L:Look,j:number,o:Pose,far:boolean){
+  const a1=-o.sh[j]*D, a2=a1-o.el[j]*D;
+  const x=Math.sin(-a1)*UARM+Math.sin(-a2)*FARM, y=Math.cos(a1)*UARM+Math.cos(a2)*FARM;
+  ctx.beginPath();ctx.arc(x,y,GLOVE,0,Math.PI*2);
+  ctx.fillStyle=far?L.dark:L.body;ctx.fill();ctx.lineWidth=OL;ctx.strokeStyle=INK;ctx.stroke();
+  if(!far){ctx.beginPath();ctx.arc(x-.012,y-.012,GLOVE*.6,Math.PI*1.05,Math.PI*1.55);ctx.lineWidth=OL*.8;ctx.strokeStyle="rgba(255,255,255,.85)";ctx.lineCap="round";ctx.stroke()}
+}
+function head(ctx:CanvasRenderingContext2D,L:Look,o:Pose,t:number){
+  const r=HEAD_R, cy=HEAD_Y;
+  // knot tails fly behind (-x), flapping with the stride
+  const fl=Math.sin(t*2)*.025;
+  ctx.lineJoin="round";ctx.lineWidth=OL;ctx.strokeStyle=INK;ctx.fillStyle=L.band;
+  ctx.beginPath();ctx.moveTo(-r*.8,cy-.06);ctx.lineTo(-r-.17,cy-.12+fl);ctx.lineTo(-r-.12,cy+.0+fl*.6);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-r*.8,cy-.02);ctx.lineTo(-r-.13,cy+.06-fl);ctx.lineTo(-r-.04,cy+.09-fl*.5);ctx.closePath();ctx.fill();ctx.stroke();
+  // head
+  ctx.beginPath();ctx.arc(0,cy,r,0,Math.PI*2);ctx.fillStyle=L.body;ctx.fill();
+  // headband: the slice of the circle between two curved edges (wraps around the head)
+  ctx.save();ctx.beginPath();ctx.arc(0,cy,r,0,Math.PI*2);ctx.clip();
+  ctx.beginPath();ctx.moveTo(-r,cy-.1);ctx.quadraticCurveTo(0,cy-.13,r,cy-.07);ctx.lineTo(r,cy+.01);ctx.quadraticCurveTo(0,cy-.04,-r,cy-.01);ctx.closePath();
+  ctx.fillStyle=L.band;ctx.fill();ctx.lineWidth=OL*.85;ctx.stroke();
+  ctx.beginPath();ctx.ellipse(-r*.38,cy-r*.68,r*.26,r*.12,-.5,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,.4)";ctx.fill(); // shine
   ctx.restore();
+  // face in profile, looking ahead (+x): brow, eye with a highlight, open "go!" mouth
+  const ex=r*.5, ey=cy+.06;
+  ctx.lineCap="round";ctx.strokeStyle=INK;ctx.lineWidth=OL*1.25;
+  ctx.beginPath();ctx.moveTo(ex-.06,ey-.07);ctx.lineTo(ex+.05,ey-.05);ctx.stroke();
+  ctx.beginPath();ctx.ellipse(ex,ey+.005,.032,.042,0,0,Math.PI*2);ctx.fillStyle=INK;ctx.fill();
+  ctx.beginPath();ctx.arc(ex+.01,ey-.012,.012,0,Math.PI*2);ctx.fillStyle="#fff";ctx.fill();
+  ctx.beginPath();ctx.moveTo(r*.42,cy+.13);ctx.quadraticCurveTo(r*.72,cy+.17,r*.9,cy+.1);ctx.quadraticCurveTo(r*.7,cy+.11,r*.42,cy+.13);ctx.closePath();
+  ctx.fillStyle=INK;ctx.fill();ctx.lineWidth=OL*.7;ctx.stroke();
+  // outline last, over the band edges
+  ctx.beginPath();ctx.arc(0,cy,r,0,Math.PI*2);ctx.lineWidth=OL;ctx.stroke();
 }
 
 // draw standing on (x, groundY); h = character height in px; squash < 1 flattens (landing), > 1 stretches (flight)
 export function drawRunner(ctx:CanvasRenderingContext2D,L:Look,o:Pose,x:number,groundY:number,h:number,squash=1){
-  if(L.frames.length&&L.frames.every(f=>f.complete&&f.naturalWidth)){ // generated run cycle, when present
-    const f=L.frames[Math.floor(o.p*L.frames.length)%L.frames.length],w=h*f.naturalWidth/f.naturalHeight;
-    ctx.save();ctx.translate(x,groundY-o.bob*h);ctx.scale(1/Math.sqrt(squash),squash);ctx.rotate(o.lean*D*.4);ctx.drawImage(f,-w/2,-h,w,h);ctx.restore();
-    return;
-  }
-  let PP=paints.get(L);
-  if(!PP){PP=[paint(ctx,L,0),paint(ctx,L,.3)];paints.set(L,PP)}
-  const P=PP[0],B=PP[1];
   const drop=Math.max(footDrop(o.th[0],o.kn[0],o.ft[0]),footDrop(o.th[1],o.kn[1],o.ft[1]),HIP_H*.6);
   ctx.save();
   ctx.translate(x,groundY);ctx.scale(h/Math.sqrt(squash),h*squash);
   ctx.translate(0,-drop-o.bob);
-  // far-side limbs first (j=1)
-  ctx.save();ctx.rotate(o.lean*D);ctx.translate(-.005,-TORSO+.03);arm(ctx,L,B,1,o);ctx.restore();
-  leg(ctx,L,B,1,o);
-  // torso leans around the hip, head rides on it
+  ctx.lineJoin="round";ctx.lineCap="round";
+  // far side first (j=1)
+  ctx.save();ctx.rotate(o.lean*D);ctx.translate(-.02,SHOULDER_Y);glove(ctx,L,1,o,true);ctx.restore();
+  leg(ctx,1,o,true);
   ctx.save();ctx.rotate(o.lean*D);
-  ctx.fillStyle=P.shorts;ctx.beginPath();ctx.roundRect(BACK+.005,-.05,CHEST-BACK-.01,.1,.04);ctx.fill();
-  ctx.fillStyle=P.torso;ctx.beginPath();ctx.roundRect(BACK,-TORSO,CHEST-BACK,TORSO+L.hemY,[.07,.06,.04,.04]);ctx.fill();
-  if(L.stripe){ctx.fillStyle="#F4F2EE";ctx.beginPath();ctx.roundRect(CHEST-.03,-TORSO+.01,.022,TORSO-.02,.01);ctx.fill()} // zip line + white tee
-  ctx.fillStyle="rgba(20,24,58,.14)";ctx.fillRect(BACK+.01,L.hemY-.02,CHEST-BACK-.02,.02);
-  if(L.head.complete&&L.head.naturalWidth)ctx.drawImage(L.head,-L.headW*L.neckX+.01,-TORSO-L.headH+.035,L.headW,L.headH);
+  ctx.beginPath();ctx.roundRect(-BODY_W/2,-BODY_H,BODY_W,BODY_H+.06,.11);ctx.fillStyle=L.body;ctx.fill();ctx.lineWidth=OL;ctx.strokeStyle=INK;ctx.stroke();
+  head(ctx,L,o,o.p*6.3);
   ctx.restore();
-  leg(ctx,L,P,0,o);
-  ctx.save();ctx.rotate(o.lean*D);ctx.translate(-.01,-TORSO+.035);arm(ctx,L,P,0,o);ctx.restore();
+  leg(ctx,0,o,false);
+  ctx.save();ctx.rotate(o.lean*D);ctx.translate(.02,SHOULDER_Y);glove(ctx,L,0,o,false);ctx.restore();
   ctx.restore();
 }

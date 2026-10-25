@@ -9,19 +9,15 @@ import {$,plural} from "./dom.ts";
 import {onView,go} from "./router.ts";
 import {renderHomeRank} from "./social.ts";
 
-const cap=(s:string)=>s.charAt(0).toUpperCase()+s.slice(1);
 function render(){
   const now=Date.now(), h=loadHist(), nick=cachedNick();
-  $("#homeDate").textContent=cap(new Date(now).toLocaleDateString("lt-LT",{weekday:"long",month:"long",day:"numeric"}));
-  const title=$("#homeTitle");
-  title.replaceChildren(nick?"Labas, ":"Labas!");
-  if(nick)title.append(Object.assign(document.createElement("span"),{textContent:nick}),"!");
+  $("#homeTitle").textContent=nick?`Labas, ${nick}!`:"Labas!";
   const n=streak(h,now), today=h.some(g=>new Date(g.t).toDateString()===new Date(now).toDateString());
   $("#streakN").textContent=String(n);
-  $("#streakTxt").textContent=!n?"Pradėk seriją šiandien":`${plural(n,["diena","dienos","dienų"])} iš eilės${today?"":" · žaisk šiandien"}`;
+  $("#streakTxt").textContent=!n?"Serijos dar nėra – pradėk šiandien":`${n} ${plural(n,["diena","dienos","dienų"])} iš eilės${today?"":" · žaisk šiandien"}`;
   $("#streakCard").classList.toggle("hot",n>0&&today);
   const w=weekGames(h,now), left=WEEK_GOAL-w;
-  $("#goalN").textContent=`${Math.min(w,WEEK_GOAL)} / ${WEEK_GOAL}`;
+  $("#goalN").textContent=`${Math.min(w,WEEK_GOAL)}/${WEEK_GOAL}`;
   $("#goalBar").querySelectorAll("i").forEach((el,i)=>el.classList.toggle("on",i<w));
   $("#goalTxt").textContent=left<=0?"Tikslas pasiektas! Žaisk toliau.":`Liko ${left} ${plural(left,["žaidimas","žaidimai","žaidimų"])} iki savaitės tikslo`;
   $("#quickFast").textContent=S.players===1?"1 min solo":"1 min";

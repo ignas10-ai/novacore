@@ -52,7 +52,7 @@ export function build(ctx:CanvasRenderingContext2D,l:Layout){
   // ad boards
   const bw=L.boardsH*7.2;
   [boards,x]=off(bw*BOARDS.length,L.boardsH);
-  x.textAlign="center";x.textBaseline="middle";x.font=`400 ${Math.round(L.boardsH*.62)}px Anton,Impact,sans-serif`;
+  x.textAlign="center";x.textBaseline="middle";x.font=`400 ${Math.round(L.boardsH*.62)}px "Titan One",Impact,sans-serif`;
   BOARDS.forEach(([bg,fg,t],i)=>{x.fillStyle=bg;x.fillRect(i*bw,0,bw,L.boardsH);x.fillStyle=fg;x.fillText(t,i*bw+bw/2,L.boardsH*.54,bw*.84);x.fillStyle="rgba(0,0,0,.12)";x.fillRect(i*bw,L.boardsH*.86,bw,L.boardsH*.14)});
   // infield grass with mowing stripes
   const gh=Math.max(1,L.H-L.trackBot);
@@ -91,7 +91,7 @@ export function drawBack(ctx:CanvasRenderingContext2D,cam:number){
     across(ctx,m,cam,3);
     for(let k=0;k<2;k++){ // number painted flat on the lane (squashed vertically)
       const y=tt+th*(k?.72:.26),x=sx(m,cam)+(tb-y)*SKEW+L.ppm*1.1;
-      ctx.save();ctx.translate(x,y);ctx.transform(1,0,-SKEW,.42,0,0);ctx.fillStyle="rgba(255,255,255,.85)";ctx.font=`400 ${Math.round(th*.62)}px Anton,Impact,sans-serif`;ctx.fillText(String(m),0,0);ctx.restore();
+      ctx.save();ctx.translate(x,y);ctx.transform(1,0,-SKEW,.42,0,0);ctx.fillStyle="rgba(255,255,255,.85)";ctx.font=`400 ${Math.round(th*.62)}px "Titan One",Impact,sans-serif`;ctx.fillText(String(m),0,0);ctx.restore();
     }
   }
   if(sx(RACE_M,cam)<W+th){ // checkered finish band
@@ -105,7 +105,7 @@ export function drawBack(ctx:CanvasRenderingContext2D,cam:number){
   // lane numbers at the start
   if(sx(0,cam)>-th*2){
     ctx.fillStyle="rgba(255,255,255,.9)";
-    for(let k=0;k<2;k++){const y=tt+th*(k?.74:.28),x=sx(-1.4,cam)+(tb-y)*SKEW;ctx.save();ctx.translate(x,y);ctx.transform(1,0,-SKEW,.5,0,0);ctx.font=`400 ${Math.round(th*.5)}px Anton,Impact,sans-serif`;ctx.fillText(String(k+1),0,0);ctx.restore()}
+    for(let k=0;k<2;k++){const y=tt+th*(k?.74:.28),x=sx(-1.4,cam)+(tb-y)*SKEW;ctx.save();ctx.translate(x,y);ctx.transform(1,0,-SKEW,.5,0,0);ctx.font=`400 ${Math.round(th*.5)}px "Titan One",Impact,sans-serif`;ctx.fillText(String(k+1),0,0);ctx.restore()}
   }
 }
 // far finish post + banner (behind the runners)
@@ -115,7 +115,7 @@ export function drawFinishBack(ctx:CanvasRenderingContext2D,cam:number){
   const top=L.trackTop-L.charH[1]*1.45;
   ctx.fillStyle="#E9ECF5";ctx.fillRect(x-4,top,8,L.trackTop-top);
   ctx.fillStyle=C.ink;ctx.beginPath();ctx.roundRect(x-L.charH[1]*.9,top-L.charH[1]*.34,L.charH[1]*1.8,L.charH[1]*.34,8);ctx.fill();
-  ctx.fillStyle="#FFC61A";ctx.textAlign="center";ctx.textBaseline="middle";ctx.font=`400 ${Math.round(L.charH[1]*.2)}px Anton,Impact,sans-serif`;ctx.fillText("FINIŠAS",x,top-L.charH[1]*.165);
+  ctx.fillStyle="#FFC61A";ctx.textAlign="center";ctx.textBaseline="middle";ctx.font=`400 ${Math.round(L.charH[1]*.2)}px "Titan One",Impact,sans-serif`;ctx.fillText("FINIŠAS",x,top-L.charH[1]*.165);
 }
 // tape across the lanes at chest height + the near post (in front of the runners); broken = time since the tape broke
 export function drawFinishFront(ctx:CanvasRenderingContext2D,cam:number,broken:number){

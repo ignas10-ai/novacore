@@ -3,7 +3,8 @@
 import {POSE} from "./detect/classifier.ts";
 import "./ui/icons.ts";
 import {fillTpl} from "./ui/dom.ts";
-fillTpl(document);
+import {paintArt} from "./ui/avatar.ts";
+fillTpl(document);paintArt(); // template copies (onboarding phone placement) carry mascot placeholders too
 import {render} from "./ui/router.ts";
 import {firstRun} from "./ui/onboarding.ts";
 import "./ui/start.ts";
@@ -14,7 +15,6 @@ import "./ui/social.ts";
 import "./ui/home.ts";
 import "./ui/library.ts";
 import "./ui/profile.ts";
-import "./ui/avatar.ts";
 import "./ui/fullscreen.ts";
 import "./ui/wakelock.ts";
 import "./clips/clips.ts";

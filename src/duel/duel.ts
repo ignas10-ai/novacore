@@ -17,6 +17,7 @@ import {$,toast,setDigits,replay} from "../ui/dom.ts";
 import {parse} from "../ui/router.ts";
 import {onbDone} from "../ui/onboarding.ts";
 import {icon} from "../ui/icons.ts";
+import {resultArt,scoreDiff} from "../ui/results.ts";
 
 type Phase="wait"|"lobby"|"camera"|"play"|"done";
 interface Duel{
@@ -143,7 +144,7 @@ const card=$("#duelInv"), cardTxt=$("#duelInvTxt");
 function paintCard(){
   const i=invites.find(x=>dv.fresh(x.created_at,Date.now()));
   card.hidden=!i;
-  if(i)cardTxt.replaceChildren(Object.assign(document.createElement("b"),{textContent:i.nickname}),` kviečia į dvikovą · ${fmtMin(i.settings.duration)}`);
+  if(i)cardTxt.replaceChildren(Object.assign(document.createElement("b"),{textContent:`${i.nickname} kviečia į dvikovą`}),Object.assign(document.createElement("span"),{textContent:`Per atstumą · ${fmtMin(i.settings.duration)} · kiekvienas savo telefonu`}));
 }
 $("#duelInvGo").onclick=()=>{const i=invites.find(x=>dv.fresh(x.created_at,Date.now()));if(i)accept(i)};
 $("#duelInvX").onclick=()=>{const i=invites.find(x=>dv.fresh(x.created_at,Date.now()));if(i)decline(i)};
@@ -275,8 +276,10 @@ function end(){ // game.ts: back during ready, startup error, results → again 
 }
 function labels(nick:string){
   const [p1,p2]=nick?["Tu",nick]:["P1","P2"];
-  document.querySelectorAll(".pl.p1 .chip,.bar.p1 .chip").forEach(e=>e.textContent=p1);
-  document.querySelectorAll(".pl.p2 .chip,.bar.p2 .chip").forEach(e=>e.textContent=p2);
+  document.querySelectorAll(".pl.p1 .chip").forEach(e=>e.textContent=p1);
+  document.querySelectorAll(".pl.p2 .chip").forEach(e=>e.textContent=p2);
+  document.querySelectorAll(".bar.p1 .chip").forEach(e=>e.textContent=nick?"Tu":"P1 · Raudonas");
+  document.querySelectorAll(".bar.p2 .chip").forEach(e=>e.textContent=nick||"Mėlynas · P2");
   $("#rd1 b").textContent=p1;
 }
 const rdCount=$("#rdCount");
@@ -343,7 +346,8 @@ function paintEnd(D:Duel){
   const end=$("#end"),w=mine>opp?"1":opp>mine?"2":"0";
   $("#wl").textContent=w==="2"?"Laimėjo":"Dvikova";
   $("#winner").textContent=w==="1"?"Laimėjai!":w==="2"?nick:"Lygiosios!";
-  end.dataset.w=w;
+  end.dataset.w=w;resultArt(w);scoreDiff(mine,opp);
+  $("#endsub").textContent=`Dvikova per atstumą · ${(D.settings.duration||180)/60} min`;
   const pending=D.oppFinal==null;
   $("#duelResTxt").textContent=!pending?`Tu ${mine} : ${opp} ${nick}`
     :D.gone||D.timedOut?`${nick} atsijungė – rodomas paskutinis gautas rezultatas (${opp}).`:`Laukiam galutinio ${nick} rezultato…`;

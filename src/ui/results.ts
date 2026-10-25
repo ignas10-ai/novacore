@@ -1,22 +1,37 @@
-// #end results screen: winner, score bars, per-exercise breakdown, record badge.
+// #end results (Claude Design): sunburst in the winner's colour (#end[data-w]), the winner mascot with a crown, the loser
+// sweating on the other colour's diagonal, score card with the difference pill, per-exercise table, record sticker.
 import {EX} from "../detect/exercises.ts";
 import {S} from "../game/state.ts";
 import {recordGame} from "../history/history.ts";
-import {$,setDigits} from "./dom.ts";
+import {$,setDigits,plural} from "./dom.ts";
 import {afterGame} from "./social.ts";
 import {toneOf} from "./coach.ts";
+import {mascot} from "./mascots.ts";
+import {getChar} from "./avatar.ts";
+
+const NAME=["Raudonas","Mėlynas"];
+// winner / loser art; duel.ts calls it again when the remote result is in (w: "1" me, "2" opponent, "0" tie)
+export function resultArt(w:string,solo=false){
+  const st=$("#resStage");
+  st.dataset.w=w;
+  st.innerHTML=solo?`<span class="rs-win">${mascot(getChar(),"win",{anim:true})}</span>`
+    :w==="0"?`<span class="rs-win tie">${mascot("r","win",{anim:true})}</span><span class="rs-win tie b">${mascot("b","win",{anim:true})}</span>`
+    :`<span class="rs-win">${mascot(w==="2"?"b":"r","win",{anim:true})}</span><span class="rs-lose">${mascot(w==="2"?"r":"b","lose",{anim:true})}</span>`;
+}
+export function scoreDiff(a:number,b:number){const d=$("#rDiff");d.textContent=a===b?"=":`+${Math.abs(a-b)}`;d.dataset.side=a>b?"1":a<b?"2":"0"}
 
 export function renderResults(){
   const {players,score,scoreEvents,duration}=S;
   setDigits($("#r1"),String(score[0]));setDigits($("#r2"),String(score[1]));
   const top=Math.max(score[0],score[1],1);
   requestAnimationFrame(()=>{$("#b1").style.width=`${score[0]/top*100}%`;$("#b2").style.width=`${score[1]/top*100}%`});
-  const w=$("#winner"),end=$("#end");
-  if(players===1){$("#wl").textContent="Tavo rezultatas";w.textContent=`${score[0]} tšk.`;end.dataset.w="1"}
-  else if(score[0]===score[1]){$("#wl").textContent="Rezultatas";w.textContent="Lygiosios!";end.dataset.w="0"}
-  else{const k=score[0]>score[1]?1:2;$("#wl").textContent="Laimėjo";w.textContent=`Žaidėjas ${k}`;end.dataset.w=String(k)}
-  const repsAll=scoreEvents.length;
-  $("#endsub").textContent=`${repsAll} judesi${repsAll%10===1&&repsAll%100!==11?"s":repsAll%10>=2&&repsAll%10<=9&&(repsAll%100<10||repsAll%100>=20)?"ai":"ų"} · ${score[0]+score[1]} tšk. per ${duration/60} min`;
+  const w=$("#winner"),end=$("#end"),mode=`${players===1?"Solo":"Dvikova"} · ${duration/60} min`;
+  const reps=scoreEvents.length, sub=$("#endsub");
+  if(players===1){$("#wl").textContent="Tavo rezultatas";w.textContent=`${score[0]} tšk.`;end.dataset.w="1";sub.textContent=`${reps} ${plural(reps,["judesys","judesiai","judesių"])} · ${mode}`}
+  else if(score[0]===score[1]){$("#wl").textContent="Rezultatas";w.textContent="Lygiosios!";end.dataset.w="0";sub.textContent=`Abu po ${score[0]} tšk. · ${mode}`}
+  else{const k=score[0]>score[1]?1:2;$("#wl").textContent="Laimėjo";w.textContent=`${NAME[k-1]}!`;end.dataset.w=String(k);sub.textContent=`Žaidėjas ${k} · ${mode}`}
+  resultArt(end.dataset.w!,players===1);
+  scoreDiff(score[0],score[1]);
   // per-exercise breakdown (reps, not points) in the order the rounds were played
   const brk=$("#brk"),brkList=$("#brkList");
   const order=[...new Set(scoreEvents.map(e=>e.ex).filter(Boolean))]; // e.ex = exercise id

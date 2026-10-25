@@ -17,25 +17,22 @@ import type {Game} from "../history/stats.ts";
 import {$,plural} from "../ui/dom.ts";
 import {RACE_M,V_MAX,runner,onStep,advance,simulate,ghostX,type Runner} from "./speed.ts";
 import {LOOKS,newPose,runPose,setPose,standPose,winPose,drawRunner,type Pose} from "./runner.ts";
+import {mascot,avatar} from "../ui/mascots.ts";
 import {layout,build,drawBack,drawFinishBack,drawFinishFront,drawFront,sx,SKEW,type Layout} from "./scene.ts";
 
 const NAMES=["Raudonas","Mėlynas"];
-const art=(f:string)=>new URL(`../art/${f}`,import.meta.url).href;
-const HEAD=[new URL("../art/sprint/raudonas-side.webp",import.meta.url).href,new URL("../art/sprint/melynas-side.webp",import.meta.url).href];
-const FACE=[[art("raudonas-head.webp"),art("raudonas-head@2x.webp")],[art("melynas-head.webp"),art("melynas-head@2x.webp")]];
-const HERO=[[art("raudonas-hero.webp"),art("raudonas-hero@2x.webp")],[art("melynas-hero.webp"),art("melynas-hero@2x.webp")]];
 const DEFAULT_GHOST=simulate(2.8).splits; // ~15 s: the target before the first run
 const POS_S=1.7, SET_MIN=1.3, SET_MAX=2.3, END_AFTER=8, LIMIT_S=60, RESULTS_DELAY=2200;
 const fmt=(s:number)=>s.toFixed(2).replace(".",",");
 const kmh=(v:number)=>Math.round(v*3.6);
-const face=(i:number,cls="")=>`<img class="${cls}" src="${FACE[i][0]}" srcset="${FACE[i][0]} 1x, ${FACE[i][1]} 2x" alt="" width="96" height="96" decoding="async">`;
+const face=(i:number,cls="")=>`<span class="${cls}">${avatar(i?"b":"r")}</span>`;
 
 // ---------- markup (built here so the shared index.html stays untouched) ----------
 const tile=document.createElement("a");
 tile.className="sp-tile tap";tile.href="#/sprintas";tile.dataset.tone="yellow";
-tile.innerHTML=`<span class="sp-tile-txt"><span class="eyebrow">Naujas žaidimas</span><b>Sprintas<br>100&nbsp;m</b><small>Bėk vietoje – kas pirmas iki finišo?</small></span>
-<span class="sp-tile-art" aria-hidden="true"><img src="${HEAD[1]}" alt="" width="99" height="120"><img src="${HEAD[0]}" alt="" width="98" height="120"></span><span class="sp-tile-go" data-icon="arrow-right"></span>`;
-(document.getElementById("homePlay")??document.querySelector("#home .col"))?.after(tile);
+tile.innerHTML=`<span class="sp-tile-txt"><span class="eyebrow">Naujas žaidimas</span><b class="d">Sprintas 100&nbsp;m</b><small>Bėk vietoje – kas pirmas iki finišo?</small></span>
+<span class="sp-tile-art" aria-hidden="true">${mascot("b","knees",{anim:true})}${mascot("r","knees",{anim:true})}</span><span class="sp-tile-go" data-icon="arrow-right"></span>`;
+(document.getElementById("rankCard")??document.querySelector("#home .col:last-child"))?.after(tile);
 
 const app=document.getElementById("app")??document.body;
 app.insertAdjacentHTML("beforeend",`
@@ -81,7 +78,7 @@ document.body.insertAdjacentHTML("beforeend",`
 <section class="screen hide" id="sprintEnd" aria-labelledby="spWin">
   <div class="wrap">
     <header class="sp-res-head" id="spResHead">
-      <img class="sp-res-art" id="spResArt" alt="" width="227" height="420" decoding="async">
+      <span class="sp-res-art" id="spResArt" aria-hidden="true"></span>
       <span class="wl">Sprintas 100 m</span>
       <h2 class="d" id="spWin">Raudonas laimi!</h2>
       <p id="spSub"></p>
@@ -137,7 +134,7 @@ function hero(now:number){
     drawRunner(heroCtx,LOOKS[k],heroPose,x,g,h*(k?.9:1));
   }
 }
-onView("sprint",()=>{document.fonts?.load("400 40px Anton").catch(()=>{});syncSeg();renderPb();if(!heroRaf)heroRaf=requestAnimationFrame(hero)});
+onView("sprint",()=>{syncSeg();renderPb();if(!heroRaf)heroRaf=requestAnimationFrame(hero)});
 $("#spGo").onclick=()=>startFlow(SPRINT);
 
 // ---------- race state ----------
@@ -202,7 +199,7 @@ function begin(){
   document.body.classList.add("sprinting");
   resize();
   cam=-(L.W/L.ppm)*.3;
-  document.fonts?.load("400 40px Anton").then(()=>{if(phase!=="off")build(ctx,L)}).catch(()=>{});
+  document.fonts?.load("400 40px \"Titan One\"","FINIŠAS 0123456789").then(()=>{if(phase!=="off")build(ctx,L)}).catch(()=>{});
   S.running=true; // game.ts swallows Android back while running
   last=performance.now();fn=0;
   enter("pos",last);
@@ -287,7 +284,7 @@ function body(k:number,look:number,x:number,v:number,alpha:number,label:string){
   ctx.globalAlpha=1;
 }
 function tag(x:number,y:number,txt:string,look:number){
-  ctx.font="800 13px Inter,system-ui,sans-serif";
+  ctx.font="800 13px Nunito,system-ui,sans-serif";
   const w=ctx.measureText(txt).width+18;
   ctx.fillStyle=look?"#2F6BFF":"#FF3B3B";ctx.beginPath();ctx.roundRect(x-w/2,y-12,w,24,12);ctx.fill();
   ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(txt,x,y+.5);
@@ -298,7 +295,7 @@ function edge(k:number,look:number,left:boolean,x:number,label:string){
   let lead=-1e9;for(let i=0;i<S.players;i++)if(R[i].x!==x)lead=Math.max(lead,R[i].x);
   const gap=lead<-1e8?0:Math.round(Math.abs(lead-x));
   const y=laneY(k)-L.charH[k]*.5,txt=`${label||NAMES[look]} ${left?"−":"+"}${gap} m`;
-  ctx.font="800 13px Inter,system-ui,sans-serif";const w=ctx.measureText(txt).width+34;
+  ctx.font="800 13px Nunito,system-ui,sans-serif";const w=ctx.measureText(txt).width+34;
   const X=left?12:L.W-12-w;
   ctx.fillStyle=look?"#2F6BFF":"#FF3B3B";ctx.beginPath();ctx.roundRect(X,y-15,w,30,15);ctx.fill();
   ctx.fillStyle="#fff";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(txt,X+(left?24:12),y+.5);
@@ -390,8 +387,8 @@ function finishRace(){
     if(tie)w=-1;
   }
   head.dataset.w=String(w+1);
-  const artI=w<0?0:solo?0:w, artEl=$<HTMLImageElement>("#spResArt");
-  artEl.src=HERO[artI][0];artEl.srcset=`${HERO[artI][0]} 1x, ${HERO[artI][1]} 2x`;
+  const artI=w<0?0:solo?0:w;
+  $("#spResArt").innerHTML=mascot(artI?"b":"r",w<0&&!solo?"idle":"win",{anim:true});
   const rb=$("#spRec");rb.hidden=!pb;rb.textContent=prev?"Naujas rekordas!":"Pirmasis rekordas!";
   // rows: place, face, name, details, time
   const rows=[...Array(S.players).keys()].map(i=>({i,t:times[i],r:R[i],ghost:false}));
