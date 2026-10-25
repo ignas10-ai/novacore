@@ -213,6 +213,17 @@
       <p><i>3 minutės.</i> <b>2 žaidėjai.</b> Visas kūnas.</p>
     </header>
 
+    <!-- online layer (src/ui/social.ts): hidden when Supabase is not configured; the game never waits for it -->
+    <section class="social" id="social" aria-label="Profilis ir kompanijos" hidden>
+      <button class="nick-chip" id="nickOpen" type="button" aria-haspopup="dialog" aria-controls="nickSheet"><span class="av d" id="nickAv">?</span><b id="nickTxt">Slapyvardis</b></button>
+      <button class="ex-open grp-open" id="grpOpen" type="button" aria-haspopup="dialog" aria-controls="grpSheet"><span class="n" id="grpRank" hidden>–</span><b>Kompanijos</b></button>
+    </section>
+    <section class="chal" id="chal" aria-live="polite" hidden>
+      <span class="chal-tag d">Iššūkis</span>
+      <p id="chalTxt"></p>
+      <button class="ex-close" id="chalX" type="button" aria-label="Atsisakyti iššūkio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="square"/></svg></button>
+    </section>
+
     <section class="pick" aria-label="Nustatymai">
       <div>
         <div class="lbl">Žaidėjai</div>
@@ -362,9 +373,15 @@
       <div class="lbl">Pakartojimai pagal pratimą</div>
       <ul class="brk-list" id="brkList"></ul>
     </section>
+    <section class="chal-res" id="chalRes" hidden>
+      <span class="chal-tag d">Iššūkis</span>
+      <b class="d" id="chalVerdict">Įveikei!</b>
+      <p id="chalLine"></p>
+    </section>
     <div class="cta">
+      <button class="go alt" id="chalBtn" type="button" hidden>Mesti iššūkį<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="6" cy="12" r="2.5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="18" cy="19" r="2.5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
       <button class="go" id="toClips"><span>Toliau</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square"/></svg></button>
-      <p class="fine">Toliau – geriausios žaidimo akimirkos</p>
+      <p class="fine" id="onNote">Toliau – geriausios žaidimo akimirkos</p>
     </div>
   </div>
 </section>
@@ -435,6 +452,66 @@
       <p class="ex-sheet-note" id="histNote"></p>
       <button class="go alt hist-clear" id="histClear" type="button">Išvalyti</button>
       <button class="go ex-done" id="histDone" type="button">Gerai<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5 9-12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square" stroke-linejoin="miter"/></svg></button>
+    </footer>
+  </div>
+</dialog>
+
+<dialog class="ex-sheet" id="nickSheet" aria-labelledby="nickTitle">
+  <form class="ex-sheet-panel" id="nickForm" novalidate>
+    <header class="ex-sheet-head">
+      <div class="ex-sheet-bar">
+        <span class="tag">Profilis</span>
+        <button class="ex-close" id="nickClose" type="button" aria-label="Uždaryti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="square"/></svg></button>
+      </div>
+      <h2 class="d ex-sheet-title" id="nickTitle">Tavo <span>vardas</span></h2>
+      <p class="ex-sheet-sub" id="nickSub">Jį matys draugai kompanijos lentelėje. Jokio el. pašto ar slaptažodžio.</p>
+    </header>
+    <div class="sheet-body">
+      <label class="field"><span class="lbl">Slapyvardis</span><input id="nickIn" name="nick" type="text" minlength="2" maxlength="20" autocomplete="nickname" autocapitalize="words" enterkeyhint="done" spellcheck="false" placeholder="pvz. Ignas" required></label>
+    </div>
+    <footer class="ex-sheet-foot">
+      <p class="ex-sheet-note" id="nickNote" aria-live="polite">2–20 simbolių</p>
+      <button class="go alt sheet-alt" id="nickLater" type="button">Vėliau</button>
+      <button class="go ex-done" id="nickSave" type="submit">Gerai<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5 9-12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square" stroke-linejoin="miter"/></svg></button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog class="ex-sheet" id="grpSheet" aria-labelledby="grpTitle">
+  <div class="ex-sheet-panel">
+    <header class="ex-sheet-head">
+      <div class="ex-sheet-bar">
+        <span class="tag">Kompanijos</span>
+        <button class="ex-close" id="grpClose" type="button" aria-label="Uždaryti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="square"/></svg></button>
+      </div>
+      <h2 class="d ex-sheet-title" id="grpTitle">Savaitės <span>lentelė</span></h2>
+      <p class="ex-sheet-sub">Geriausias 3 min solo rezultatas nuo pirmadienio.</p>
+    </header>
+    <div class="sheet-body">
+      <div class="grp-tabs" id="grpTabs" role="tablist" aria-label="Tavo kompanijos" hidden></div>
+      <section class="grp-card" id="grpCard" hidden>
+        <div class="grp-top">
+          <div class="ex-info"><div class="lbl">Kodas</div><b class="d grp-code" id="grpCode">––––––</b></div>
+          <button class="ex-open" id="grpShare" type="button"><b>Pakviesti</b><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="6" cy="12" r="2.5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="18" cy="19" r="2.5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
+        </div>
+        <ol class="lb" id="lb" aria-label="Savaitės rezultatai"></ol>
+        <button class="grp-leave" id="grpLeave" type="button">Išeiti iš kompanijos</button>
+      </section>
+      <p class="grp-empty" id="grpEmpty" hidden>Dar nesi jokioje kompanijoje. Sukurk ir pakviesk draugus arba įvesk jų kodą.</p>
+      <div class="grp-forms">
+        <form class="grp-form" id="grpNewForm" novalidate>
+          <label class="field"><span class="lbl">Nauja kompanija</span><input id="grpName" type="text" minlength="2" maxlength="30" placeholder="pvz. 10B klasė" enterkeyhint="go" autocomplete="off"></label>
+          <button class="go alt sheet-alt" type="submit">Sukurti</button>
+        </form>
+        <form class="grp-form" id="grpJoinForm" novalidate>
+          <label class="field"><span class="lbl">Turi kodą?</span><input id="grpCodeIn" type="text" minlength="6" maxlength="6" placeholder="AB12CD" autocapitalize="characters" enterkeyhint="go" autocomplete="off" spellcheck="false"></label>
+          <button class="go alt sheet-alt" type="submit">Prisijungti</button>
+        </form>
+      </div>
+    </div>
+    <footer class="ex-sheet-foot">
+      <p class="ex-sheet-note" id="grpNote" aria-live="polite"></p>
+      <button class="go ex-done" id="grpDone" type="button">Gerai<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5 9-12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="square" stroke-linejoin="miter"/></svg></button>
     </footer>
   </div>
 </dialog>

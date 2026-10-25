@@ -3,6 +3,7 @@ import {POSE} from "./detect/classifier.ts";
 import "./ui/start.ts";
 import "./audio/sound.ts";
 import "./history/history.ts";
+import "./ui/social.ts";
 import "./ui/fullscreen.ts";
 import "./ui/wakelock.ts";
 import "./clips/clips.ts";

@@ -3,6 +3,7 @@ import {EX} from "../detect/exercises.ts";
 import {S} from "../game/state.ts";
 import {recordGame} from "../history/history.ts";
 import {$,setDigits} from "./dom.ts";
+import {afterGame} from "./social.ts";
 
 export function renderResults(){
   const {players,score,scoreEvents,duration}=S;
@@ -28,5 +29,6 @@ export function renderResults(){
   }));
   brk.hidden=!order.length;
   $("#recBadge").hidden=!recordGame();
+  try{afterGame()}catch(e){console.error("Online:",e)} // online save + challenge comparison; never blocks the results screen
   return end;
 }
