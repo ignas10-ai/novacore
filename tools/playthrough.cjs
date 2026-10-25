@@ -1,8 +1,9 @@
 // Pilnas žaidimo prabėgimas headless Chrome su „suvaidinta" kamera iš vaizdo failo → ekrano kadrai kiekvieno ekrano.
-// Naudojimas: node tools/playthrough.cjs <cam.y4m> [--landscape] [--out dir] [--players 1|2] [--duration 60|180]
+// Naudojimas: npm run build && node tools/playthrough.cjs <cam.y4m> [--landscape] [--out dir] [--players 1|2] [--duration 60|180]
 //   y4m paruošimas: ffmpeg -i klipas.mp4 -vf "scale=640:360,fps=30" -pix_fmt yuv420p cam.y4m
 //   (paruošimo vartui reikia ~4 s, kai abu riešai virš nosies – jei įraše to nėra, suklijuok priekyje tokį gabalą)
-// Rezultatas: <out>/01-loading … 07-clips-menu.png + konsolės klaidos. Chrome/puppeteer-core keliai – kaip extract.cjs.
+// Testuoja SURINKTĄ žaidimą (dist/, kaip Vercel) – po kodo pakeitimų pirma `npm run build`.
+// Rezultatas: <out>/00-start, 01-loading … 07-clips-menu.png + konsolės klaidos. Chrome/puppeteer-core keliai – kaip extract.cjs.
 const path=require("path"),fs=require("fs"),http=require("http");
 const PUP=process.env.PUPPETEER_CORE||"c:/Users/User/.claude/projects/EA/tmp/laimos-qa/node_modules/puppeteer-core";
 const CHROME=process.env.CHROME||"C:/Program Files/Google/Chrome/Application/chrome.exe";
@@ -13,8 +14,9 @@ const arg=(k,d)=>{const i=rest.indexOf(k);return i>=0?rest[i+1]:d};
 const landscape=rest.includes("--landscape"),out=arg("--out",path.join(__dirname,"..","_playthrough",landscape?"landscape":"portrait"));
 const players=arg("--players","1"),duration=arg("--duration","60"),port=8766+(landscape?1:0);
 fs.mkdirSync(out,{recursive:true});
-const root=path.join(__dirname,"..");
-const types={".html":"text/html",".js":"text/javascript",".json":"application/json",".webmanifest":"application/manifest+json",".png":"image/png"};
+const root=path.join(__dirname,"..","dist");
+if(!fs.existsSync(path.join(root,"index.html"))){console.error("nėra dist/ – pirma: npm run build");process.exit(1)}
+const types={".html":"text/html",".js":"text/javascript",".css":"text/css",".json":"application/json",".webmanifest":"application/manifest+json",".png":"image/png"};
 const srv=http.createServer((q,r)=>{const u=q.url.split("?")[0];const f=path.join(root,u==="/"?"index.html":u);if(!fs.existsSync(f)){r.writeHead(404);return r.end()}r.writeHead(200,{"content-type":types[path.extname(f)]||"application/octet-stream"});fs.createReadStream(f).pipe(r)}).listen(port);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 (async()=>{
@@ -25,6 +27,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const shot=async(n,t)=>{await sleep(t);await p.screenshot({path:path.join(out,n+".png")});console.log("•",n)};
   const visible=id=>p.evaluate(id=>{const el=document.getElementById(id);return !!el&&getComputedStyle(el).display!=="none"},id);
   await p.goto(`http://localhost:${port}/`,{waitUntil:"networkidle0"});await sleep(800);
+  await shot("00-start",0);
   await p.click(`[data-p="${players}"]`);await p.click(`[data-d="${duration==="60"?"60":"180"}"]`);
   await p.click("#go");
   await shot("01-loading",600);
