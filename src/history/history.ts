@@ -8,7 +8,7 @@ import type {Game} from "./stats.ts";
 
 const HIST_KEY="novacore.history", HIST_MAX=50, HIST_SHOW=10;
 export function loadHist():Game[]{try{const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");return Array.isArray(h)?h:[]}catch(e){return []}}
-function saveHist(h:Game[]){try{localStorage.setItem(HIST_KEY,JSON.stringify(h.slice(0,HIST_MAX)))}catch(e){}}
+export function saveHist(h:Game[]){try{localStorage.setItem(HIST_KEY,JSON.stringify(h.slice(0,HIST_MAX)))}catch(e){}}
 // best single-player score among games with this player count
 function bestScore(h:Game[],p:number){return h.filter(g=>g.players===p).reduce((m,g)=>Math.max(m,...(g.score||[]).slice(0,p)),0)}
 const histSheet=$<HTMLDialogElement>("#histSheet"), histList=$("#histList"), histOpen=$("#histOpen"), histClose=$("#histClose"), histDone=$("#histDone"), histClear=$("#histClear"), histNote=$("#histNote");
@@ -23,9 +23,10 @@ export function histItem(g:Game,i:number,best:number[]){
   const when=document.createElement("span");when.className="when";
   when.textContent=new Date(g.t).toLocaleString("lt-LT",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
   const what=document.createElement("span");what.className="what";
-  what.textContent=`${g.players===1?"Solo":"Dvikova"} · ${Math.round(g.duration/60)} min · ${(g.ex||[]).map(exName).join(", ")}`;
+  const sprint=g.mode==="sprint";
+  what.textContent=sprint?`Sprintas 100 m · ${g.players===1?"solo":"dvikova"}`:`${g.players===1?"Solo":"Dvikova"} · ${Math.round(g.duration/60)} min · ${(g.ex||[]).map(exName).join(", ")}`;
   const pts=document.createElement("span");pts.className="pts";
-  for(let p=0;p<g.players;p++){const b=document.createElement("b");b.className=`d p${p+1}`;b.textContent=String(g.score[p]??0);pts.append(b)}
+  for(let p=0;p<g.players;p++){const b=document.createElement("b");b.className=`d p${p+1}`;const t=g.times?.[p];b.textContent=sprint?(t!=null?`${t.toFixed(2).replace(".",",")} s`:"–"):String(g.score[p]??0);pts.append(b)}
   li.append(when,what,pts);
   return li;
 }

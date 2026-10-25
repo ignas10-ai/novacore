@@ -18,11 +18,20 @@ function tone(freq:number,dur:number,gain=.2,type:OscillatorType="square",when=0
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
   o.connect(g).connect(ac.destination);o.start(t);o.stop(t+dur+.02);
 }
+// short white-noise burst (start gun crack)
+function noise(dur:number,gain:number){
+  if(!soundOn||!ac)return;
+  const n=Math.floor(ac.sampleRate*dur),b=ac.createBuffer(1,n,ac.sampleRate),d=b.getChannelData(0);
+  for(let k=0;k<n;k++)d[k]=(Math.random()*2-1)*(1-k/n)**3;
+  const s=ac.createBufferSource(),g=ac.createGain();g.gain.value=gain;s.buffer=b;s.connect(g).connect(ac.destination);s.start();
+}
 const buzz=(ms:number)=>{if(vibeOn)try{navigator.vibrate?.(ms)}catch(e){}};
 export const sfx={
   rep:(i:number)=>{tone(i?1046:784,.07,.16);buzz(30)},
   round:()=>{tone(659,.12,.2,"triangle");tone(988,.2,.2,"triangle",.12)},
   tick:()=>tone(1200,.035,.07,"sine"),
+  step:(i:number)=>tone(i?150:120,.045,.09,"sine"), // sprint footfall
+  gun:()=>{noise(.32,.5);tone(90,.18,.3,"sine");buzz(80)}, // sprint start
   finish:()=>[523,659,784,1046].forEach((f,k)=>tone(f,k===3?.55:.14,.2,"triangle",k*.13)),
 };
 const save=(k:string,on:boolean)=>{try{localStorage.setItem(k,on?"1":"0")}catch(e){}};

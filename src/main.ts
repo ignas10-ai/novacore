@@ -21,6 +21,7 @@ import "./clips/clips.ts";
 import "./game/game.ts";
 import {Capacitor} from "@capacitor/core";
 import {App} from "@capacitor/app";
+import "./sprint/sprint.ts";
 
 if(!firstRun())render();
 // Android back = the same history.back() as the on-screen back (router.ts handles it); nothing left to go back to = close the app

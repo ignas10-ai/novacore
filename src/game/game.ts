@@ -41,8 +41,13 @@ function detect(lm:Lm[],i:number,ex:string,mult:number){
   }
 }
 
+// Other game modes (src/sprint) take over after the ready gate: start() replaces startGame(), reset() runs in resetGame(),
+// shown() = its result screen is up (back closes it like #end). null = the rep game.
+export interface GameMode{start():void;reset():void;shown():boolean}
+let flowMode:GameMode|null=null;
 const inGameEntry=()=>!!history.state?.game;
-export async function startFlow(){
+export async function startFlow(mode:GameMode|null=null){
+  flowMode=mode;
   $("#goTxt").textContent="Kraunama…";$("#go").setAttribute("aria-busy","true");
   document.body.classList.add("ingame"); // hides the tab bar; the current screen stays under #loading
   ensureAudio(); // user gesture: the only place an AudioContext may be created
@@ -78,7 +83,7 @@ export async function startFlow(){
     exitGame();
   }
 }
-$("#go").onclick=startFlow;
+$("#go").onclick=()=>startFlow();
 // back into the app (router shows the screen of the current URL)
 function exitGame(){
   document.body.classList.remove("ingame","playing");
@@ -88,6 +93,7 @@ function exitGame(){
 function startGame(){
   if(S.running)return;
   clearTimeout(startTimer);startTimer=0;
+  if(flowMode){readyRoot.classList.add("hide");readyRoot.classList.remove("done","holding");setCue(readyCue,readyCueText,"","");flowMode.start();return}
   nudgedRound=-1;S.lastPointAt[0]=S.lastPointAt[1]=0;
   lastHudSec=-1;lastBarAt=0;
   readyRoot.classList.add("hide");
@@ -143,6 +149,7 @@ $("#readyBack").onclick=()=>inGameEntry()?history.back():(backToSettings(),rende
 
 // a finished game -> clean state for the next one without reloading the page
 export function resetGame(){
+  flowMode?.reset();
   S.score=[0,0];S.scoreEvents=[];S.lastPointAt=[0,0];S.st=[{},{}] as typeof S.st;S.fl=[0,0];S.rec=null;
   shown[0]=shown[1]="0";scoreEls.forEach(e=>e.textContent="0");
   stopCamera();cam.srcObject=null;resetTracking();
@@ -150,7 +157,7 @@ export function resetGame(){
   $("#end").classList.add("hide");$("#clips").classList.add("hide");
   $("#goTxt").textContent="Pradėti";$("#go").removeAttribute("aria-busy");
 }
-const afterGameShown=()=>!$("#end").classList.contains("hide")||!$("#clips").classList.contains("hide");
+const afterGameShown=()=>!$("#end").classList.contains("hide")||!$("#clips").classList.contains("hide")||!!flowMode?.shown();
 document.querySelectorAll<HTMLElement>("[data-again]").forEach(b=>b.onclick=()=>{resetGame();startFlow()});
 document.querySelectorAll<HTMLElement>("[data-home]").forEach(b=>b.onclick=()=>{resetGame();document.body.classList.remove("ingame");home()});
 setBackHandler(()=>{
