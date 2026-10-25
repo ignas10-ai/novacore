@@ -26,21 +26,37 @@ export const current=()=>cur;
 export const setBackHandler=(fn:()=>boolean)=>{backHandler=fn};
 const el=(id:string)=>document.getElementById(id)!;
 
+const ROOTS:View[]=["home","groups","library","profile"];
+const MOTION_MS=360; // = --duration-medium + a frame; the leaving screen stays visible for the push/pop slide
+let leaving:HTMLElement|null=null, leaveTimer=0;
+function settle(){clearTimeout(leaveTimer);document.querySelectorAll<HTMLElement>(".screen[data-enter]").forEach(s=>delete s.dataset.enter);if(leaving){leaving.classList.add("hide");delete leaving.dataset.leave;leaving.inert=false;leaving=null}}
 function show(v:View,arg:string,dir:""|"fwd"|"back"){
-  const prev=cur&&el(SCREEN[cur]);
-  if(prev&&!prev.classList.contains("hide"))scrolls.set(prev.id+(curArg||""),prev.scrollTop);
+  settle();
+  const prev=cur?el(SCREEN[cur]):null, prevShown=!!prev&&!prev.classList.contains("hide");
+  if(prev&&prevShown)scrolls.set(prev.id+(curArg||""),prev.scrollTop);
   el("onb").classList.add("hide");
-  for(const id of Object.values(SCREEN))el(id).classList.toggle("hide",id!==SCREEN[v]);
   const scr=el(SCREEN[v]);
-  scr.dataset.dir=dir;
+  // native feel: push/pop slide into and out of sub-screens, a short fade between tabs, nothing on the first paint
+  const anim=firstShow||prev===scr?"":dir&&ROOTS.includes(v)&&cur&&ROOTS.includes(cur)?"tab":dir||"in";
+  const slide=prevShown&&(anim==="fwd"||anim==="back");
+  for(const id of Object.values(SCREEN))if(id!==scr.id&&!(slide&&id===prev!.id))el(id).classList.add("hide");
+  if(slide){leaving=prev;prev!.dataset.leave=anim;prev!.inert=true;leaveTimer=setTimeout(settle,MOTION_MS)}
+  scr.classList.remove("hide");
+  if(anim)scr.dataset.enter=anim;else delete scr.dataset.enter;
+  clearTimeout(enterTimer);enterTimer=setTimeout(()=>delete scr.dataset.enter,MOTION_MS);
   document.body.dataset.view=v;
   document.querySelectorAll<HTMLElement>("#tabbar [data-tab]").forEach(a=>{if(a.dataset.tab===TAB[v])a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   cur=v;curArg=arg;
   hooks[v]?.(arg);
   scr.scrollTop=dir==="back"?scrolls.get(scr.id+arg)||0:0; // back restores where you were
+  scrolledState(scr);
   if(!firstShow)scr.querySelector<HTMLElement>("h1[tabindex]")?.focus({preventScroll:true}); // screen readers land on the new title
   firstShow=false;
 }
+let enterTimer=0;
+// sticky top bar: frosted background + compact title once the large title has scrolled away
+const scrolledState=(s:HTMLElement)=>s.classList.toggle("scrolled",s.scrollTop>40);
+document.addEventListener("scroll",e=>{const t=e.target;if(t instanceof HTMLElement&&t.classList.contains("app"))scrolledState(t)},{capture:true,passive:true});
 export function render(dir:""|"fwd"|"back"=""){const {v,arg}=parse(location.hash);show(v,arg,dir)}
 export const refresh=()=>{if(cur&&!document.body.classList.contains("ingame"))hooks[cur]?.(curArg)};
 
@@ -75,6 +91,6 @@ document.addEventListener("click",e=>{
   else go(href);
 });
 // screens the router does not own (game flow, onboarding)
-export function leaveApp(){for(const id of Object.values(SCREEN))el(id).classList.add("hide")}
+export function leaveApp(){settle();for(const id of Object.values(SCREEN))el(id).classList.add("hide")}
 export function showOnly(id:string){leaveApp();el(id).classList.remove("hide");document.body.dataset.view=id}
 if(!history.state)history.replaceState({d:0},"",location.href);

@@ -1,30 +1,48 @@
-// Pratimai (#library): every EX with its animated coach figure, how-to + tip, BETA badge and this phone's stats.
+// Pratimai (#library): one colourful tile per EX (its tone + animated coach figure, BETA, this phone's record);
+// tapping a tile opens #exDetail (bottom sheet) with how-to, what the counter checks, total and record.
 import {EX} from "../detect/exercises.ts";
 import {loadHist} from "../history/history.ts";
 import {exTotals} from "../history/stats.ts";
-import {DEMO,coachSvg} from "./coach.ts";
-import {$} from "./dom.ts";
+import {DEMO,coachSvg,toneOf} from "./coach.ts";
+import {$,sheet} from "./dom.ts";
 import {onView} from "./router.ts";
 
-const lib=$("#lib");
+const lib=$("#lib"), det=$<HTMLDialogElement>("#exDetail"), detS=sheet(det);
 const el=(tag:string,cls:string,text="")=>Object.assign(document.createElement(tag),{className:cls,textContent:text});
+let totals:Record<string,{total:number;best:number}>={};
+
 lib.replaceChildren(...EX.map((e,i)=>{
-  const d=DEMO[e.id];
-  const card=el("article","card ex-card");
+  const card=el("button","ex-card tap") as HTMLButtonElement;
+  card.type="button";card.dataset.ex=e.id;card.dataset.tone=toneOf(e.id);
   card.style.setProperty("--i",String(i));
-  const art=el("div","ex-art "+(i%2?"p2":"p1"));art.append(coachSvg(e.id));
-  const head=el("h2","ex-name",d?.name||e.name);
-  if(e.beta)head.append(el("span","beta","beta"));
-  const stats=el("dl","ex-stats");stats.dataset.ex=e.id;
-  stats.innerHTML='<div><dt>Iš viso</dt><dd class="d" data-k="total">0</dd></div><div><dt>Rekordas</dt><dd class="d" data-k="best">0</dd></div>';
-  card.append(art,head,el("p","ex-cue",d?.cue||""),el("p","ex-tip",d?.tip||""),stats);
+  card.setAttribute("aria-haspopup","dialog");
+  const art=el("span","ex-art");art.append(coachSvg(e.id));
+  if(e.beta)art.append(el("span","beta","beta"));
+  card.append(art,el("span","ex-name",DEMO[e.id]?.name||e.name),el("span","ex-meta"));
   return card;
 }));
+function meta(card:HTMLElement){
+  const v=totals[card.dataset.ex!];
+  const m=card.querySelector(".ex-meta")!;
+  m.replaceChildren(...(v?.best?["Rekordas ",Object.assign(document.createElement("b"),{textContent:String(v.best)})]:["Dar nedaryta"]));
+}
 onView("library",()=>{
-  const t=exTotals(loadHist());
-  lib.querySelectorAll<HTMLElement>(".ex-stats").forEach(s=>{
-    const v=t[s.dataset.ex!]||{total:0,best:0};
-    s.querySelector("[data-k=total]")!.textContent=String(v.total);
-    s.querySelector("[data-k=best]")!.textContent=String(v.best);
-  });
+  totals=exTotals(loadHist());
+  lib.querySelectorAll<HTMLElement>(".ex-card").forEach(meta);
 });
+lib.addEventListener("click",e=>{
+  const card=(e.target as Element).closest<HTMLElement>(".ex-card");
+  if(!card)return;
+  const id=card.dataset.ex!, d=DEMO[id], ex=EX.find(x=>x.id===id)!, v=totals[id]||{total:0,best:0};
+  det.dataset.tone=toneOf(id);
+  $("#exdArt").replaceChildren(coachSvg(id));
+  const name=$("#exdName");name.replaceChildren(d?.name||ex.name);
+  if(ex.beta)name.append(el("span","beta","beta"));
+  $("#exdCue").textContent=d?.cue||"";
+  $("#exdTip").textContent=d?.tip||"";
+  $("#exdTotal").textContent=String(v.total);
+  $("#exdBest").textContent=String(v.best);
+  detS.open();
+});
+$("#exdClose").onclick=detS.close;
+$("#exdDone").onclick=detS.close;
