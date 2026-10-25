@@ -1,9 +1,11 @@
 // fullscreen: use vendor-prefixed fallback, hide the control when unsupported
 import {$} from "./dom.ts";
+import {Capacitor} from "@capacitor/core";
 
 const fsBtn=$("#fs"), fsRoot=document.documentElement as any, doc=document as any;
 const fsApi=fsRoot.requestFullscreen||fsRoot.webkitRequestFullscreen;
-if(!fsApi) fsBtn.hidden=true;
+// Android app: Capacitor's WebChromeClient closes element fullscreen at once, and the app already fills the screen
+if(!fsApi||Capacitor.isNativePlatform()) fsBtn.hidden=true;
 const fsElement=()=>doc.fullscreenElement||doc.webkitFullscreenElement||null;
 function updateFs(){
   const on=!!fsElement();

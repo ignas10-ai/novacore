@@ -9,6 +9,8 @@ import {onView,go,current,refresh} from "./router.ts";
 import {onbDone} from "./onboarding.ts";
 import {markBeat} from "../history/history.ts";
 import * as api from "../online/api.ts";
+import {Capacitor} from "@capacitor/core";
+import {Share} from "@capacitor/share";
 
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const chars=(s:string)=>[...s].length; // the DB checks char_length (code points), not UTF-16 units
@@ -28,7 +30,11 @@ const NICK_SUB=nickSub.textContent!;
 
 function note(el:HTMLElement,text:string,warn=false){el.textContent=text;el.classList.toggle("warn",warn)}
 function strip(k:string){try{const u=new URL(location.href);u.searchParams.delete(k);history.replaceState(history.state,"",u)}catch(e){}}
+// in the Android app the page lives on https://localhost, so invite/challenge links must point at the web app
+const WEB=Capacitor.isNativePlatform()?"https://novacore-two.vercel.app":location.origin;
 async function share(url:string,text:string,noteEl:HTMLElement){
+  // Android WebView has no navigator.share -> the native share sheet
+  if(Capacitor.isNativePlatform())try{await Share.share({title:"NovaCore",text,url});return}catch(e){if(/cancel/i.test(String(e)))return}
   try{if(navigator.share){await navigator.share({title:"NovaCore",text,url});return}}
   catch(e){if((e as Error).name==="AbortError")return}
   try{await navigator.clipboard.writeText(url);toast("Nuoroda nukopijuota – įklijuok draugams.")}
@@ -173,7 +179,7 @@ $("#grpJoinForm").addEventListener("submit",async e=>{
 });
 $("#grpShare").onclick=()=>{
   const g=groups.find(x=>x.id===gid);
-  if(g)share(`${location.origin}/?g=${g.code}`,`Prisijunk prie „${g.name}“ NovaCore kompanijos (kodas ${g.code}) – kas surinks daugiau per 3 min?`,grpNote2);
+  if(g)share(`${WEB}/?g=${g.code}`,`Prisijunk prie „${g.name}“ NovaCore kompanijos (kodas ${g.code}) – kas surinks daugiau per 3 min?`,grpNote2);
 };
 let leaveTimer=0;
 function resetLeave(){clearTimeout(leaveTimer);grpLeaveTxt.textContent="Išeiti iš kompanijos";grpLeave.classList.remove("arm")}
@@ -250,7 +256,7 @@ export function afterGame(){
 chalBtn.onclick=async()=>{
   if(needNick("Iššūkiui reikia slapyvardžio – jį pamatys draugas.",()=>chalBtn.click()))return;
   if(!(await saveRow())||!row)return;
-  share(`${location.origin}/?c=${row.id}`,`Surinkau ${row.score} tšk. per ${mins(row.duration)} NovaCore. Įveik!`,onNote);
+  share(`${WEB}/?c=${row.id}`,`Surinkau ${row.score} tšk. per ${mins(row.duration)} NovaCore. Įveik!`,onNote);
 };
 
 // ---------- start ----------

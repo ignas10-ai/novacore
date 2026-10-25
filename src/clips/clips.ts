@@ -2,7 +2,10 @@
 import {S} from "../game/state.ts";
 import {cv,recCv,readCameraInfo,drawRecordFrame} from "../camera/camera.ts";
 import {clipSpec,type ClipProfile,type Segment} from "./highlight.ts";
-import {$} from "../ui/dom.ts";
+import {$,toast} from "../ui/dom.ts";
+import {Capacitor} from "@capacitor/core";
+import {Filesystem,Directory} from "@capacitor/filesystem";
+import {Share} from "@capacitor/share";
 
 // prefer MP4 (universal playback); webm only as a last-resort fallback
 // H.264 level 4.2 is the first candidate because 1080p60 exceeds level 3.0
@@ -71,8 +74,27 @@ document.addEventListener("click",e=>{if(!(e.target as Element).closest("#dlWrap
 document.addEventListener("keydown",e=>{if(e.key==="Escape")setDlOpen(false)});
 dlMenu.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>setTimeout(()=>setDlOpen(false),80)));
 
+// Android app: a blob <a download> does nothing in the WebView and navigator.share is missing,
+// so the clip is written to the app cache and handed to the native share sheet (save to Files/Photos, send, ...)
+const native=Capacitor.isNativePlatform();
+const b64=(b:Blob)=>new Promise<string>((ok,no)=>{const r=new FileReader();r.onload=()=>ok((r.result as string).split(",")[1]||"");r.onerror=()=>no(r.error);r.readAsDataURL(b)});
+async function nativeShare(blob:Blob,name:string){
+  const CH=3<<20; // 3 MB per bridge call: a full 1080p60 clip can be >100 MB, one base64 string that big crashes the WebView
+  try{
+    await Filesystem.writeFile({path:name,directory:Directory.Cache,data:await b64(blob.slice(0,CH))});
+    for(let i=CH;i<blob.size;i+=CH)await Filesystem.appendFile({path:name,directory:Directory.Cache,data:await b64(blob.slice(i,i+CH))});
+    const {uri}=await Filesystem.getUri({path:name,directory:Directory.Cache});
+    await Share.share({title:"NovaCore",files:[uri]});
+  }catch(e){if(!/cancel/i.test(String(e)))toast("Nepavyko pasidalinti klipu.")}
+}
+if(native){
+  dlPrev.addEventListener("click",e=>{e.preventDefault();if(previewBlob)nativeShare(previewBlob,dlPrev.download)});
+  dlFull.addEventListener("click",e=>{e.preventDefault();if(fullBlob)nativeShare(fullBlob,dlFull.download)});
+}
+
 async function sharePreviewClip(){
   if(!previewBlob)return;
+  if(native)return nativeShare(previewBlob,`novacore-highlights.${REC_EXT}`);
   const type=(previewBlob.type||REC_MIME||"video/mp4").split(";")[0];
   const ext=type.includes("mp4")?"mp4":"webm";
   const file=new File([previewBlob],`novacore-highlights.${ext}`,{type});
