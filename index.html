@@ -20,7 +20,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FF3B3B'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23FFC61A'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/src/styles/main.css">
 </head>
 <body data-view="home">
@@ -216,7 +216,7 @@
       <button class="link tap" id="onbSkip" type="button">Praleisti</button>
     </div>
     <div class="onb-step" data-step="0">
-      <div class="onb-art coach-pair" aria-hidden="true"><span class="p1" data-coach="squat"></span><span class="vs d">VS</span><span class="p2" data-coach="jack"></span></div>
+      <div class="onb-art vs-art" aria-hidden="true"><img class="vs-img" src="/src/art/vs.webp" srcset="/src/art/vs.webp 1x, /src/art/vs@2x.webp 2x" alt="" width="351" height="300" decoding="async"><span class="vs-badge">VS</span></div>
       <span class="eyebrow">Judesio žaidimas</span>
       <h1 class="d onb-title" id="onbTitle1">3 minutės. 2 žaidėjai. <em>Visas kūnas.</em></h1>
       <p class="onb-copy">Žaisk su draugu ar vienas. Telefono kamera skaičiuoja pritūpimus, pašokimus ir kitus judesius – kas 30 s keičiasi pratimas, o taškai dauginasi.</p>
@@ -262,9 +262,13 @@
       </div>
     </section>
     <button class="hero tap" id="homePlay" type="button">
-      <span class="hero-art" aria-hidden="true"><span class="hero-fig p1" data-coach="squat"></span><span class="hero-vs d">VS</span><span class="hero-fig p2" data-coach="jack"></span></span>
-      <span class="hero-txt"><small>Raudonas prieš mėlyną</small><b class="d">Žaisti</b><span>1–2 žaidėjai · 3 min</span></span>
-      <span class="hero-go" data-icon="play"></span>
+      <span class="hero-word">Žaisti</span>
+      <span class="hero-stage" aria-hidden="true">
+        <img class="hero-char p1" src="/src/art/raudonas-hero.webp" srcset="/src/art/raudonas-hero.webp 1x, /src/art/raudonas-hero@2x.webp 2x" alt="" width="227" height="420" decoding="async">
+        <img class="hero-char p2" src="/src/art/melynas-hero.webp" srcset="/src/art/melynas-hero.webp 1x, /src/art/melynas-hero@2x.webp 2x" alt="" width="287" height="420" decoding="async">
+        <span class="hero-vs">VS</span>
+      </span>
+      <span class="hero-foot"><span class="hero-txt"><b>Raudonas prieš mėlyną</b><span>1–2 žaidėjai · 3 min</span></span><span class="hero-go" data-icon="play"></span></span>
     </button>
     </div>
     <div class="col">
@@ -283,8 +287,8 @@
     <section aria-labelledby="quickLbl">
       <h2 class="sec-title" id="quickLbl">Greitas startas</h2>
       <div class="quick">
-        <button class="quick-tile tap" type="button" data-quick="2,180" data-tone="red"><span class="q-ic" data-icon="swords"></span><b>Dvikova</b><small>3 min</small></button>
-        <button class="quick-tile tap" type="button" data-quick="1,180" data-tone="blue"><span class="q-ic" data-icon="user"></span><b>Solo</b><small>3 min</small></button>
+        <button class="quick-tile tap" type="button" data-quick="2,180" data-tone="red"><span class="q-ic heads"><img class="q-head" src="/src/art/raudonas-head.webp" srcset="/src/art/raudonas-head.webp 1x, /src/art/raudonas-head@2x.webp 2x" alt="" width="96" height="96" decoding="async"><img class="q-head" src="/src/art/melynas-head.webp" srcset="/src/art/melynas-head.webp 1x, /src/art/melynas-head@2x.webp 2x" alt="" width="96" height="96" decoding="async"></span><b>Dvikova</b><small>3 min</small></button>
+        <button class="quick-tile tap" type="button" data-quick="1,180" data-tone="blue"><span class="q-ic heads"><img class="q-head" src="/src/art/raudonas-head.webp" srcset="/src/art/raudonas-head.webp 1x, /src/art/raudonas-head@2x.webp 2x" alt="" width="96" height="96" decoding="async"></span><b>Solo</b><small>3 min</small></button>
         <button class="quick-tile tap" type="button" data-quick="0,60" data-tone="yellow"><span class="q-ic" data-icon="timer"></span><b>Greitas</b><small id="quickFast">1 min</small></button>
       </div>
     </section>

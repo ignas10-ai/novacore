@@ -113,6 +113,11 @@ tools/, test-*.cjs     checks (Node), not shipped
 - `#nickSheet` reuses the `.ex-sheet` chrome (its "Vėliau" shows only for prompts). 
 - `sw.js` does not touch `*.supabase.co` (not same-origin, not in `RUNTIME_HOSTS`), so API calls are never served stale.
 
+## 3D characters (ui-v3 sample, 2026-10-25)
+
+- Brand characters **Raudonas** (P1, red) and **Mėlynas** (P2, blue): Gemini `gemini-3-pro-image` renders. `tools/art/gen.mjs` (key only via `node --env-file=<.env.local with GEMINI_API_KEY>`, never in git/client) takes reference images; every pose is generated WITH the chosen turnaround sheet as input (consistency), on chroma green with a white sticker outline. `python -I tools/art/cutout.py <raw.png> <name> <height@1x>` keys the green (despill) and writes `src/art/<name>.webp` + `@2x` (Vite hashes them into `/assets/`, so `sw.js` caches them). Raw renders + the prompt fragments (`style.txt`, `r.txt`, `b.txt`) stay in `tools/art/raw/` (git-ignored); the approved sheets are `sheet-r3.png` / `sheet-b3.png`.
+- So far used on Pradžia (hero, quick-start heads), Pratimai (squat, jack tiles + detail sheet via `ART` in library.ts) and onboarding step 1 (VS pair). `--disp-x` = Anton (condensed display: big words, numerals); Lithuanian caps diacritics need line-height ≥1.25 on multi-line Anton.
+
 ## Conventions
 
 - User-facing copy is Lithuanian; keep new UI text Lithuanian.
