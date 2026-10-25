@@ -1,4 +1,7 @@
-# Debug APK for testers: GitHub -> Actions -> latest "Android APK" run -> Artifacts -> novacore-debug-apk
+# Debug APK for testers:
+# GitHub -> Releases -> latest Debug Build
+# Obtainium can monitor the GitHub Releases page.
+
 name: Android APK
 
 on:
@@ -6,31 +9,76 @@ on:
     branches: [master, android]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   apk:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v7
+
       - uses: actions/setup-node@v7
         with:
-          node-version: 24 # npm test needs >= 22.18 (type stripping + require(esm)); Vercel builds on 24.x too
+          node-version: 24
           cache: npm
+
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: 21 # Capacitor 8 / AGP 8.13 compile with Java 21
+          java-version: 21
           cache: gradle
+
       - run: npm ci
+
       - run: npm test
+
       - run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
       - run: npx cap sync android
+
+      # Use the same debug signing key on every build, otherwise Android
+      # refuses to update the installed app (signature mismatch).
+      - name: Restore stable debug keystore
+        env:
+          DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p ~/.android
+          echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+        working-directory: android
+
       - run: ./gradlew assembleDebug --no-daemon
         working-directory: android
-      - uses: actions/upload-artifact@v7
+
+      # Keep an Actions artifact as well.
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v7
         with:
           name: novacore-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      # Publish the APK to GitHub Releases.
+      # A new release is created for every successful workflow run.
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "build-${{ github.run_number }}"
+          name: "Debug Build ${{ github.run_number }}"
+          target_commitish: ${{ github.sha }}
+          prerelease: false
+          make_latest: true
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
