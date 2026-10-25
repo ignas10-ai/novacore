@@ -92,7 +92,7 @@ try{
   ok("B priėmė (antrą kartą atsakyti nebegalima)");
 
   // privatus kanalas
-  const rx={A:[],B:[]};
+  const rx={A:[],B:[],C:[]};
   const chan=(c,me,who)=>{const ch=c.channel(`duel:${d.id}`,{config:{private:true,broadcast:{self:false},presence:{key:me}}});
     ch.on("broadcast",{event:"*"},m=>rx[who]?.push({...m,at:Date.now()}));channels.push([c,ch]);return ch};
   const chA=chan(A,ids.A,"A"),chB=chan(B,ids.B,"B"),chC=chan(C,ids.C,"C");
