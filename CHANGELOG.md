@@ -1,5 +1,12 @@
 # Pakeitimų žurnalas
 
+## 2026-10-26 — Šuolis į tolį: matoma atsispyrimo zona (Martyno pastaba, #1)
+
+- Takas prieš liniją: 8 m juosta, kuri ryškėja iš oranžinės į geltoną, tada paskutiniai 2,5 m žali (anksčiau buvo tik 2 m geltona). Viršuje – oranžinis „Ruoškis…“, žalioje zonoje didelis žalias „Šok!“. Tas pats spalvų perėjimas ir mažame žemėlapyje.
+- 360 px telefone viršutinėje juostoje telpa visas vardas („Raudonas“, ne „Raudo…“).
+## 2026-10-26 — Google Play grafika (#6)
+
+- **`npm run store`** (`tools/store-assets.mjs`): pats paleidžia Vite, nufotografuoja tikrus programėlės ekranus ir sudeda Play parduotuvės grafiką į `_playthrough/store/`: 512×512 ikona (Raudono galva, be pavadinimo), 1024×500 viršelis (LT + EN, maskotai VS), po 5 kadrus 1080×1920 su antrašte (LT + EN): pradžia, šuolis į tolį ore, 4 žaidėjų rezultatai, žaidimų sąrašas, pratimai. Kamera – e2e klipas su mūsų maskotu, jokio tikro žmogaus. Pavadinimas imamas iš `manifest.webmanifest`, tad pervadinus (#8) užtenka paleisti iš naujo.
 ## 2026-10-26 — Google Play: „Ištrinti mano duomenis“ + privatumo politika (šaka `privacy`)
 
 - **Profilis → Nustatymai:** „Privatumo politika“ (atidaro `privacy.html`, Android'e – svetainės kopiją) ir „Ištrinti mano duomenis“: patvirtinimas → `delete_my_data()` serveryje (dvikovos, savo sukurtos kompanijos, profilis su žaidimais ir narystėmis, anoniminis vartotojas) → išvalomi visi `novacore.*` ir Supabase raktai telefone → programėlė atsidaro iš naujo. Jei serveris neatsako – nieko neištrinama, rodoma klaida. LT + EN.

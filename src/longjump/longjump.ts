@@ -27,7 +27,7 @@ import type {ScreenState} from "../cast/room.ts";
 import {V_MAX} from "../sprint/speed.ts";
 import {LOOKS,newPose,runPose,setPose,standPose,winPose,jumpPose,landPose,drawRunner} from "../sprint/runner.ts";
 import {layout,build,type Layout} from "../sprint/scene.ts";
-import {LINE_M,ZONE_M,ATTEMPTS,bestJump,newAttempt,stepAt,tick,jump,total,turnOf,rank,bestOf,flightS,apexM,type Attempt} from "./logic.ts";
+import {LINE_M,ZONE_M,APPROACH_M,ATTEMPTS,bestJump,newAttempt,stepAt,tick,jump,total,turnOf,rank,bestOf,flightS,apexM,type Attempt} from "./logic.ts";
 import {geom,drawField,drawFront,worldX,mLabel,type View,type FieldInfo} from "./field.ts";
 
 const WHO:Who[]=["r","b","y","g"];
@@ -366,7 +366,7 @@ function render(now:number,dt:number){
   drawFront(ctx,V.cam*V.ppm/L.ppm);
 }
 // HUD: text only when it changes
-const shown={gap:"",gapL:""};
+const shown={gap:"",gapL:"",cue:""};
 function hud(){
   const x=A.r.x, toLine=LINE_M-x;
   let gtxt:string,gl:string;
@@ -377,7 +377,9 @@ function hud(){
   if(gl!==shown.gapL){shown.gapL=gl;gapL.textContent=gl}
   vEl.style.transform=`scaleX(${Math.min(1,A.r.v/V_MAX).toFixed(3)})`;
   dotEl.style.transform=`translateX(${(Math.min(1,Math.max(0,(phase==="air"?airFrom+airLen*Math.min(1,(performance.now()-phaseAt)/1000/airT):phase==="land"?landX:x)/(LINE_M+9)))*100).toFixed(1)}%)`;
-  jumpEl.classList.toggle("on",phase==="run"&&toLine<ZONE_M+1.5&&toLine>-.2);
+  // orange "Ruoškis…" over the approach band, green "Šok!" over the green zone
+  const cue=phase!=="run"||toLine<=-.2?"":toLine<=ZONE_M?"go":toLine<=ZONE_M+APPROACH_M?"ready":"";
+  if(cue!==shown.cue){shown.cue=cue;jumpEl.className=`lj-jump${cue?" on "+cue:""}`;if(cue)jumpEl.textContent=tr(cue==="go"?"lj.jumpNow":"lj.getReady")}
   runRoot.classList.toggle("is-foul",phase==="foul");
 }
 // what the TV board shows (cast.ts merges it over the rep-game state): 1-2 players = their best in cm;

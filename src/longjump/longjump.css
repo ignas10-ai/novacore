@@ -53,14 +53,17 @@ body.longjumping .fs,body:has(#ljEnd:not(.hide)) .fs{display:none}
 .lj-run.is-foul .lj-gap{background:var(--red-deep)}
 .lj-lead{--tone:var(--ink)}
 .lj-lead b{font-size:19px}
+@media (max-width:380px){.lj-top{grid-template-columns:minmax(0,1.7fr) auto minmax(0,1fr);gap:6px}.lj-top .sp-face{width:26px;height:26px}.lj-top .sp-card{gap:4px;padding-left:6px;padding-right:8px}.lj-top .sp-clock{min-width:58px;padding:4px 6px 2px}.lj-top .sp-clock .d{font-size:22px}.lj-me-n{font-size:13px}.lj-lead b{font-size:16px}} /* 360 px: „Raudonas“ and „5,54 m“ fit */
 .lj-tro{background:var(--yellow);border-color:var(--ink);color:var(--ink);place-items:center;--ic:20px}
-.lj-map .lj-map-zone{position:absolute;top:0;bottom:0;left:calc(100%*(28/39));width:calc(100%*(2/39));background:var(--yellow)}
+.lj-map .lj-map-zone{position:absolute;top:0;bottom:0;left:calc(100%*(19.5/39));width:calc(100%*(10.5/39));background:linear-gradient(90deg,#FF8A1F,var(--yellow) 76%,var(--green) 76%)}
 .lj-map .lj-map-line{position:absolute;top:-6px;bottom:-6px;left:calc(100%*(30/39));width:4px;margin-left:-2px;border-radius:2px;background:var(--red);box-shadow:0 0 0 2px var(--ink)}
 .lj-map::after{content:"";position:absolute;top:0;bottom:0;right:0;left:calc(100%*(30.6/39));border-radius:0 5px 5px 0;background:#F3D49C}
 .lj-map .sp-dotw{z-index:1}
 .lj-jump{position:absolute;left:50%;top:calc(max(10px,env(safe-area-inset-top)) + 96px);translate:-50% 0;padding:6px 18px 4px;border:var(--bw) solid var(--ink);border-radius:var(--r-pill);background:var(--yellow);color:var(--ink);
   font:400 26px/1.15 var(--disp);box-shadow:0 4px 0 var(--ink);opacity:0;scale:.6;transition:opacity var(--duration-quick) var(--ease-ui),scale var(--duration-quick) var(--ease-ui)}
-.lj-jump.on{opacity:1;scale:1;animation:lj-pulse 360ms ease-in-out infinite alternate}
+.lj-jump.on{opacity:1;scale:1}
+.lj-jump.ready{background:#FF8A1F}
+.lj-jump.go{background:var(--green);color:#fff;-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;font-size:34px;animation:lj-pulse 360ms ease-in-out infinite alternate}
 @keyframes lj-pulse{to{scale:1.12}}
 .lj-call.is-num b{font-size:clamp(84px,26vmin,170px);color:#fff}
 .lj-call.is-dist b{font-size:clamp(56px,16vmin,110px);color:var(--yellow)}
@@ -133,4 +136,4 @@ body.longjumping .fs,body:has(#ljEnd:not(.hide)) .fs{display:none}
   #ljEnd .cta{grid-column:2;flex-direction:row}
   #ljEnd .cta .go{flex:1;white-space:nowrap;font-size:18px}
 }
-@media (prefers-reduced-motion:reduce){.lj-hero-m,.lj-jump.on,.lj-turn.in .lj-turn-card{animation:none}}
+@media (prefers-reduced-motion:reduce){.lj-hero-m,.lj-jump.go,.lj-turn.in .lj-turn-card{animation:none}}

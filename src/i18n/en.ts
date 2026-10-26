@@ -636,6 +636,7 @@ export const en:Record<Key,string>={
   "lj.leader":"Leader",
   "lj.best":"Best",
   "lj.jumpNow":"Jump!",
+  "lj.getReady":"Get ready…",
   "lj.now":"Up next",
   "lj.attempt":"Attempt {n} of {total}",
   "lj.attemptN":"Attempt {n}",
