@@ -1,5 +1,15 @@
 # Pakeitimų žurnalas
 
+## 2026-10-26 — Claude Design: visa programėlė nauju stiliumi (šaka `next`; į master NEsujungta)
+
+- **Kas tai:** visa programėlė perpiešta pagal patvirtintą „Claude Design“ pavyzdį (6 ekranai, `Downloads/NovaCore/claude-design-ref/`): „lipdukų“ žaidimo stilius – šilta balta, storos tamsiai mėlynos kontūrinės linijos ir kietas šešėlis apačioje (paspaudus mygtukas „įsispaudžia“), raudoni / mėlyni / geltoni blokai.
+- **Šriftai:** Titan One (antraštės, skaičiai, dideli mygtukai) + Nunito (tekstas). Abu įdėti į programėlę (`public/fonts`), todėl Android programėlė veikia ir be interneto. Patikrinta visomis lietuviškomis raidėmis (ĄČĘĖĮŠŲŪŽ ąčęėįšųūž): pavyzdžio šriftas Lilita One ir Fredoka jų neturi (todėl pavyzdyje keistai atrodė „ė“ žodyje „Pradėti“), Baloo 2 rašo ū be brūkšnelio – jie atmesti.
+- **Personažai – vektoriniai:** Raudonas (raudonas, geltonas raištis) ir Mėlynas (mėlynas, baltas raištis), apvalūs boksininkai su pirštinėmis. Pozos: ramiai, akis į akį (VS), laimėtojas su karūna, pralaimėjęs (prakaituoja), ir visi 7 pratimai su animacija (pritūpimai, pašokimai, aukšti keliai, šuoliukai, šoniniai žingsniai, įtūpstai, atsilenkimai). Galvos – avatarams. 3D paveikslėliai nebenaudojami (failai palikti – iš jų dvikovos testas daro netikras kameras).
+- **Ekranai:** Pradžia (VS kortelė su „Žaisti“, serijos ženkliukas, greito starto plytelės, vieta + savaitės tikslas), Pratimai (filtrai, populiariausio pratimo kortelė, sunumeruotas sąrašas su BETA), Naujas žaidimas (žaidėjų kortelės su personažais, trukmė, pratimai, garsas), žaidimo ekranas (taškai viršuje, karūna pirmaujančiam, „Raundas 2 / 6 · Kitas: …“, raundų žymos, „+2“ lipdukai), rezultatai (saulės spinduliai laimėtojo spalva, laimėtojas su karūna ir pralaimėjęs, skirtumas, lentelė pagal pratimą, didelis „Klipas“), Kompanija (pakylos trejetukas, „Savaitė baigsis po …“, rodyklės, kas pakilo / nukrito, kompanijų perjungimas), Profilis (ženkliukai – medaliai, personažo pasirinkimas), įvadas, kraunama, pasiruošimas, klipai, visi lapai, dvikova, sprintas (bėgikai dabar – tie patys personažai, piešiami drobėje).
+- **Nauja:** „Rodyti per TV“ (nustatymuose ir profilyje) – trumpa instrukcija: Android „Smart View / Ekrano transliavimas“, iPhone „Ekrano dubliavimas“, arba kompiuteris + HDMI.
+- **Ištaisytos pavyzdžio klaidos:** iššūkio kortelėje tekstą dengė mygtukas; „Rekordas per žaidimą“ langelis buvo nukirptas; ilgi lietuviški pavadinimai dabar keliami į kitą eilutę (patikrinta ir 360 px pločio ekrane).
+- **Elgsena nepakeista:** visi mygtukai, nuorodos, dvikovos, sprintas, Android atgal mygtukas veikia kaip anksčiau.
+
 ## 2026-10-25 — dvikovos per atstumą (šaka `duel`, iš `ui-v3`; į master NEsujungta)
 
 - **Kas tai:** pakvieti draugą iš kompanijos, jis priima, ir abu žaidžiate tą patį žaidimą tuo pačiu metu iš skirtingų vietų, kiekvienas savo telefonu, matydami vienas kito taškus gyvai. Vaizdas niekur nesiunčiamas – per Supabase Realtime keliauja tik taškai ir keli valdymo pranešimai.

@@ -24,7 +24,7 @@
 .sp-hero canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:fill}
 .sp-hero-big{position:absolute;left:16px;top:10px;font:400 clamp(56px,17vw,84px)/1.1 var(--disp);color:#fff;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:0 5px 0 var(--ink)}
 .sp-hero-sub{position:absolute;left:20px;top:calc(16px + clamp(56px,17vw,84px)*1.06);padding:3px 10px;border-radius:8px;background:var(--ink);color:var(--yellow);font:900 12px/1.2 var(--body);letter-spacing:.14em;text-transform:uppercase}
-.sp-seg button{flex-direction:column;align-items:center;gap:2px}
+.sp-seg button>span{display:flex;flex-direction:column;align-items:center;gap:2px}
 .sp-seg button .d{font-size:30px}
 .sp-pb{display:flex;align-items:center;gap:14px}
 .sp-pb-ic{display:grid;place-items:center;flex:none;width:52px;height:52px;border-radius:50%;border:var(--bw) solid var(--ol);background:var(--yellow);color:var(--ink);--ic:26px}
@@ -93,16 +93,16 @@ body.sprinting .fs,body:has(#sprintEnd:not(.hide)) .fs{display:none}
 #sprintEnd{background:var(--bg)}
 #sprintEnd .wrap{gap:16px}
 #sprintEnd:not(.hide)>.wrap{animation:modal-in var(--duration-slow) var(--ease-smooth-out) both}
-.sp-res-head{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:40px;min-height:196px;padding:20px 150px 20px 20px;border:var(--bw-lg) solid var(--ol);border-radius:var(--r-lg);
+.sp-res-head{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:40px;min-height:196px;padding:20px 124px 20px 20px;border:var(--bw-lg) solid var(--ol);border-radius:var(--r-lg);
   background:repeating-conic-gradient(from 0deg at 80% 70%,var(--red) 0 8deg,color-mix(in srgb,#fff 16%,var(--red)) 8deg 16deg);color:#fff;box-shadow:var(--sh-lg);overflow:hidden}
 .sp-res-head[data-w="2"]{background:repeating-conic-gradient(from 0deg at 80% 70%,var(--blue) 0 8deg,color-mix(in srgb,#fff 14%,var(--blue)) 8deg 16deg)}
 .sp-res-head[data-w="0"]{background:repeating-conic-gradient(from 0deg at 80% 70%,var(--yellow) 0 8deg,color-mix(in srgb,#fff 30%,var(--yellow)) 8deg 16deg);color:var(--ink)}
 .sp-res-head .wl{font:900 13px/1.2 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
-.sp-res-head h2{font:400 clamp(36px,10.5vw,52px)/1.15 var(--disp);text-shadow:0 4px 0 color-mix(in srgb,var(--ink) 28%,transparent);overflow-wrap:anywhere}
+.sp-res-head h2{font:400 clamp(32px,9vw,52px)/1.15 var(--disp);text-shadow:0 4px 0 color-mix(in srgb,var(--ink) 28%,transparent);overflow-wrap:break-word;max-width:100%}
 .sp-res-head p{font:800 15px/1.4 var(--body);color:var(--ink)}
 .sp-res-head[data-w="1"] p,.sp-res-head[data-w="2"] p{color:#fff}
 .sp-res-head .rec-badge{position:static;margin-top:6px}
-.sp-res-art{position:absolute;right:4px;bottom:-12px;width:150px;pointer-events:none}
+.sp-res-art{position:absolute;right:2px;bottom:-12px;width:128px;pointer-events:none}
 .sp-rows{list-style:none;display:grid;gap:10px}
 .sp-row{display:flex;align-items:center;gap:12px;padding:10px 16px 10px 12px;border:var(--bw) solid var(--ol);border-radius:18px;background:var(--surface);box-shadow:var(--sh);--tone:var(--red);
   animation:sp-row-in var(--duration-slow) var(--ease-smooth-out) both;animation-delay:calc(120ms + var(--i,0)*var(--duration-stagger)*2)}
@@ -115,7 +115,7 @@ body.sprinting .fs,body:has(#sprintEnd:not(.hide)) .fs{display:none}
 .sp-row-txt{display:flex;flex-direction:column;min-width:0;flex:1}
 .sp-row-txt b{font:900 17px/1.25 var(--body)}
 .sp-row-txt small{font:700 13px/1.3 var(--body);color:var(--fg-faint)}
-.sp-row-t{font:400 26px/1.15 var(--disp);color:var(--tone);white-space:nowrap}
+.sp-row-t{font:400 22px/1.15 var(--disp);color:var(--tone);white-space:nowrap}
 .sp-row.ghost .sp-row-t{color:var(--fg-mute)}
 @keyframes sp-row-in{from{opacity:0;translate:0 10px}to{opacity:1;translate:0 0}}
 #sprintEnd .cta{display:flex;flex-direction:column;gap:12px;padding-top:6px}
