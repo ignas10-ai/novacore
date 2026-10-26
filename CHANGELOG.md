@@ -1,5 +1,14 @@
 # Pakeitimų žurnalas
 
+## 2026-10-26 — anglų kalba (šaka `en`)
+
+- **Kam:** Solve for Tomorrow finalas vyks angliškai, o vėliau – kitos rinkos. Programėlė dabar dviem kalbomis: lietuvių (numatyta, tekstai nepakeisti) ir anglų.
+- **Kaip padaryta (be bibliotekos):** `src/i18n/` – `t(raktas,{parametrai})`, `tn()` daugiskaitai (lt: 1 žaidimas / 2 žaidimai / 10 žaidimų, en: 1 game / 2 games; `Intl.PluralRules`), `dec()` skaičiams (12,34 / 12.34), savaitės dienos ir datos per `Intl`. 522 raktai (`lt.ts` = originalūs tekstai, `en.ts` = angliški); trūkstamas angliškas raktas = `tsc` klaida. `index.html` lieka lietuviškas – `src/i18n/dom.ts` kiekvieną tekstą randa `lt.ts` pagal tikslią reikšmę ir įrašo pasirinkta kalba (taip pat `aria-label`, `placeholder`, `<title>`, meta aprašymai, `manifest.en.webmanifest`).
+- **Kalbos pasirinkimas:** automatiškai pagal naršyklę (lt → LT, visa kita → EN), Profilis → Nustatymai → **Kalba LT / EN** (išsaugoma, puslapis persikrauna), `?lang=en` nuoroda demonstracijoms. TV lenta seka telefono kalbą (`ScreenState.lang` per esamą kanalą); kol telefonas dar neprisijungęs – TV naršyklės kalba. Dvikovose kiekvienas telefonas rodo savo kalbą (tekstų tarp telefonų nesiunčiama).
+- **Anglų tekstai** rašyti žaidėjams, ne pažodžiui: „Red vs Blue“, „Crews“ (kompanijos), sprinto startas „On your marks… Get set… Go!“, „Who scores more in 3 min?“. Raudonas/Mėlynas = Red/Blue, NovaCore lieka NovaCore.
+- **Išdėstymas:** patikrinta 390 px, 360 px ir landscape angliškai (kadrai `Downloads/NovaCore/en/`); pataisyta: įvado „Your name?“ antraštė nebelenda po personažu, „2–3 m“ ir „6-character“ nebelūžta, TV būsena „No phone yet“ telpa. Istorijos „Rekordas“ ženkliukas buvo CSS tekste – dabar iš `t()` (`attr(data-rec)`). Profilyje nauja eilutė „Kalba“.
+- **Testai:** `test/unit/i18n.test.ts` (vienodi raktai, jokių tuščių reikšmių, tie patys `{parametrai}`, daugiskaitos formų skaičius, kiekvienas `index.html` tekstas turi raktą, LT/EN daugiskaita, datos, kalbos aptikimo tvarka). `test/e2e/en.spec.ts` – visas žaidimas angliškai (įvadas → žaidimas → rezultatai → klipas → kalbos perjungimas atgal į LT) ir krenta, jei ekrane lieka lietuviškų raidžių. Kiti e2e – lietuviškai; puppeteer įrankiai paleidžiami su `--lang=lt-LT`, `tools/screens.cjs --lang en` daro angliškus kadrus.
+
 ## 2026-10-26 — pataisytos 2 testų rastos klaidos (šaka `en`)
 
 - **NaN kadras:** kartais MediaPipe grąžina sugadintą kadrą (NaN koordinatės). Vienas toks kadras pritūpimų vidurkį (EMA) paversdavo NaN iki raundo pabaigos – to žaidėjo pritūpimai nebeskaičiuoti. Dabar `step()` (per jį eina visi pratimai ir abu skaičiuokliai – rankinis ir k-NN) tokį kadrą praleidžia, būsena neliečiama. `replay-check` ir `accuracy.cjs` skaičiai identiški kaip prieš pataisą.
