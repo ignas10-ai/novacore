@@ -13,6 +13,7 @@ export const S={
   lastPointAt:[0,0],
   st:[{},{}] as StepState[], // per-player state machine
   running:false, t0:0, curMult:1,
+  exShift:0, // random start offset so the exercise skipped by a short game rotates between games
   fl:[0,0], // last +N flash per player (skeleton glows for 250 ms)
   camFps:30,
   rec:null as MediaRecorder|null, recFrameMs:28, lastRecDrawAt:0,

@@ -95,7 +95,7 @@
       <p class="help" id="onbNickHelp">Jį matys draugai kompanijos lentelėje. Jokio el. pašto ar slaptažodžio.</p>
       <div class="box perm">
         <span class="perm-ic" data-tone="red" data-icon="camera"></span>
-        <div><b>Kamera</b><p>Įsijungia tik žaidimo metu. Vaizdas apdorojamas telefone ir niekur nesiunčiamas.</p></div>
+        <div><b>Kamera</b><p>Įsijungia tik žaidimo metu. Vaizdas apdorojamas telefone; į TV siunčiamas tik jei pats įjungi „Kamera per TV“.</p></div>
         <button class="pill accent tap" id="onbCam" type="button">Leisti</button>
       </div>
     </div>
@@ -112,6 +112,7 @@
       <span class="wordmark d" aria-hidden="true">NovaCore</span>
       <span class="nav-acts">
         <span class="streak-pill" id="streakCard" role="img" aria-labelledby="streakTxt"><span data-icon="flame"></span><b class="d" id="streakN">0</b><span class="sr-only" id="streakTxt">dienų iš eilės</span></span>
+        <button class="icon-btn tap" id="homeCast" type="button" aria-label="Rodyti per TV" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button>
         <a class="avatar char tap" id="homeAv" href="#/profilis" aria-label="Profilis" data-avatar></a>
       </span>
     </div></header>
@@ -168,7 +169,7 @@
 
 <section class="screen app hide" id="start" aria-labelledby="setupTitle">
   <div class="wrap">
-    <header class="nav inline"><div class="nav-in"><a class="icon-btn sq tap" href="#/" data-back aria-label="Atgal"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="setupTitle" tabindex="-1">Naujas žaidimas</h1></div></header>
+    <header class="nav inline"><div class="nav-in"><a class="icon-btn sq tap" href="#/" data-back aria-label="Atgal"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="setupTitle" tabindex="-1">Naujas žaidimas</h1><button class="icon-btn tap" id="setupCast" type="button" aria-label="Rodyti per TV" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
     <section class="pick" aria-labelledby="plLbl">
       <h2 class="eyebrow sec-lbl" id="plLbl">Žaidėjai</h2>
       <div class="players" role="group" aria-label="Žaidėjų skaičius">
@@ -199,15 +200,15 @@
       <div class="set-txt"><b>Garsas</b><small>Už judesį, raundą ir finišą</small></div>
       <button class="switch" type="button" role="switch" aria-checked="true" data-snd aria-label="Garsas"><i></i></button>
     </div>
-    <button class="set-row tap-row tap" type="button" data-tv aria-haspopup="dialog" aria-controls="tvSheet">
+    <button class="set-row tap-row tap" id="castOpen" type="button" aria-haspopup="dialog" aria-controls="screenSheet">
       <span class="set-ic" data-icon="tv"></span>
-      <div class="set-txt"><b>Rodyti per TV</b><small>Didelis ekranas visai kompanijai</small></div>
+      <div class="set-txt"><b>Rodyti per TV</b><small id="castState">Taškai per TV · nuoroda</small></div>
       <span class="chev" data-icon="chevron-right"></span>
     </button>
     <p class="hint-row"><span data-icon="smartphone"></span>Pastatyk telefoną 2–3 m atstumu, kad matytų visą kūną.</p>
     <div class="cta">
       <button class="go tap" id="go"><span id="goTxt">Pradėti</span><span data-icon="arrow-right"></span></button>
-      <p class="fine"><span data-icon="lock"></span>Vaizdas apdorojamas tik telefone ir niekur nesiunčiamas.</p>
+      <p class="fine"><span data-icon="lock"></span>Vaizdas apdorojamas telefone. Į TV – tik įjungus „Kamera per TV“.</p>
     </div>
   </div>
 </section>
@@ -315,9 +316,9 @@
         <div class="set-row"><span class="set-ic" data-icon="user"></span><div class="set-txt"><b>Personažas</b><small>Tavo veidas Pradžioje ir Profilyje</small></div><div class="char-pick" role="radiogroup" aria-label="Personažas"><button class="tap" type="button" role="radio" data-char="r" aria-checked="true" aria-label="Raudonas"><span data-head="r"></span></button><button class="tap" type="button" role="radio" data-char="b" aria-checked="false" aria-label="Mėlynas"><span data-head="b"></span></button></div></div>
         <div class="set-row"><span class="set-ic" data-icon="volume-2"></span><div class="set-txt"><b>Garsas</b><small>Už judesį, raundą ir finišą</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-snd aria-label="Garsas"><i></i></button></div>
         <div class="set-row"><span class="set-ic" data-icon="vibrate"></span><div class="set-txt"><b>Vibracija</b><small>Trumpas virptelėjimas už judesį</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-vibe aria-label="Vibracija"><i></i></button></div>
-        <button class="set-row tap-row" type="button" data-tv aria-haspopup="dialog" aria-controls="tvSheet"><span class="set-ic" data-icon="tv"></span><div class="set-txt"><b>Rodyti per TV</b><small>Kaip parodyti žaidimą dideliame ekrane</small></div><span class="chev" data-icon="chevron-right"></span></button>
+        <button class="set-row tap-row" type="button" data-tv aria-haspopup="dialog" aria-controls="screenSheet"><span class="set-ic" data-icon="tv"></span><div class="set-txt"><b>Rodyti per TV</b><small>TV lenta su kodu arba ekrano dubliavimas</small></div><span class="chev" data-icon="chevron-right"></span></button>
         <button class="set-row tap-row" id="onbAgain" type="button"><span class="set-ic" data-icon="info"></span><div class="set-txt"><b>Kaip žaisti</b><small>Parodyti įvadą dar kartą</small></div><span class="chev" data-icon="chevron-right"></span></button>
-        <div class="set-row"><span class="set-ic" data-icon="shield-check"></span><div class="set-txt"><b>Privatumas</b><small>Vaizdas niekada nepalieka telefono. Serveriui siunčiamas tik slapyvardis ir taškai.</small></div></div>
+        <div class="set-row"><span class="set-ic" data-icon="shield-check"></span><div class="set-txt"><b>Privatumas</b><small>Pagal nutylėjimą vaizdas niekur nesiunčiamas. Įjungus „Kamera per TV“, jis tiesiogiai (WebRTC) siunčiamas tik tam TV, kuris turi kodą. Serveriui – tik slapyvardis ir taškai.</small></div></div>
       </div>
       <p class="fine" id="appVer">NovaCore</p>
     </section>
@@ -359,6 +360,7 @@
         <span class="cue-label" id="readyCueText"></span>
       </div>
       <p class="sr-only" id="readyHint" aria-live="polite">Atsistokite taip, kad matytųsi visas kūnas</p>
+      <p class="ready-cast" id="readyCast" hidden><span data-icon="cast"></span>Didelis ekranas<b class="d" id="readyCastCode"></b></p>
       <button class="go alt ready-back" id="readyBack" type="button"><span data-icon="chevron-left"></span>Atgal į nustatymus</button>
     </div>
   </div>
@@ -447,6 +449,66 @@
   </div>
 </section>
 
+<!-- big screen / TV (route #/ekranas/<code>): the scoreboard page, filled by src/cast/screen.ts -->
+<section class="screen cam hide" id="screen" data-phase="connect" aria-label="Didelis ekranas">
+  <video class="bs-cam-vid" id="bsCamVid" muted playsinline autoplay aria-hidden="true"></video>
+  <div class="bs-cam-scrim" id="bsCamScrim" aria-hidden="true"></div>
+  <div class="wrap bs-wrap">
+    <header class="bs-top">
+      <span class="wordmark d">NovaCore</span>
+      <span class="bs-tag">Didelis ekranas</span>
+      <span class="bs-live" id="bsLive" data-on="0" aria-live="polite"><i></i><span id="bsLiveTxt">Neprijungta</span></span>
+      <button class="pill sm bs-cam tap" id="bsCam" type="button" aria-label="Rodyti kamerą per TV" aria-pressed="false"><span data-icon="camera"></span><span class="bs-cam-txt" id="bsCamTxt">Kamera</span></button>
+      <button class="icon-btn bs-fs tap" id="bsFs" type="button" aria-label="Visas ekranas" title="Visas ekranas"><span data-icon="maximize"></span></button>
+    </header>
+
+    <div class="bs-wait" id="bsWait">
+      <div class="bs-art" data-mascots="vs" aria-hidden="true"></div>
+      <span class="eyebrow">NovaCore · TV lenta</span>
+      <h1 class="d bs-title">Taškai per <span>visą ekraną</span></h1>
+      <p class="bs-lead">Telefone spausk <b>Rodyti per TV → Įjungti didelį ekraną</b> ir čia įvesk kodą. Telefonas lieka kamera.</p>
+      <form class="bs-connect" id="bsConnect" novalidate>
+        <input id="bsCodeIn" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="6" placeholder="ABC123" aria-label="Didelio ekrano kodas">
+        <button class="go tap" type="submit">Jungtis<span data-icon="arrow-right"></span></button>
+      </form>
+      <p class="note bs-err" id="bsErr" aria-live="polite"></p>
+      <p class="bs-waiting" id="bsWaiting" hidden>Kodas <b class="d" id="bsWaitCode">------</b> · laukiama žaidimo…</p>
+    </div>
+
+    <div class="bs-game" id="bsGame">
+      <div class="bs-stage">
+        <div class="bs-side p1" id="bsSide1">
+          <span class="bs-id"><span class="bs-av" data-head="r"></span><span class="bs-chip" id="bsP1Label">P1</span></span>
+          <b class="d bs-score" id="bsS1">0</b>
+        </div>
+        <div class="bs-mid">
+          <span class="bs-round" id="bsRound">Pasiruošimas</span>
+          <div class="bs-time" id="bsTimer">3:00</div>
+          <div class="bs-ex-name d" id="bsEx">Pasiruošimas</div>
+          <span class="bs-mult d" id="bsMult" hidden>×1</span>
+        </div>
+        <div class="bs-side p2" id="bsSide2">
+          <span class="bs-id"><span class="bs-av" data-head="b"></span><span class="bs-chip">P2</span></span>
+          <b class="d bs-score" id="bsS2">0</b>
+        </div>
+      </div>
+      <div class="bs-demo" id="bsDemo" aria-hidden="true"></div>
+      <div class="bs-bar"><i id="bsBar"></i></div>
+      <div class="bs-verdict" id="bsVerdict" hidden>
+        <span class="eyebrow" id="bsVerdictTag">Pabaiga</span>
+        <b class="d" id="bsVerdictTxt"></b>
+        <span class="bs-reps" id="bsReps"></span>
+      </div>
+      <p class="bs-stale" id="bsStale" hidden>Ryšys su telefonu nutrūko · laukiama…</p>
+    </div>
+
+    <footer class="bs-foot">
+      <span class="bs-brand">NovaCore · 3 minutės judėjimo</span>
+      <span class="bs-code">Kodas <b class="d" id="bsFootCode">------</b></span>
+    </footer>
+  </div>
+</section>
+
 <dialog class="ex-sheet" id="exDetail" aria-labelledby="exdName">
   <div class="ex-sheet-panel">
     <div class="exd-top">
@@ -521,26 +583,60 @@
   </form>
 </dialog>
 
-<!-- "Rodyti per TV": instructions only (screen mirroring is the phone's own feature; no casting API) -->
-<dialog class="ex-sheet" id="tvSheet" aria-labelledby="tvTitle">
+<dialog class="ex-sheet" id="screenSheet" aria-labelledby="screenTitle" aria-describedby="screenSub">
   <div class="ex-sheet-panel">
     <header class="ex-sheet-head">
       <div class="ex-sheet-bar">
         <span class="eyebrow">Didelis ekranas</span>
-        <button class="icon-btn" id="tvClose" type="button" aria-label="Uždaryti"><span data-icon="x"></span></button>
+        <button class="icon-btn" id="screenClose" type="button" aria-label="Uždaryti"><span data-icon="x"></span></button>
       </div>
-      <h2 class="d ex-sheet-title" id="tvTitle">Rodyti <span>per TV</span></h2>
-      <p class="ex-sheet-sub">Visa kompanija matys taškus ir laikmatį. Telefonas lieka ant žemės ir filmuoja.</p>
+      <h2 class="d ex-sheet-title" id="screenTitle">Rodyti <span>per TV</span></h2>
+      <p class="ex-sheet-sub" id="screenSub">Visa kompanija matys taškus, laiką ir pratimą. Telefonas lieka ant žemės ir filmuoja.</p>
     </header>
-    <div class="sheet-body">
-      <ol class="tv-steps">
-        <li data-tone="blue"><span class="tv-ic" data-icon="cast"></span><div><b>Android</b><p>Perbrauk žemyn nuo ekrano viršaus ir greitajame meniu spausk <b>„Smart View“</b> arba <b>„Ekrano transliavimas“</b>. Pasirink televizorių.</p></div></li>
-        <li data-tone="red"><span class="tv-ic" data-icon="airplay"></span><div><b>iPhone</b><p>Atidaryk Valdymo centrą (perbrauk žemyn nuo dešinio viršutinio kampo) ir spausk <b>„Ekrano dubliavimas“</b>. Pasirink Apple TV ar AirPlay televizorių.</p></div></li>
-        <li data-tone="yellow"><span class="tv-ic" data-icon="laptop"></span><div><b>Kompiuteris ir HDMI</b><p>Atidaryk NovaCore kompiuterio naršyklėje ir prijunk kompiuterį prie TV <b>HDMI</b> laidu. Tada filmuos kompiuterio kamera.</p></div></li>
-      </ol>
-      <p class="help">Telefonas ir televizorius turi būti tame pačiame „Wi-Fi“ tinkle. Jei vaizdas TV šiek tiek vėluoja – nieko tokio, taškai skaičiuojami telefone.</p>
+    <div class="sheet-body cast-body">
+      <div id="castOff">
+        <ol class="cast-how">
+          <li><p><b>Įjunk didelį ekraną</b> – gausi 6 simbolių kodą.</p></li>
+          <li><p><b>TV naršyklėje atidaryk</b> <span class="cast-host">novacore-two.vercel.app/#/ekranas</span> ir įvesk kodą (arba nusiųsk nuorodą į TV ar kompiuterį).</p></li>
+        </ol>
+        <button class="go tap" id="castOn" type="button"><span data-icon="cast"></span>Įjungti didelį ekraną</button>
+      </div>
+      <div id="castOnBox" hidden>
+        <div class="cast-code-card">
+          <span class="lbl">Kodas</span>
+          <b class="d" id="castCode">------</b>
+          <span class="cast-live" id="castLive" data-on="0" aria-live="polite"><i></i><span id="castLiveTxt">Laukiama TV</span></span>
+        </div>
+        <p class="cast-step">TV naršyklėje atidaryk <span class="cast-host">novacore-two.vercel.app/#/ekranas</span> ir įvesk kodą. Arba nusiųsk nuorodą:</p>
+        <div class="cast-link-row">
+          <input id="castUrl" type="text" readonly aria-label="Didelio ekrano nuoroda">
+          <button class="icon-btn tap" id="castCopy" type="button" aria-label="Kopijuoti nuorodą"><span data-icon="copy"></span></button>
+        </div>
+        <div class="cast-acts">
+          <button class="go alt tap" id="castShare" type="button"><span data-icon="share-2"></span>Bendrinti</button>
+          <button class="go alt tap" id="castOpenPage" type="button"><span data-icon="external-link"></span>Peržiūrėti</button>
+        </div>
+        <div class="set-row cast-cam">
+          <span class="set-ic" data-tone="red" data-icon="camera"></span>
+          <div class="set-txt"><b>Kamera per TV</b><small id="camState">Rodyk žaidimo vaizdą televizoriuje</small></div>
+          <button class="switch" type="button" role="switch" aria-checked="false" id="camSwitch" aria-label="Kamera per TV"><i></i></button>
+        </div>
+        <p class="help">Per TV bus rodomas kameros vaizdas su skeletu. Kai įjungta, kamerą mato tik šį kodą turintis TV. Gali šiek tiek apkrauti telefoną.</p>
+        <button class="danger-link tap" id="castOffBtn" type="button"><span data-icon="power"></span>Išjungti didelį ekraną</button>
+      </div>
+      <p class="help" id="castNet" hidden>TV lentai reikia interneto ryšio. Be jo gali rodyti telefoną per AirPlay / Chromecast (žemiau).</p>
+      <details class="cast-help">
+        <summary><span data-icon="airplay"></span><b>TV neturi naršyklės? Dubliuok ekraną</b><span class="chev" data-icon="chevron-down"></span></summary>
+        <ol class="tv-steps">
+          <li data-tone="blue"><span class="tv-ic" data-icon="cast"></span><div><b>Android</b><p>Perbrauk žemyn nuo ekrano viršaus ir greitajame meniu spausk <b>„Smart View“</b> arba <b>„Ekrano transliavimas“</b>. Pasirink televizorių.</p></div></li>
+          <li data-tone="red"><span class="tv-ic" data-icon="airplay"></span><div><b>iPhone</b><p>Atidaryk Valdymo centrą (perbrauk žemyn nuo dešinio viršutinio kampo) ir spausk <b>„Ekrano dubliavimas“</b>. Pasirink Apple TV ar AirPlay televizorių.</p></div></li>
+          <li data-tone="yellow"><span class="tv-ic" data-icon="laptop"></span><div><b>Kompiuteris ir HDMI</b><p>Atidaryk NovaCore kompiuterio naršyklėje ir prijunk kompiuterį prie TV <b>HDMI</b> laidu. Tada filmuos kompiuterio kamera.</p></div></li>
+        </ol>
+        <p class="help">Telefonas ir televizorius turi būti tame pačiame „Wi-Fi“ tinkle. Jei vaizdas TV šiek tiek vėluoja – nieko tokio, taškai skaičiuojami telefone.</p>
+      </details>
+      <p class="fine"><span data-icon="lock"></span>Be kameros per TV siunčiami tik taškai ir pratimo pavadinimas. Įjungus „Kamera per TV“, vaizdas tiesiogiai (WebRTC) siunčiamas tik tam TV, kuris turi kodą.</p>
+      <p class="note" id="castNote" aria-live="polite"></p>
     </div>
-    <footer class="ex-sheet-foot"><button class="go ex-done wide tap" id="tvDone" type="button">Supratau</button></footer>
   </div>
 </dialog>
 

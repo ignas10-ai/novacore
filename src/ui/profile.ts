@@ -10,7 +10,7 @@ import {onView} from "./router.ts";
 import {showOnb} from "./onboarding.ts";
 import {toneOf} from "./coach.ts";
 
-export const APP_VERSION="2.0"; // ponytail: bump by hand with user-visible releases
+export const APP_VERSION="2.2"; // ponytail: bump by hand with user-visible releases
 const DAY=["Sk","Pr","An","Tr","Kt","Pn","Š"];
 const DAY_LONG=["sekmadienis","pirmadienis","antradienis","trečiadienis","ketvirtadienis","penktadienis","šeštadienis"];
 // medal colour per badge (locked badges are grey)

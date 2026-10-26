@@ -50,7 +50,20 @@ node tools/screens.cjs cam2sq.y4m --both --out ~/Downloads/NovaCore/app-v2   # p
 node tools/screens.cjs --no-game                                         # be kameros: iki nustatymų ekrano
 ```
 
-Švarus naršyklės profilis → įvadas 1–3 → Pradžia (tuščia) → įdedama netikra istorija (9 žaidimai per 9 dienas) → Kompanijos (tuščia, sukurta, lentelė, sąrašas), Pradžia (su vieta ir iššūkiu), Pratimai, Profilis (+ ženkliukai, nustatymai), istorijos ir slapyvardžio lapai, nustatymai, pratimų lapas; su kameros failu – kraunama, pasiruošimas, žaidimas, rezultatai, klipai, Pradžia po žaidimo. Supabase visada netikras (`mock-supabase.cjs`). Dviem žaidėjams reikia įrašo su dviem žmonėmis (`--players 1` – vienam). Kadrai sunumeruoti (`01-onboarding-1.png` …, landscape `…-landscape.png`) – peržiūrėti VISUS.
+Švarus naršyklės profilis → įvadas 1–3 → Pradžia (tuščia) → įdedama netikra istorija (9 žaidimai per 9 dienas) → Kompanijos (tuščia, sukurta, lentelė, sąrašas), Pradžia (su vieta ir iššūkiu), Pratimai, Profilis (+ ženkliukai, nustatymai), istorijos ir slapyvardžio lapai, nustatymai, „Didelis ekranas“ lapas (įjungtas kodas), pratimų lapas; su kameros failu – kraunama, pasiruošimas, žaidimas, rezultatai, klipai, Pradžia po žaidimo. Gale atidaromas antras langas su TV lenta: `tv-connect`, `tv-wait`, `tv-ready`, `tv-live`, `tv-live-solo`, `tv-done` (būsenos įterpiamos per BroadcastChannel, nes headless neturi Supabase sesijos). Supabase visada netikras (`mock-supabase.cjs`). Dviem žaidėjams reikia įrašo su dviem žmonėmis (`--players 1` – vienam). Kadrai sunumeruoti (`01-onboarding-1.png` …, landscape `…-landscape.png`) – peržiūrėti VISUS.
+
+## Didelis ekranas (`cast-check.cjs`)
+
+```
+npm run build
+node tools/cast-check.cjs
+```
+
+Atidaro telefono nustatymus, įjungia „Didelį ekraną“, perskaito kodą, atidaro antrą langą `#/ekranas/<kodas>` tame pačiame naršyklės kontekste ir tikrina: 6 simbolių kodą, telefone matomą „TV prijungtas“ (`hello`), TV gaunamą `idle`, taškų/laiko/pratimo/animacijos atvaizdavimą, laimėtojo būseną, kodo įvedimą TV lange ir išjungimą telefone. Tai BroadcastChannel kelias (be Supabase), todėl veikia ir be interneto; Realtime tarp įrenginių tikrinamas rankiniu telefonu + kompiuteriu. 24 teiginiai, `N/N OK`, exit 1 jei kas nors nepavyksta. Reikia Chrome ir `puppeteer-core` (kaip `screens.cjs`).
+
+Kameros vaizdas (WebRTC, „Kamera per TV“) šiame įrankyje netikrinamas – reikia tikros kameros ir antro įrenginio; `cast-check.cjs` tikrina tik kodą/būsenas. Rankinis bandymas: telefone įjunk kamerą, TV spausk „Kamera“, žaisk 1 min; patikrink vaizdą, išjungimą iš abiejų pusių ir kad žaidimas/klipas nesulėtėtų.
+
+Jei nori pamatyti tikrą žaidimą TV lentoje be telefono, suklijuok y4m, kurio pradžioje bent ~15 s abi rankos virš galvos (paruošimo vartams), tada įprastą klipe: `ffmpeg` → `cam.y4m`, tada `playthrough.cjs` su `--social` (žr. aukščiau) arba rankiniu `#/ekranas` langu. 12 s neužtenka, jei modelis kraunasi ilgiau.
 
 PWA ikonos: `node tools/icons.cjs` (reikia interneto Inter šriftui). Lucide ikonos: `node tools/lucide-icons.cjs src/ui/icons.ts <visi vardai>`.
 

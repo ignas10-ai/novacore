@@ -5,13 +5,15 @@ import "./ui/icons.ts";
 import {fillTpl} from "./ui/dom.ts";
 import {paintArt} from "./ui/avatar.ts";
 fillTpl(document);paintArt(); // template copies (onboarding phone placement) carry mascot placeholders too
-import {render} from "./ui/router.ts";
+import {render,parse} from "./ui/router.ts";
 import {firstRun} from "./ui/onboarding.ts";
 import "./ui/start.ts";
 import "./audio/sound.ts";
 import "./history/history.ts";
 import "./ui/coach.ts";
 import "./ui/social.ts";
+import "./cast/cast.ts";
+import "./cast/screen.ts";
 import "./ui/home.ts";
 import "./ui/library.ts";
 import "./ui/profile.ts";
@@ -24,7 +26,9 @@ import {Capacitor} from "@capacitor/core";
 import {App} from "@capacitor/app";
 import "./sprint/sprint.ts";
 
-if(!firstRun())render();
+// the TV/laptop scoreboard never shows the first-run onboarding (a fresh browser there has no nickname/history)
+if(parse(location.hash).v==="screen")render();
+else if(!firstRun())render();
 // Android back = the same history.back() as the on-screen back (router.ts handles it); nothing left to go back to = close the app
 if(Capacitor.isNativePlatform())App.addListener("backButton",e=>e.canGoBack?history.back():App.exitApp());
 // no service worker in the Android app: the files are already on the phone (and a SW would serve stale builds after an update)

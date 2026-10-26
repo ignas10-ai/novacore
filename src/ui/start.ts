@@ -152,7 +152,4 @@ renderExGrid();
 updateExUI();
 syncExNotes(false);
 
-// "Rodyti per TV" (setup + Profilis): how to mirror the phone to a TV; instructions only, no casting API
-const tv=sheet($<HTMLDialogElement>("#tvSheet"));
-document.querySelectorAll<HTMLElement>("[data-tv]").forEach(b=>b.onclick=tv.open);
-$("#tvClose").onclick=tv.close;$("#tvDone").onclick=tv.close;
+// "Rodyti per TV" (setup row #castOpen, Profilis [data-tv], nav cast icons) opens #screenSheet: src/cast/cast.ts
