@@ -1,6 +1,7 @@
 // Remote duels, NO DOM (supabase/migrations/002_duels.sql): RPC wrappers + the pure helpers that tools/duel-check.mjs tests.
 // Writes go only through the RPCs (RLS: only the two players can read a duel). Realtime channel `duel:<id>` is private.
 import {sb} from "../online/api.ts";
+import {t} from "../i18n/i18n.ts";
 
 export interface DuelSettings{duration:number;exercises:string[];seed:number}
 export interface Duel{id:string;group_id:string;from_user:string;to_user:string;status:string;settings:DuelSettings;created_at:string;from_score:number|null;to_score:number|null;winner:string|null}
@@ -19,13 +20,13 @@ export const start=async(id:string)=>must(await c().rpc("start_duel",{p_id:id}))
 export const finish=async(id:string,score:number)=>must(await c().rpc("finish_duel",{p_id:id,p_score:Math.min(2000,Math.max(0,score|0))})) as Duel;
 export const pending=async()=>(must(await c().rpc("pending_duels")) as Invite[])||[];
 
-// LT message for a duel failure (falls back to the general online messages)
+// player-facing message for a duel failure (falls back to the general online messages)
 export function duelErr(e:any,general:(e:any)=>string){
   const m=String(e?.message||e||"");
-  if(/duel_not_member/.test(m))return "Draugas nebe šios kompanijos narys.";
-  if(/duel_closed|duel_not_found/.test(m))return "Šis kvietimas nebegalioja.";
-  if(/duel_rate/.test(m))return "Per daug kvietimų. Pabandyk po valandos.";
-  if(/duel_bad/.test(m))return "Netinkami dvikovos nustatymai.";
+  if(/duel_not_member/.test(m))return t("duel.errMember");
+  if(/duel_closed|duel_not_found/.test(m))return t("duel.errClosed");
+  if(/duel_rate/.test(m))return t("duel.errRate");
+  if(/duel_bad/.test(m))return t("duel.errBad");
   return general(e);
 }
 

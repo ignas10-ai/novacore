@@ -3,6 +3,7 @@ import {S} from "../game/state.ts";
 import {cv,recCv,readCameraInfo,drawRecordFrame} from "../camera/camera.ts";
 import {clipSpec,type ClipProfile,type Segment} from "./highlight.ts";
 import {$,toast} from "../ui/dom.ts";
+import {t} from "../i18n/i18n.ts";
 import {Capacitor} from "@capacitor/core";
 import {Filesystem,Directory} from "@capacitor/filesystem";
 import {Share} from "@capacitor/share";
@@ -63,7 +64,7 @@ function openClips(){
   }
 }
 $("#toClips").onclick=openClips;
-previewVid.onerror=()=>{if(clipState==="ready")setClipState("error","Nepavyko atkurti peržiūros.")};
+previewVid.onerror=()=>{if(clipState==="ready")setClipState("error",t("clip.playFail"))};
 
 function setDlOpen(open:boolean){
   dlMenu.hidden=!open;
@@ -85,7 +86,7 @@ async function nativeShare(blob:Blob,name:string){
     for(let i=CH;i<blob.size;i+=CH)await Filesystem.appendFile({path:name,directory:Directory.Cache,data:await b64(blob.slice(i,i+CH))});
     const {uri}=await Filesystem.getUri({path:name,directory:Directory.Cache});
     await Share.share({title:"NovaCore",files:[uri]});
-  }catch(e){if(!/cancel/i.test(String(e)))toast("Nepavyko pasidalinti klipu.")}
+  }catch(e){if(!/cancel/i.test(String(e)))toast(t("clip.shareFail"))}
 }
 if(native){
   dlPrev.addEventListener("click",e=>{e.preventDefault();if(previewBlob)nativeShare(previewBlob,dlPrev.download)});
@@ -100,7 +101,7 @@ async function sharePreviewClip(){
   const file=new File([previewBlob],`novacore-highlights.${ext}`,{type});
   try{
     if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
-      await navigator.share({files:[file],title:"NovaCore",text:"Mano NovaCore geriausios akimirkos"});
+      await navigator.share({files:[file],title:"NovaCore",text:t("clip.shareTxt")});
       return;
     }
   }catch(e){if((e as Error).name==="AbortError")return}
@@ -120,9 +121,9 @@ function setClipState(state:string,message?:string){
   previewLoad.classList.toggle("over",showFull);
   previewSpin.hidden=state!=="processing";
   if(showFull&&previewVid.src!==fullURL)previewVid.src=fullURL!; // no play(): the full clip plays only if the player taps it
-  if(state==="processing")previewMsg.innerHTML=showFull?"Kerpamos geriausios akimirkos…<small id=\"previewEta\">ruošiama ištrauka</small>":"Kerpamos geriausios akimirkos…<small>15–20 s iš taškų karščiausių vietų</small>";
-  else if(state==="error")previewMsg.innerHTML=`${message||"Nepavyko paruošti peržiūros."}<small>Pilną klipą vis tiek galite atsisiųsti.</small>`;
-  else if(state==="unavailable")previewMsg.innerHTML="Klipas neįrašytas.<small>Ši naršyklė nepalaiko įrašymo.</small>";
+  if(state==="processing")previewMsg.innerHTML=`${t("clip.cutting")}${showFull?`<small id="previewEta">${t("clip.prep")}</small>`:`<small>${t("clip.cutHint")}</small>`}`;
+  else if(state==="error")previewMsg.innerHTML=`${message||t("clip.err")}<small>${t("clip.errFull")}</small>`;
+  else if(state==="unavailable")previewMsg.innerHTML=`${t("clip.none")}<small>${t("clip.noRec")}</small>`;
   if(fullURL){dlFull.href=fullURL;dlFull.hidden=false}else{dlFull.hidden=true;dlFull.removeAttribute("href")}
   if(previewURL){dlPrev.href=previewURL;dlPrev.hidden=false}else{dlPrev.hidden=true;dlPrev.removeAttribute("href")}
   dlToggle.hidden=!(fullURL||previewURL);
@@ -146,7 +147,7 @@ function preparePreview(){
     const eta=document.getElementById("previewEta");
     if(!eta||clipState!=="processing"){clearInterval(etaTimer);return}
     const left=Math.max(1,Math.ceil(total-(performance.now()-startedAt)/1000));
-    eta.textContent=`ištrauka už ~${left} s`;
+    eta.textContent=t("clip.eta",{n:left});
   },500);
   const g=gen;
   makeHighlightClip(fullBlob,plan,poster=>{if(g===gen&&clipState==="processing")previewVid.poster=poster})

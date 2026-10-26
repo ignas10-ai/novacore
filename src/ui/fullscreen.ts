@@ -1,6 +1,7 @@
 // fullscreen: use vendor-prefixed fallback, hide the control when unsupported
 import {$} from "./dom.ts";
 import {Capacitor} from "@capacitor/core";
+import {t} from "../i18n/i18n.ts";
 
 const fsBtn=$("#fs"), fsRoot=document.documentElement as any, doc=document as any;
 const fsApi=fsRoot.requestFullscreen||fsRoot.webkitRequestFullscreen;
@@ -11,7 +12,7 @@ function updateFs(){
   const on=!!fsElement();
   fsBtn.dataset.on=on?"1":"0";
   fsBtn.setAttribute("aria-pressed",on?"true":"false");
-  const label=on?"Išeiti iš viso ekrano":"Visas ekranas";
+  const label=t(on?"app.fsOff":"app.fs");
   fsBtn.setAttribute("aria-label",label);fsBtn.title=label;
 }
 async function toggleFs(){

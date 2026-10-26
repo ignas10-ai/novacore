@@ -9,6 +9,7 @@ import {exIcon} from "./mascots.ts";
 import {icon} from "./icons.ts";
 import {$,sheet} from "./dom.ts";
 import {onView} from "./router.ts";
+import {t} from "../i18n/i18n.ts";
 
 const lib=$("#lib"), filt=$("#libFilter"), det=$<HTMLDialogElement>("#exDetail"), detS=sheet(det);
 const el=(tag:string,cls:string,text="")=>Object.assign(document.createElement(tag),{className:cls,textContent:text});
@@ -17,7 +18,7 @@ const nameOf=(id:string)=>DEMO[id]?.name||EX.find(e=>e.id===id)!.name;
 let totals:Record<string,{total:number;best:number}>={}, mode="all";
 
 const FILTERS:[string,string,(e:typeof EX[number])=>boolean][]=[
-  ["all","Visi",()=>true],["main","Pagrindiniai",e=>!e.beta],["beta","Beta",e=>!!e.beta],
+  ["all",t("app.all"),()=>true],["main",t("lib.main"),e=>!e.beta],["beta",t("u.Beta"),e=>!!e.beta],
 ];
 filt.replaceChildren(...FILTERS.map(([id,label,f])=>{
   const b=el("button","chip-btn tap",`${label} · ${EX.filter(f).length}`) as HTMLButtonElement;
@@ -35,13 +36,13 @@ function featured(id:string,i:number){
   card.type="button";card.dataset.ex=id;card.dataset.tone=toneOf(id);card.setAttribute("aria-haspopup","dialog");
   const art=el("span","feat-art");art.append(coachSvg(id,false));
   const txt=el("span","feat-txt");
-  txt.append(el("span","feat-eye d",`${pad(i)} · ${v.total?"Populiariausias":"Pradėk nuo jo"}`),el("b","feat-name d",nameOf(id)),el("span","feat-cue",DEMO[id]?.cue||""));
+  txt.append(el("span","feat-eye d",`${pad(i)} · ${t(v.total?"lib.top":"lib.startHere")}`),el("b","feat-name d",nameOf(id)),el("span","feat-cue",DEMO[id]?.cue||""));
   const st=el("span","feat-stats");
   const box=(cls:string,lbl:string,n:number)=>{const b=el("span","fs-box "+cls);b.append(el("small","",lbl),el("b","d",String(n)));return b};
-  st.append(box("y","Iš viso",v.total),box("w","Rekordas per žaidimą",v.best));
+  st.append(box("y",t("lib.total"),v.total),box("w",t("lib.best"),v.best));
   txt.append(st);
   const tip=el("span","feat-tip");const ic=el("span","feat-tip-ic");ic.innerHTML=icon("scan-face");
-  const tt=el("span","feat-tip-txt");tt.append(el("b","","Ką tikrina kamera"),el("span","",DEMO[id]?.tip||""));
+  const tt=el("span","feat-tip-txt");tt.append(el("b","",t("lib.checks")),el("span","",DEMO[id]?.tip||""));
   tip.append(ic,tt);
   card.append(art,txt,tip);
   return card;
@@ -53,7 +54,7 @@ function row(id:string,i:number,beta:boolean){
   const n=el("span","ex-num d",pad(i));if(!beta)n.classList.add("on");
   const ic=el("span","ex-pose");ic.innerHTML=exIcon(id);
   b.append(n,ic,el("span","ex-name",nameOf(id)));
-  if(beta)b.append(el("span","beta","beta"));else{const c=el("span","chev");c.innerHTML=icon("chevron-right");b.append(c)}
+  if(beta)b.append(el("span","beta",t("u.beta")));else{const c=el("span","chev");c.innerHTML=icon("chevron-right");b.append(c)}
   li.append(b);return li;
 }
 function render(){
@@ -73,7 +74,7 @@ lib.addEventListener("click",e=>{
   const id=card.dataset.ex!, d=DEMO[id], ex=EX.find(x=>x.id===id)!, v=totals[id]||{total:0,best:0};
   det.dataset.tone=toneOf(id);
   $("#exdArt").replaceChildren(coachSvg(id));
-  $("#exdNo").textContent=pad(EX.indexOf(ex))+(ex.beta?" · Beta":"");
+  $("#exdNo").textContent=pad(EX.indexOf(ex))+(ex.beta?` · ${t("u.Beta")}`:"");
   $("#exdName").textContent=d?.name||ex.name;
   $("#exdCue").textContent=d?.cue||"";
   $("#exdTip").textContent=d?.tip||"";

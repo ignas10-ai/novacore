@@ -13,11 +13,6 @@ export function setCue(root:HTMLElement,label:HTMLElement,kind:string,text:strin
   if(root.classList.contains("on")!==on)root.classList.toggle("on",on);
   if(label.textContent!==text)label.textContent=text;
 }
-// Lithuanian plural: plural(2,["diena","dienos","dienų"]) -> "dienos"
-export function plural(n:number,[one,few,many]:[string,string,string]){
-  const a=Math.abs(n)%10,b=Math.abs(n)%100;
-  return a===1&&b!==11?one:a>=2&&(b<10||b>=20)?few:many;
-}
 // short status message at the bottom (aria-live polite, never steals focus)
 let toastTimer=0;
 export function toast(msg:string){

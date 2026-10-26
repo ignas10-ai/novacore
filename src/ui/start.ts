@@ -4,6 +4,7 @@ import {S} from "../game/state.ts";
 import {$,replay,sheet} from "./dom.ts";
 import {toneOf} from "./coach.ts";
 import {exIcon} from "./mascots.ts";
+import {t} from "../i18n/i18n.ts";
 
 document.querySelectorAll<HTMLElement>("[data-p]").forEach(b=>b.onclick=()=>{S.players=+b.dataset.p!;sel(b);document.body.classList.toggle("solo",S.players===1)});
 document.querySelectorAll<HTMLElement>("[data-d]").forEach(b=>b.onclick=()=>{S.duration=+b.dataset.d!;sel(b)});
@@ -25,8 +26,8 @@ const exPad=(n:number)=>String(n).padStart(2,"0");
 function updateExUI(){
   const total=EX.length,n=pickedEx.size;
   exCount.textContent=String(n);
-  exSummary.textContent=total===n?(total===1?"Visi pratimai":`Visi ${total} pratimai`):`${n} iš ${total} pratimų`;
-  exOpen.setAttribute("aria-label",`Keisti pratimus, pasirinkta ${n} iš ${total}`);
+  exSummary.textContent=total===n?(total===1?t("ex.allOne"):t("ex.allN",{n:total})):t("ex.nOf",{n,total});
+  exOpen.setAttribute("aria-label",t("ex.aria",{n,total}));
   exAll.hidden=total===n;
   const chosen=EX.filter(e=>pickedEx.has(e.id));
   const chips=chosen.slice(0,4).map(e=>{
@@ -50,20 +51,20 @@ function updateExUI(){
   replay(exCount,"bump");
 }
 function exNoteMessage(){
-  return pickedEx.size===1?"Pasirinktas 1 pratimas. Raundai kartosis.":`Pasirinkti ${pickedEx.size} pratimai. Raundai keisis tik tarp jų.`;
+  return pickedEx.size===1?t("ex.note1"):t("ex.noteN",{n:pickedEx.size});
 }
 function syncExNotes(warn:boolean){
   clearTimeout(exNoteTimer);
   exNote.classList.toggle("warn",!!warn);
   exSheetNote.classList.toggle("warn",!!warn);
   if(warn){
-    exNote.textContent="Bent vienas pratimas turi likti.";
-    exSheetNote.textContent="Bent vienas turi likti.";
+    exNote.textContent=t("ex.keepOne");
+    exSheetNote.textContent=t("ex.keepOneShort");
     exNoteTimer=setTimeout(()=>syncExNotes(false),2200);
     return;
   }
   exNote.textContent=exNoteMessage();
-  exSheetNote.textContent=pickedEx.size===1?"Pasirinktas 1 pratimas":`Pasirinkti ${pickedEx.size} pratimai`;
+  exSheetNote.textContent=pickedEx.size===1?t("ex.sheet1"):t("ex.sheetN",{n:pickedEx.size});
 }
 function saveExPick(){try{localStorage.setItem("novacore.exercises",JSON.stringify([...pickedEx]))}catch(e){}}
 function renderExGrid(){
@@ -77,7 +78,7 @@ function renderExGrid(){
     btn.dataset.tone=toneOf(e.id);
     btn.classList.toggle("on",on);
     btn.setAttribute("aria-pressed",String(on));
-    btn.innerHTML=`<span class="ex-n d" aria-hidden="true">${exPad(i+1)}</span><span class="ex-pose" aria-hidden="true">${exIcon(e.id)}</span><span class="ex-name"></span>${e.beta?'<span class="ex-beta">beta</span>':''}<span class="ex-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13l5 5 9-12"/></svg></span>`;
+    btn.innerHTML=`<span class="ex-n d" aria-hidden="true">${exPad(i+1)}</span><span class="ex-pose" aria-hidden="true">${exIcon(e.id)}</span><span class="ex-name"></span>${e.beta?`<span class="ex-beta">${t("u.beta")}</span>`:''}<span class="ex-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13l5 5 9-12"/></svg></span>`;
     btn.querySelector(".ex-name")!.textContent=e.name;
     return btn;
   }));

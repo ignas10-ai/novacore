@@ -16,6 +16,7 @@ import {renderResults} from "../ui/results.ts";
 import {$,replay,setDigits,setCue,toast} from "../ui/dom.ts";
 import {screenPhase} from "../cast/cast.ts";
 import {S} from "./state.ts";
+import {t} from "../i18n/i18n.ts";
 
 const IDLE_DEMO_SECS=5; // re-show the coach card after this long without points
 const READY_MS=3000, READY_GRACE=300; // hold arms up this long before the game starts
@@ -33,8 +34,8 @@ const hudRoot=$("#hud"), timerEl=$("#timer"), tbarEl=$("#tbar"), multEl=$("#mult
 const roundN=$("#roundN"), roundNext=$("#roundNext"), roundChips=$("#roundChips");
 function paintRounds(round:number){
   const total=Math.ceil(S.duration/ROUND_SECS), n=S.activeEX.length, exAt=(r:number)=>S.activeEX[(r+S.exShift)%n].name;
-  roundN.textContent=`Raundas ${round+1} / ${total}`;
-  roundNext.replaceChildren(...(round+1<total?["Kitas: ",Object.assign(document.createElement("b"),{textContent:exAt(round+1)})]:["Paskutinis raundas!"]));
+  roundN.textContent=t("hud.roundOf",{n:round+1,total});
+  roundNext.replaceChildren(...(round+1<total?[t("hud.next"),Object.assign(document.createElement("b"),{textContent:exAt(round+1)})]:[t("hud.last")]));
   roundChips.replaceChildren(...[round-1,round,round+1].filter(r=>r>=0&&r<total).map(r=>Object.assign(document.createElement("li"),{className:r<round?"done":r===round?"now":"",textContent:exAt(r)})));
 }
 function flash(i:number){S.fl[i]=performance.now();const f=$(`#f${i+1}`);f.textContent=`+${S.curMult}`;replay(f,"go-pop");replay($(`#e${i+1}`),"go-pop");sfx.rep(i)}
@@ -57,15 +58,15 @@ let flowMode:GameMode|null=null;
 const inGameEntry=()=>!!history.state?.game;
 export async function startFlow(mode:GameMode|null=null){
   flowMode=mode;
-  $("#goTxt").textContent="Kraunama…";$("#go").setAttribute("aria-busy","true");
+  $("#goTxt").textContent=t("app.loading");$("#go").setAttribute("aria-busy","true");
   document.body.classList.add("ingame"); // hides the tab bar; the current screen stays under #loading
   ensureAudio(); // user gesture: the only place an AudioContext may be created
-  loadMsg.textContent="Ruošiama kamera ir judesio modelis";
+  loadMsg.textContent=t("load.msg");
   loadingRoot.classList.remove("hide");
   const loadingSince=performance.now();
   try{
     const sizeLabel=await openCamera();
-    loadMsg.textContent=`Kamera ${sizeLabel} · ${Math.round(S.camFps)} fps · ruošiamas modelis`;
+    loadMsg.textContent=t("load.cam",{size:sizeLabel,fps:Math.round(S.camFps)});
     console.info(`NovaCore kamera: ${cam.videoWidth}×${cam.videoHeight} @ ${Math.round(S.camFps)} fps`);
     await loadModel(S.players);
     const wait=700-(performance.now()-loadingSince);
@@ -89,8 +90,8 @@ export async function startFlow(mode:GameMode|null=null){
     readyRoot.classList.add("hide");
     loadingRoot.classList.add("hide");
     $("#go").removeAttribute("aria-busy");
-    $("#goTxt").textContent="Bandykite dar kartą";
-    toast((e as Error)?.name==="NotAllowedError"?"Kamera neleista – leisk ją naršyklės nustatymuose.":"Nepavyko įjungti kameros ar modelio. Bandyk dar kartą.");
+    $("#goTxt").textContent=t("setup.retry");
+    toast(t((e as Error)?.name==="NotAllowedError"?"err.camDenied":"err.camFail"));
     exitGame();
   }
 }
@@ -127,10 +128,10 @@ function startGame(){
 
 function finishReady(){
   if(S.duel){S.duel.ready(startGame);return} // remote duel: both phones start at the same moment
-  rdCount.textContent="Pirmyn!";
+  rdCount.textContent=t("ready.go");
   rdCount.classList.add("word");
   replay(rdCount,"pop");
-  readyHint.textContent="Puiku!";
+  readyHint.textContent=t("ready.great");
   readyRoot.classList.add("done");
   startTimer=setTimeout(startGame,520);
 }
@@ -150,12 +151,12 @@ function backToSettings(){
   rdCount.textContent="3";
   rdCount.classList.remove("word","pop");
   rdChips.forEach(el=>el.dataset.ok="0");
-  readyHint.textContent="Atsistokite taip, kad matytųsi visas kūnas";
+  readyHint.textContent=t("ready.stand");
   loadingRoot.classList.add("hide");
   stopCamera();
   cam.srcObject=null;
   resetTracking();
-  $("#goTxt").textContent="Pradėti";
+  $("#goTxt").textContent=t("setup.start");
   $("#go").removeAttribute("aria-busy");
   document.body.classList.remove("ingame");
   screenPhase("idle");
@@ -172,7 +173,7 @@ export function resetGame(){
   stopCamera();cam.srcObject=null;resetTracking();
   resetClips();
   $("#end").classList.add("hide");$("#clips").classList.add("hide");
-  $("#goTxt").textContent="Pradėti";$("#go").removeAttribute("aria-busy");
+  $("#goTxt").textContent=t("setup.start");$("#go").removeAttribute("aria-busy");
 }
 const afterGameShown=()=>!$("#end").classList.contains("hide")||!$("#clips").classList.contains("hide")||!!flowMode?.shown();
 document.querySelectorAll<HTMLElement>("[data-again]").forEach(b=>b.onclick=()=>{resetGame();startFlow()});
@@ -198,11 +199,11 @@ function readyLoop(){
   const allVisible=poses.length===players;
   const allReady=allVisible&&up.slice(0,players).every(Boolean);
   const sides=poses.map(p=>sideCue(p.lm));
-  if(!allVisible)setCue(readyCue,readyCueText,"back","Atsitrauk");
+  if(!allVisible)setCue(readyCue,readyCueText,"back",t("cue.back"));
   else if(sides.some(Boolean)){
     const k=sides.findIndex(Boolean),dir=sides[k];
-    setCue(readyCue,readyCueText,dir,`P${k+1} · ${dir==="left"?"į kairę":"į dešinę"}`);
-  }else if(!allReady)setCue(readyCue,readyCueText,"arms","Rankos aukštyn");
+    setCue(readyCue,readyCueText,dir,t(dir==="left"?"cue.left":"cue.right",{n:k+1}));
+  }else if(!allReady)setCue(readyCue,readyCueText,"arms",t("cue.arms"));
   else setCue(readyCue,readyCueText,"","");
   if(allReady){
     lastReady=now;
@@ -223,11 +224,11 @@ function readyLoop(){
   let msg;
   if(!allVisible){
     const missing=players-poses.length;
-    msg=missing===1?"Nematau žaidėjo – įsirikiuokite, kad matytųsi visas kūnas":`Nematau ${missing} žaidėjų – įsirikiuokite, kad matytųsi visi`;
+    msg=missing===1?t("ready.miss1"):t("ready.missN",{n:missing});
   }else if(!allReady){
     const waiting=up.slice(0,players).map((ok,i)=>ok?null:`P${i+1}`).filter(Boolean);
-    msg=waiting.length===1?`${waiting[0]}: pakelkite abi rankas virš galvos`:"Pakelkite abi rankas virš galvos";
-  }else msg="Puiku – laikykite rankas virš galvos";
+    msg=waiting.length===1?t("ready.armsP",{p:waiting[0]!}):t("ready.arms");
+  }else msg=t("ready.hold");
   if(readyHint.textContent!==msg)readyHint.textContent=msg;
 
   if(pct>=1){readying=false;cancelAnimationFrame(readyRaf);finishReady();return}
@@ -251,14 +252,15 @@ function loop(){
     // assign by x: leftmost on screen (mirrored) = player 1
     poses.forEach((p,i)=>{detect(p.lm,i,ex.id,mult);draw(p.lm,i)});
     const lost=poses.map((p,i)=>st[i].lost?i+1:0).filter(Boolean);
-    const missing=poses.length<players?`Nematau ${players-poses.length===2?"žaidėjų":"žaidėjo "+(poses.length+1)}`:lost.length?`P${lost.join(" ir P")}: atsitrauk, nesimato viso kūno`:"";
+    const who=lost.map(n=>`P${n}`).join(t("u.and"));
+    const missing=poses.length<players?(players-poses.length===2?t("hint.missAll"):t("hint.missP",{n:poses.length+1})):lost.length?t("hint.lost",{who}):"";
     if(hintEl.textContent!==missing)hintEl.textContent=missing;
     const sides=poses.map(p=>sideCue(p.lm));
-    if(poses.length<players)setCue(hintCue,hintCueText,"back","Įsirikiuok");
+    if(poses.length<players)setCue(hintCue,hintCueText,"back",t("cue.line"));
     else if(sides.some(Boolean)){
       const k=sides.findIndex(Boolean),dir=sides[k];
-      setCue(hintCue,hintCueText,dir,`P${k+1} · ${dir==="left"?"į kairę":"į dešinę"}`);
-    }else if(lost.length)setCue(hintCue,hintCueText,"back",`P${lost.join(" ir P")} · atsitrauk`);
+      setCue(hintCue,hintCueText,dir,t(dir==="left"?"cue.left":"cue.right",{n:k+1}));
+    }else if(lost.length)setCue(hintCue,hintCueText,"back",t("cue.lostP",{who}));
     else setCue(hintCue,hintCueText,"","");
   }
   let moved=false;

@@ -597,6 +597,7 @@ body.ingame .toast,body[data-view="onb"] .toast{bottom:calc(16px + env(safe-area
 .char-pick button[aria-checked="true"]{opacity:1;border-color:var(--ink);box-shadow:var(--sh-sm)}
 .char-pick button>span{display:grid;width:100%;height:100%}
 .char-pick button:active{translate:0 2px}
+.lang-pick button{font-family:var(--disp);font-size:15px;color:var(--ink)} /* LT / EN in Profilis → Nustatymai */
 #appVer{margin-top:14px}
 
 /* ---------- HUD: navy score panel / camera / round strip (read from 2–3 m: size and weight carry it) ---------- */
@@ -823,7 +824,7 @@ body.solo .brk-list li{grid-template-columns:auto 1fr 3.2ch}
 .hist-item .pts{grid-column:2;grid-row:1 / span 2;display:flex;gap:10px;align-items:baseline}
 .hist-item .pts b{font-family:var(--disp);font-weight:400;font-size:24px}
 .hist-item .pts .p1{color:var(--p1-ink)}.hist-item .pts .p2{color:var(--p2-ink)}
-.hist-item.best .when::after{content:"rekordas";display:inline-block;margin-left:8px;padding:2px 8px;border-radius:7px;border:2px solid var(--ink);background:var(--yellow);color:var(--ink);font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;vertical-align:1px}
+.hist-item.best .when::after{content:attr(data-rec);display:inline-block;margin-left:8px;padding:2px 8px;border-radius:7px;border:2px solid var(--ink);background:var(--yellow);color:var(--ink);font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;vertical-align:1px}
 .hist-empty{padding:24px 8px;text-align:center;color:var(--fg-mute);font-weight:700}
 .hist-list.inline .hist-empty{padding:14px 0;text-align:left}
 @media (max-width:420px){#histSheet .ex-sheet-note{display:none}#histSheet .hist-clear{margin-right:auto}}

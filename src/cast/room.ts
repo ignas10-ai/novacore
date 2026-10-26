@@ -24,6 +24,7 @@ export interface ScreenState{
   winner:0|1|2; // 1=P1, 2=P2, 0=tie or solo
   cam:boolean; // the phone's camera-per-TV option (the video itself goes over WebRTC)
   sent:number; // Date.now() on the phone (debug only; receivers use their own clock)
+  lang:"lt"|"en"; // the phone's language: the TV board follows it (older phones send none -> "lt")
 }
 
 export function makeCode(rand:()=>number=Math.random){
@@ -74,5 +75,6 @@ export function readState(raw:any):ScreenState|null{
     winner:raw.winner===1?1:raw.winner===2?2:0,
     cam:!!raw.cam,
     sent:Number(raw.sent)||0,
+    lang:raw.lang==="en"?"en":"lt",
   };
 }

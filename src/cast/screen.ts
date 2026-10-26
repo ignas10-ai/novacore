@@ -3,7 +3,9 @@
 // paint is a code entry screen so a TV without the link can still be connected with the 6-character code.
 import type {RealtimeChannel} from "@supabase/supabase-js";
 import {sb} from "../online/api.ts";
-import {$,plural,replay} from "../ui/dom.ts";
+import {$,replay} from "../ui/dom.ts";
+import {t,tn,lang,setLang} from "../i18n/i18n.ts";
+import {translateDom} from "../i18n/dom.ts";
 import {icon} from "../ui/icons.ts";
 import {coachSvg} from "../ui/coach.ts";
 import {onView,go} from "../ui/router.ts";
@@ -92,8 +94,8 @@ function updateCamBtn(){
   const on=tCamWanted||live||!!state?.cam;
   camBtn.setAttribute("aria-pressed",on?"true":"false");
   camBtn.disabled=!state;
-  camBtn.setAttribute("aria-label",on?"Išjungti kamerą per TV":"Rodyti kamerą per TV");
-  const txt=live?"Kamera":on?"Kamera…":"Kamera";
+  camBtn.setAttribute("aria-label",t(on?"tv.camOffAria":"tv.camAria"));
+  const txt=t(on&&!live?"app.cameraDots":"app.camera");
   if(camBtnTxt.textContent!==txt)camBtnTxt.textContent=txt;
 }
 function stopCamView(){
@@ -165,6 +167,8 @@ function toggleCamTV(){
 }
 
 function render(s:ScreenState){
+  // the board speaks the phone's language (static text re-translated once per change; the rest is set below)
+  if(s.lang!==lang){setLang(s.lang);document.documentElement.lang=s.lang;translateDom(root)}
   root.dataset.phase=s.phase;
   root.dataset.players=String(s.players);
   root.dataset.winner=s.phase==="done"?String(s.winner):"";
@@ -173,7 +177,7 @@ function render(s:ScreenState){
   footCode.textContent=room;
   waitCode.textContent=room;
   waitLine.hidden=s.phase!=="idle";
-  p1Label.textContent=s.players===1?"Solo":"P1";
+  p1Label.textContent=s.players===1?t("mode.Solo"):"P1";
   multEl.hidden=s.phase!=="play";
   staleEl.hidden=true;
   verdict.hidden=s.phase!=="done";
@@ -187,17 +191,17 @@ function render(s:ScreenState){
   prevScore=s.score;
   if(s.phase==="ready"){
     roundEl.hidden=false;exEl.hidden=false;
-    roundEl.textContent="Rankos aukštyn";
-    exEl.textContent="Pasiruošimas";
+    roundEl.textContent=t("cue.arms");
+    exEl.textContent=t("app.prep");
     setDemo("",s.phase);
     return;
   }
   if(s.phase==="done"){
     roundEl.hidden=true;exEl.hidden=true;
     setDemo("",s.phase);
-    verdictTag.textContent="Pabaiga";
-    verdictTxt.textContent=s.players===1?"Tavo rezultatas":s.winner===0?"Lygiosios!":`Žaidėjas ${s.winner} laimi!`;
-    repsEl.textContent=`${s.reps} ${plural(s.reps,["judesys","judesiai","judesių"])} · ${s.duration/60} min`;
+    verdictTag.textContent=t("tv.end");
+    verdictTxt.textContent=s.players===1?t("res.yours"):s.winner===0?t("res.tie"):t("tv.pWins",{n:s.winner});
+    repsEl.textContent=`${tn("u.moves",s.reps)} · ${t("u.min",{n:s.duration/60})}`;
     timerEl.textContent="0:00";
     barEl.style.transform="scaleX(0)";
     root.dataset.low="0";
@@ -205,7 +209,7 @@ function render(s:ScreenState){
   }
   // play
   roundEl.hidden=false;exEl.hidden=false;
-  roundEl.textContent=`Raundas ${s.round+1}`;
+  roundEl.textContent=t("tv.round",{n:s.round+1});
   exEl.textContent=s.ex?.name||"";
   multEl.textContent=`×${s.mult}`;
   setDemo(s.ex?.id||"",s.phase);
@@ -231,7 +235,7 @@ function tick(){
   const recent=seenAny&&now-lastSeenAt<8000;
   const live=recent?"1":"0";
   if(liveEl.dataset.on!==live)liveEl.dataset.on=live;
-  const txt=recent?"Prijungta":"Laukiama telefono";
+  const txt=t(recent?"tv.connected":"tv.waitPhone");
   if(liveTxt.textContent!==txt)liveTxt.textContent=txt;
   const lost=seenAny&&state?.phase!=="idle"&&now-lastSeenAt>12000;
   if(staleEl.hidden===lost)staleEl.hidden=!lost;
@@ -246,7 +250,7 @@ function enter(arg:string){
   root.dataset.players="2";
   root.dataset.winner="";
   codeIn.value=raw;
-  errEl.textContent=raw&&!room?"Kodas – 6 raidės arba skaičiai.":"";
+  errEl.textContent=raw&&!room?t("tv.codeBad"):"";
   waitLine.hidden=!room;
   waitCode.textContent=room||"------";
   footCode.textContent=room||"------";
@@ -282,7 +286,7 @@ onView("screen",enter);
 form.addEventListener("submit",e=>{
   e.preventDefault();
   const c=normCode(codeIn.value);
-  if(!isCode(c)){errEl.textContent="Kodas – 6 raidės arba skaičiai. Žiūrėk telefone: Rodyti per TV.";codeIn.focus();return}
+  if(!isCode(c)){errEl.textContent=t("tv.codeBadHelp");codeIn.focus();return}
   errEl.textContent="";
   if(c===room)enter(c);else go(`#/ekranas/${c}`,true);
 });

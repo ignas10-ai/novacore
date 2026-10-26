@@ -2,6 +2,7 @@
 // Everything static is painted ONCE per resize into offscreen tiles; a frame is a few drawImage blits + the moving bits.
 // World x is in metres; sx(m) = (m - cam) * ppm. Parallax layers scroll at a fraction of the track speed.
 import {RACE_M} from "./speed.ts";
+import {t as tr} from "../i18n/i18n.ts";
 
 export interface Layout{W:number;H:number;dpr:number;standsTop:number;boardsTop:number;boardsH:number;trackTop:number;trackBot:number;
   lane:number[];charH:number[];ppm:number;portrait:boolean}
@@ -16,7 +17,7 @@ export function layout(W:number,H:number,dpr:number):Layout{
 // palette (scene only; UI colours stay in main.css tokens)
 const C={skyTop:"#A9D3FF",skyBot:"#E6F2FF",roof:"#1E2552",stand:["#2B3470","#323C7E","#28306A"],track:"#D9604A",trackDark:"#C24F3C",
   line:"rgba(255,255,255,.92)",grass:"#7CC36E",grassDark:"#6BB15F",ink:"#14183A",crowd:["#FF3B3B","#2F6BFF","#FFC61A","#FFFFFF","#FF4F93","#12B886","#1FB0EA","#F4C3A0","#A86A45"]};
-const BOARDS:[string,string,string][]=[["#14183A","#FFFFFF","NOVACORE"],["#FF3B3B","#FFFFFF","SPRINTAS 100 M"],["#FFC61A","#14183A","NOVACORE"],["#2F6BFF","#FFFFFF","BĖK VIETOJE"]];
+const BOARDS:[string,string,string][]=[["#14183A","#FFFFFF","NOVACORE"],["#FF3B3B","#FFFFFF",tr("sp.board")],["#FFC61A","#14183A","NOVACORE"],["#2F6BFF","#FFFFFF",tr("sp.boardRun")]];
 export const SKEW=.28; // lines across the lanes lean back with depth (x shift per px of track depth)
 
 let L:Layout, skyG:CanvasGradient, trackG:CanvasGradient, stands:HTMLCanvasElement, boards:HTMLCanvasElement, grass:HTMLCanvasElement;
@@ -115,7 +116,7 @@ export function drawFinishBack(ctx:CanvasRenderingContext2D,cam:number){
   const top=L.trackTop-L.charH[1]*1.45;
   ctx.fillStyle="#E9ECF5";ctx.fillRect(x-4,top,8,L.trackTop-top);
   ctx.fillStyle=C.ink;ctx.beginPath();ctx.roundRect(x-L.charH[1]*.9,top-L.charH[1]*.34,L.charH[1]*1.8,L.charH[1]*.34,8);ctx.fill();
-  ctx.fillStyle="#FFC61A";ctx.textAlign="center";ctx.textBaseline="middle";ctx.font=`400 ${Math.round(L.charH[1]*.2)}px "Titan One",Impact,sans-serif`;ctx.fillText("FINIŠAS",x,top-L.charH[1]*.165);
+  ctx.fillStyle="#FFC61A";ctx.textAlign="center";ctx.textBaseline="middle";ctx.font=`400 ${Math.round(L.charH[1]*.2)}px "Titan One",Impact,sans-serif`;ctx.fillText(tr("sp.finishLine"),x,top-L.charH[1]*.165);
 }
 // tape across the lanes at chest height + the near post (in front of the runners); broken = time since the tape broke
 export function drawFinishFront(ctx:CanvasRenderingContext2D,cam:number,broken:number){

@@ -1,6 +1,7 @@
 // PURE (no DOM, no storage): stats, streaks, weekly goal and badges computed from the local game history.
 // Days are LOCAL calendar days; the week starts on Monday (as in Lithuania and the group_leaderboard RPC).
 import {EX} from "../detect/exercises.ts";
+import {t as tr} from "../i18n/i18n.ts";
 
 export interface Game{
   t:number;players:number;duration:number;ex:string[];score:number[];reps:number[];
@@ -64,13 +65,13 @@ export interface Badge{id:string;name:string;desc:string;icon:string;on:boolean}
 export function badges(h:Game[]):Badge[]{
   const ex=exTotals(h), t=totals(h,Date.now());
   return [
-    {id:"first",name:"Pirmas žaidimas",desc:"Sužaisk vieną žaidimą",icon:"play",on:h.length>=1},
-    {id:"duel",name:"Dvikova",desc:"Sužaisk dviese",icon:"swords",on:h.some(g=>g.players===2)},
-    {id:"streak3",name:"3 dienos iš eilės",desc:"Žaisk tris dienas paeiliui",icon:"flame",on:bestStreak(h)>=3},
-    {id:"squat100",name:"100 pritūpimų",desc:"Iš viso šiame telefone",icon:"dumbbell",on:(ex.squat?.total||0)>=100},
-    {id:"pts100",name:"100 taškų",desc:"Per vieną žaidimą",icon:"zap",on:t.best>=100},
-    {id:"beat",name:"Iššūkis įveiktas",desc:"Įveik draugo rezultatą",icon:"trophy",on:h.some(g=>g.beat)},
-    {id:"games10",name:"10 žaidimų",desc:"Sužaisk dešimt kartų",icon:"medal",on:h.length>=10},
-    {id:"allex",name:"Visi pratimai",desc:"Bent vienas kiekvieno pratimo",icon:"sparkles",on:EX.every(e=>(ex[e.id]?.total||0)>0)},
+    {id:"first",name:tr("badge.first"),desc:tr("badge.firstD"),icon:"play",on:h.length>=1},
+    {id:"duel",name:tr("mode.Duel"),desc:tr("badge.duelD"),icon:"swords",on:h.some(g=>g.players===2)},
+    {id:"streak3",name:tr("badge.streak3"),desc:tr("badge.streak3D"),icon:"flame",on:bestStreak(h)>=3},
+    {id:"squat100",name:tr("badge.squat100"),desc:tr("badge.squat100D"),icon:"dumbbell",on:(ex.squat?.total||0)>=100},
+    {id:"pts100",name:tr("badge.pts100"),desc:tr("badge.pts100D"),icon:"zap",on:t.best>=100},
+    {id:"beat",name:tr("badge.beat"),desc:tr("badge.beatD"),icon:"trophy",on:h.some(g=>g.beat)},
+    {id:"games10",name:tr("badge.games10"),desc:tr("badge.games10D"),icon:"medal",on:h.length>=10},
+    {id:"allex",name:tr("ex.allOne"),desc:tr("badge.allexD"),icon:"sparkles",on:EX.every(e=>(ex[e.id]?.total||0)>0)},
   ];
 }

@@ -1,5 +1,6 @@
 // Entry: wires the UI modules (each sets up its own DOM on import), then shows the first screen
 // (onboarding on the very first visit, else the screen of the URL hash) and loads the k-NN sample poses.
+import "./i18n/dom.ts"; // first: translates index.html before any module reads or copies its text
 import {POSE} from "./detect/classifier.ts";
 import "./ui/icons.ts";
 import {fillTpl} from "./ui/dom.ts";

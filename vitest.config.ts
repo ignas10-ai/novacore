@@ -9,6 +9,7 @@ export default defineConfig({
   test:{
     include:["test/unit/**/*.test.ts"],
     environment:"node", // DOM tests opt in with `// @vitest-environment jsdom`
+    setupFiles:["test/unit/setup.ts"], // navigator.language = lt-LT (jsdom says en-US)
     testTimeout:20000,
   },
 });

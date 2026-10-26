@@ -18,6 +18,7 @@ import {parse} from "../ui/router.ts";
 import {onbDone} from "../ui/onboarding.ts";
 import {icon} from "../ui/icons.ts";
 import {resultArt,scoreDiff} from "../ui/results.ts";
+import {t} from "../i18n/i18n.ts";
 
 type Phase="wait"|"lobby"|"camera"|"play"|"done";
 interface Duel{
@@ -32,10 +33,10 @@ let pick:{group:string;id:string;nick:string}|null=null, pickDur=180;
 let saved:{players:number;duration:number;activeEX:Exercise[]}|null=null, startFn:(()=>void)|null=null, waitRaf=0;
 
 const online=()=>!!api.sb&&navigator.onLine!==false;
-const OFFLINE="Dvikovai reikia interneto. Solo ir dviese viename telefone gali žaisti ir be jo.";
+const OFFLINE=t("duel.offline");
 const sc=(v:any)=>Math.min(2000,Math.max(0,v|0)); // never trust the other phone's numbers
 const wait=(ms:number)=>new Promise(r=>setTimeout(r,ms));
-const fmtMin=(d:number)=>`${d/60} min`;
+const fmtMin=(d:number)=>t("u.min",{n:d/60});
 const exNames=(ids:string[])=>ids.map(id=>EX.find(e=>e.id===id)?.name).filter(Boolean).join(", ");
 const ensureMe=async()=>me||=await api.userId();
 const busyGame=()=>S.running||!$("#ready").classList.contains("hide")||!$("#loading").classList.contains("hide");
@@ -55,30 +56,30 @@ function btn(el:HTMLButtonElement,label:string,ic:string){el.hidden=false;el.dis
 function paintSheet(){
   const D=cur;
   if(view==="pick"&&pick){
-    eye.textContent="Dvikova";setTitle("Dvikova","per atstumą");
-    sub.textContent=`${pick.nick} gaus kvietimą. Žaisite vienu metu, kiekvienas savo telefonu, ir matysite vienas kito taškus.`;
-    pickBox.hidden=false;exTxt.textContent=`Pratimai: ${exNames(S.activeEX.map(e=>e.id))}`;
-    dvOppName.textContent=pick.nick;dvOppSt.textContent="kviečiamas";dvOpp.dataset.on="0";
-    no.hidden=true;btn(yes,"Kviesti","swords");
+    eye.textContent=t("mode.Duel");setTitle(t("mode.Duel"),t("duel.remote"));
+    sub.textContent=t("duel.pickSub",{nick:pick.nick});
+    pickBox.hidden=false;exTxt.textContent=t("duel.ex",{list:exNames(S.activeEX.map(e=>e.id))});
+    dvOppName.textContent=pick.nick;dvOppSt.textContent=t("duel.invited");dvOpp.dataset.on="0";
+    no.hidden=true;btn(yes,t("duel.invite"),"swords");
   }else if(view==="incoming"&&shownInvite){
     const i=shownInvite;
-    eye.textContent="Kvietimas";setTitle(i.nickname,"kviečia");
-    sub.textContent=`Dvikova per atstumą · ${fmtMin(i.settings.duration)}. Žaisite vienu metu, kiekvienas savo telefonu.`;
-    pickBox.hidden=true;dvOppName.textContent=i.nickname;dvOppSt.textContent="laukia atsakymo";dvOpp.dataset.on="1";
-    btn(no,"Atmesti","x");btn(yes,"Priimti","check");
+    eye.textContent=t("duel.inviteEye");setTitle(i.nickname,t("duel.invites"));
+    sub.textContent=t("duel.inSub",{min:fmtMin(i.settings.duration)});
+    pickBox.hidden=true;dvOppName.textContent=i.nickname;dvOppSt.textContent=t("duel.awaitAnswer");dvOpp.dataset.on="1";
+    btn(no,t("duel.decline"),"x");btn(yes,t("app.accept"),"check");
   }else if((view==="wait"||view==="lobby")&&D){
     pickBox.hidden=true;dvOppName.textContent=D.opp.nick;
     if(view==="wait"){
-      eye.textContent="Kvietimas išsiųstas";setTitle("Laukiam","atsakymo");
-      sub.textContent=`${D.opp.nick} gaus kvietimą, jei programėlė atidaryta, arba pamatys jį Pradžioje. Galioja 10 min.`;
-      dvOppSt.textContent="dar neatsakė";dvOpp.dataset.on="0";yes.hidden=true;
+      eye.textContent=t("duel.sent");setTitle(t("duel.waiting"),t("duel.forAnswer"));
+      sub.textContent=t("duel.waitSub",{nick:D.opp.nick});
+      dvOppSt.textContent=t("duel.noAnswer");dvOpp.dataset.on="0";yes.hidden=true;
     }else{
-      eye.textContent=`Dvikova · ${fmtMin(D.settings.duration)}`;setTitle("Pasiruošk","startui");
-      sub.textContent="Pastatyk telefoną, atsitrauk, kad matytųsi visas kūnas, ir pakelk rankas. Startas – abiem tuo pačiu metu.";
-      dvOppSt.textContent=D.oppOn?"prisijungęs":"jungiasi…";dvOpp.dataset.on=D.oppOn?"1":"0";
-      btn(yes,"Į kamerą","play");
+      eye.textContent=t("duel.eyeMin",{min:fmtMin(D.settings.duration)});setTitle(t("duel.getReady"),t("duel.forStart"));
+      sub.textContent=t("duel.lobbySub");
+      dvOppSt.textContent=t(D.oppOn?"duel.online":"duel.connecting");dvOpp.dataset.on=D.oppOn?"1":"0";
+      btn(yes,t("duel.toCam"),"play");
     }
-    btn(no,"Atšaukti","x");
+    btn(no,t("app.cancel"),"x");
   }
 }
 $("[data-dd]")?.parentElement?.addEventListener("click",e=>{
@@ -100,7 +101,7 @@ no.onclick=()=>{
 $("#lb").addEventListener("click",e=>{
   const b=(e.target as Element).closest<HTMLElement>("[data-duel]");if(!b)return;
   if(!online()){toast(OFFLINE);return}
-  if(cur&&cur.phase!=="done"){toast("Jau esi dvikovoje.");return}
+  if(cur&&cur.phase!=="done"){toast(t("duel.already"));return}
   pick={group:parse(location.hash).arg,id:b.dataset.duel!,nick:b.dataset.nick!};
   view="pick";note.textContent="";paintSheet();openSheet();
 });
@@ -109,7 +110,7 @@ async function sendInvite(again?:Duel){
   if(!target)return;
   if(!online()){again?toast(OFFLINE):(note.textContent=OFFLINE);return}
   const dur=again?again.settings.duration:pickDur, ex=again?again.settings.exercises:S.activeEX.map(e=>e.id);
-  yes.disabled=true;note.textContent="Siunčiama…";
+  yes.disabled=true;note.textContent=t("duel.sending");
   try{
     await ensureMe();startInbox();
     const d=await dv.invite(target.group,target.id,dur,ex);
@@ -125,7 +126,7 @@ async function accept(i:dv.Invite){
     await ensureMe();
     const d=await dv.respond(i.id,true);
     invites=invites.filter(x=>x.id!==i.id);paintCard();
-    if(d.status!=="accepted"){toast("Kvietimas nebegalioja.");closeSheet();return}
+    if(d.status!=="accepted"){toast(t("duel.expired"));closeSheet();return}
     if(cur)drop(cur); // the finished previous duel (rematch from the results screen)
     cur=mk(d,false,i.nickname);join(cur);
     view="lobby";note.textContent="";paintSheet();openSheet();
@@ -144,7 +145,7 @@ const card=$("#duelInv"), cardTxt=$("#duelInvTxt");
 function paintCard(){
   const i=invites.find(x=>dv.fresh(x.created_at,Date.now()));
   card.hidden=!i;
-  if(i)cardTxt.replaceChildren(Object.assign(document.createElement("b"),{textContent:`${i.nickname} kviečia į dvikovą`}),Object.assign(document.createElement("span"),{textContent:`Per atstumą · ${fmtMin(i.settings.duration)} · kiekvienas savo telefonu`}));
+  if(i)cardTxt.replaceChildren(Object.assign(document.createElement("b"),{textContent:t("duel.cardTitle",{nick:i.nickname})}),Object.assign(document.createElement("span"),{textContent:t("duel.cardSub",{min:fmtMin(i.settings.duration)})}));
 }
 $("#duelInvGo").onclick=()=>{const i=invites.find(x=>dv.fresh(x.created_at,Date.now()));if(i)accept(i)};
 $("#duelInvX").onclick=()=>{const i=invites.find(x=>dv.fresh(x.created_at,Date.now()));if(i)decline(i)};
@@ -175,11 +176,11 @@ function onInvite(id:string){
 function onRow(d:dv.Duel){
   if(d.status==="cancelled"||d.status==="expired"){
     if(invites.some(i=>i.id===d.id)){invites=invites.filter(i=>i.id!==d.id);paintCard()}
-    if(view==="incoming"&&shownInvite?.id===d.id){closeSheet();toast("Kvietimas atšauktas.")}
+    if(view==="incoming"&&shownInvite?.id===d.id){closeSheet();toast(t("duel.cancelled"))}
   }
   const D=cur;if(!D||D.id!==d.id||!D.host)return;
   if(d.status==="accepted"&&D.phase==="wait")accepted(D);
-  else if(D.phase==="wait"&&(d.status==="declined"||d.status==="expired")){toast(d.status==="declined"?`${D.opp.nick} atmetė kvietimą.`:"Kvietimas nebegalioja.");drop(D);closeSheet()}
+  else if(D.phase==="wait"&&(d.status==="declined"||d.status==="expired")){toast(d.status==="declined"?t("duel.declined",{nick:D.opp.nick}):t("duel.expired"));drop(D);closeSheet()}
 }
 
 // ---------- channel ----------
@@ -201,14 +202,14 @@ function join(D:Duel){
   on("score",p=>{D.oppScore=sc(p.s);if(D.phase==="play")S.score[1]=D.oppScore});
   on("final",p=>{D.oppFinal=D.oppScore=sc(p.s);if(D.phase==="done")paintEnd(D)});
   on("bye",()=>{
-    if(D.phase==="wait"||D.phase==="lobby"){toast(`${D.opp.nick} atšaukė dvikovą.`);drop(D);closeSheet();return}
-    if(D.phase==="camera")toast(`${D.opp.nick} išėjo iš dvikovos.`);
+    if(D.phase==="wait"||D.phase==="lobby"){toast(t("duel.oppCancelled",{nick:D.opp.nick}));drop(D);closeSheet();return}
+    if(D.phase==="camera")toast(t("duel.oppLeft",{nick:D.opp.nick}));
     D.gone=true;paint(D);
   });
   ch.subscribe(async(st)=>{
     if(cur!==D)return;
     if(st==="SUBSCRIBED"){D.joined=true;try{await ch.track({n:api.cachedNick()||""})}catch(e){}paint(D)}
-    else if(st==="CHANNEL_ERROR"||st==="TIMED_OUT"){if(view)note.textContent="Nepavyko prisijungti prie dvikovos. Patikrink ryšį.";}
+    else if(st==="CHANNEL_ERROR"||st==="TIMED_OUT"){if(view)note.textContent=t("duel.joinFail");}
   });
 }
 function presence(D:Duel){
@@ -275,18 +276,18 @@ function end(){ // game.ts: back during ready, startup error, results → again 
   }
 }
 function labels(nick:string){
-  const [p1,p2]=nick?["Tu",nick]:["P1","P2"];
+  const [p1,p2]=nick?[t("p.you"),nick]:["P1","P2"];
   document.querySelectorAll(".pl.p1 .chip").forEach(e=>e.textContent=p1);
   document.querySelectorAll(".pl.p2 .chip").forEach(e=>e.textContent=p2);
-  document.querySelectorAll(".bar.p1 .chip").forEach(e=>e.textContent=nick?"Tu":"P1 · Raudonas");
-  document.querySelectorAll(".bar.p2 .chip").forEach(e=>e.textContent=nick||"Mėlynas · P2");
+  document.querySelectorAll(".bar.p1 .chip").forEach(e=>e.textContent=nick?t("p.you"):t("res.p1"));
+  document.querySelectorAll(".bar.p2 .chip").forEach(e=>e.textContent=nick||t("res.p2"));
   $("#rd1 b").textContent=p1;
 }
 const rdCount=$("#rdCount");
 function ready(D:Duel,fn:()=>void){ // my arms-up gate passed
   startFn=fn;D.meReady=true;send(D,"ready");
-  rdCount.textContent="Laukiam";rdCount.classList.add("word");replay(rdCount,"pop");
-  $("#readyHint").textContent=`Laukiam, kol ${D.opp.nick} pasiruoš`;
+  rdCount.textContent=t("duel.waiting");rdCount.classList.add("word");replay(rdCount,"pop");
+  $("#readyHint").textContent=t("duel.waitOpp",{nick:D.opp.nick});
   const live=()=>{const p=sampleCamera(performance.now());if(p)p.forEach((x,i)=>draw(x.lm,i));waitRaf=requestAnimationFrame(live)};
   live(); // keep the camera image moving while we wait
   maybeStart(D);paint(D);
@@ -311,7 +312,7 @@ function schedule(D:Duel,at:number){
 function go(D:Duel){
   if(cur!==D||!startFn)return;
   cancelAnimationFrame(waitRaf);
-  rdCount.textContent="Pirmyn!";rdCount.classList.add("word");
+  rdCount.textContent=t("ready.go");rdCount.classList.add("word");
   D.phase="play";S.score[1]=D.oppScore;
   startFn();
   D.timers.push(setInterval(()=>{ // own score -> opponent, max 4x/s, only on change
@@ -333,9 +334,9 @@ function finished(D:Duel){ // game.ts finish(), after renderResults()
 function paint(D:Duel){
   if(view==="lobby"&&D===cur)paintSheet();
   if(bound!==D)return;
-  const st=D.gone?"atsijungė":D.oppReady?"pasiruošęs":D.oppOn?"ruošiasi":"jungiasi…";
+  const st=t(D.gone?"duel.gone":D.oppReady?"duel.ready":D.oppOn?"duel.preparing":"duel.connecting");
   $("#rdOppName").textContent=D.opp.nick;$("#rdOppSt").textContent=st;$("#rdOpp").dataset.ok=D.oppReady&&!D.gone?"1":"0";
-  const p2=$(".pl.p2");p2.classList.toggle("gone",D.gone);p2.querySelector(".chip")!.textContent=D.gone?"Atsijungė":D.opp.nick;
+  const p2=$(".pl.p2");p2.classList.toggle("gone",D.gone);p2.querySelector(".chip")!.textContent=D.gone?t("duel.Gone"):D.opp.nick;
 }
 function paintEnd(D:Duel){
   if(bound!==D)return;
@@ -344,13 +345,13 @@ function paintEnd(D:Duel){
   const top=Math.max(mine,opp,1);
   requestAnimationFrame(()=>{$("#b1").style.width=`${mine/top*100}%`;$("#b2").style.width=`${opp/top*100}%`});
   const end=$("#end"),w=mine>opp?"1":opp>mine?"2":"0";
-  $("#wl").textContent=w==="2"?"Laimėjo":"Dvikova";
-  $("#winner").textContent=w==="1"?"Laimėjai!":w==="2"?nick:"Lygiosios!";
+  $("#wl").textContent=t(w==="2"?"res.won":"mode.Duel");
+  $("#winner").textContent=w==="1"?t("duel.youWon"):w==="2"?nick:t("res.tie");
   end.dataset.w=w;resultArt(w);scoreDiff(mine,opp);
-  $("#endsub").textContent=`Dvikova per atstumą · ${(D.settings.duration||180)/60} min`;
+  $("#endsub").textContent=t("duel.endSub",{min:fmtMin(D.settings.duration||180)});
   const pending=D.oppFinal==null;
-  $("#duelResTxt").textContent=!pending?`Tu ${mine} : ${opp} ${nick}`
-    :D.gone||D.timedOut?`${nick} atsijungė – rodomas paskutinis gautas rezultatas (${opp}).`:`Laukiam galutinio ${nick} rezultato…`;
+  $("#duelResTxt").textContent=!pending?t("chal.vs",{me:mine,them:opp,nick})
+    :D.gone||D.timedOut?t("duel.goneLast",{nick,n:opp}):t("duel.waitFinal",{nick});
   $("#duelRes").hidden=false;
 }
 $("#duelAgain").onclick=()=>{const D=bound||cur;if(D)sendInvite(D)};

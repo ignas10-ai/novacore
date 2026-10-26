@@ -5,6 +5,7 @@ import {S} from "../game/state.ts";
 import {$} from "../ui/dom.ts";
 import {refresh} from "../ui/router.ts";
 import type {Game} from "./stats.ts";
+import {t,dec,locale} from "../i18n/i18n.ts";
 
 const HIST_KEY="novacore.history", HIST_MAX=50, HIST_SHOW=10;
 export function loadHist():Game[]{try{const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");return Array.isArray(h)?h:[]}catch(e){return []}}
@@ -20,22 +21,22 @@ export function histItem(g:Game,i:number,best:number[]){
   li.style.setProperty("--i",String(i%10));
   const top=Math.max(...g.score.slice(0,g.players));
   if(top&&top===best[g.players])li.classList.add("best");
-  const when=document.createElement("span");when.className="when";
-  when.textContent=new Date(g.t).toLocaleString("lt-LT",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+  const when=document.createElement("span");when.className="when";when.dataset.rec=t("prof.best"); // .best badge (CSS ::after)
+  when.textContent=new Date(g.t).toLocaleString(locale(),{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
   const what=document.createElement("span");what.className="what";
   const sprint=g.mode==="sprint";
-  what.textContent=sprint?`Sprintas 100 m · ${g.players===1?"solo":"dvikova"}`:`${g.players===1?"Solo":"Dvikova"} · ${Math.round(g.duration/60)} min · ${(g.ex||[]).map(exName).join(", ")}`;
+  what.textContent=sprint?t("hist.sprint",{mode:t(g.players===1?"mode.solo":"mode.duel")}):t("hist.game",{mode:t(g.players===1?"mode.Solo":"mode.Duel"),min:Math.round(g.duration/60),ex:(g.ex||[]).map(exName).join(", ")});
   const pts=document.createElement("span");pts.className="pts";
-  for(let p=0;p<g.players;p++){const b=document.createElement("b");b.className=`d p${p+1}`;const t=g.times?.[p];b.textContent=sprint?(t!=null?`${t.toFixed(2).replace(".",",")} s`:"–"):String(g.score[p]??0);pts.append(b)}
+  for(let p=0;p<g.players;p++){const b=document.createElement("b");b.className=`d p${p+1}`;const s=g.times?.[p];b.textContent=sprint?(s!=null?`${dec(s,2)} s`:"–"):String(g.score[p]??0);pts.append(b)}
   li.append(when,what,pts);
   return li;
 }
 export const bests=(h:Game[])=>[0,bestScore(h,1),bestScore(h,2)];
 function renderHist(){
   const h=loadHist(), best=bests(h);
-  histNote.textContent=h.length?`Saugoma ${h.length} iš ${HIST_MAX}`:"";
+  histNote.textContent=h.length?t("hist.count",{n:h.length,max:HIST_MAX}):"";
   histClear.hidden=!h.length;
-  if(!h.length){histList.replaceChildren(Object.assign(document.createElement("li"),{className:"hist-empty",textContent:"Dar nė vieno žaidimo."}));return}
+  if(!h.length){histList.replaceChildren(Object.assign(document.createElement("li"),{className:"hist-empty",textContent:t("hist.empty")}));return}
   histList.replaceChildren(...h.slice(0,HIST_SHOW).map((g,i)=>histItem(g,i,best)));
 }
 function openHist(){
@@ -57,8 +58,8 @@ histClose.addEventListener("click",closeHist);
 histDone.addEventListener("click",closeHist);
 let clearArmed=0; // two taps: clearing history also resets streaks and badges
 histClear.addEventListener("click",()=>{
-  if(!clearArmed){histClear.textContent="Tikrai?";clearArmed=setTimeout(()=>{clearArmed=0;histClear.textContent="Išvalyti"},3000);return}
-  clearTimeout(clearArmed);clearArmed=0;histClear.textContent="Išvalyti";
+  if(!clearArmed){histClear.textContent=t("hist.sure");clearArmed=setTimeout(()=>{clearArmed=0;histClear.textContent=t("hist.clear")},3000);return}
+  clearTimeout(clearArmed);clearArmed=0;histClear.textContent=t("hist.clear");
   saveHist([]);renderHist();refresh();
 });
 histSheet.addEventListener("cancel",e=>{e.preventDefault();closeHist()});

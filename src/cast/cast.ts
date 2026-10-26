@@ -7,6 +7,7 @@ import type {RealtimeChannel} from "@supabase/supabase-js";
 import {S} from "../game/state.ts";
 import {ROUND_SECS} from "../detect/exercises.ts";
 import {sb} from "../online/api.ts";
+import {t,lang} from "../i18n/i18n.ts";
 import {$,sheet,toast} from "../ui/dom.ts";
 import {WEB,share} from "../ui/social.ts";
 import {channelName,isCode,makeCode,SCREEN_BC,type ScreenPhase,type ScreenState} from "./room.ts";
@@ -42,7 +43,7 @@ function refreshUI(){
   offBox.hidden=on;onBox.hidden=!on;
   codeEl.textContent=code||"------";
   urlEl.value=roomUrl();
-  rowState.textContent=on?`Įjungta · ${code}`:"Taškai per TV · nuoroda";
+  rowState.textContent=on?t("cast.onState",{code:code!}):t("setup.tvSub");
   readyEl.hidden=!on;
   readyCode.textContent=code||"";
   homeCast.dataset.on=on?"1":"0";
@@ -54,16 +55,14 @@ function refreshLive(){
   const live=isOn()&&tvSeen>0&&performance.now()-tvSeen<15000;
   const v=live?"1":"0";
   if(liveEl.dataset.on!==v)liveEl.dataset.on=v;
-  const txt=live?"TV prijungtas":"Laukiama TV";
+  const txt=t(live?"cast.tvOn":"cast.waitTv");
   if(liveTxt.textContent!==txt)liveTxt.textContent=txt;
 }
 function markTv(){tvSeen=performance.now();refreshLive()}
 function refreshCamUI(){
   const on=camOn;
   if(camSwitch.getAttribute("aria-checked")!==String(on))camSwitch.setAttribute("aria-checked",String(on));
-  const txt=!on?"Rodyk žaidimo vaizdą televizoriuje"
-    :phase!=="ready"&&phase!=="play"?"Įsijungs su žaidimu"
-    :camRemoteSet?"Rodoma per TV":"Jungiamasi…";
+  const txt=t(!on?"cast.camOff":phase!=="ready"&&phase!=="play"?"cast.camLater":camRemoteSet?"cast.camLive":"app.connecting");
   if(camState.textContent!==txt)camState.textContent=txt;
 }
 
@@ -257,6 +256,7 @@ function buildState():ScreenState{
     winner:done&&players===2?(score[0]===score[1]?0:score[0]>score[1]?1:2):0,
     cam:camOn,
     sent:Date.now(),
+    lang,
   };
 }
 function publish(force=false){
@@ -304,8 +304,8 @@ function disable(){
 async function copyLink(){
   const url=roomUrl();
   if(!url)return;
-  try{await navigator.clipboard.writeText(url);toast("Nuoroda nukopijuota.")}
-  catch(e){urlEl.focus();urlEl.select();noteEl.textContent="Nukopijuok nuorodą rankiniu būdu – ji pažymėta."}
+  try{await navigator.clipboard.writeText(url);toast(t("cast.copied"))}
+  catch(e){urlEl.focus();urlEl.select();noteEl.textContent=t("cast.copyManual")}
 }
 
 // game.ts calls this at ready / play / done (and at idle when leaving a finished game)
@@ -326,13 +326,13 @@ $("#castOn").onclick=enable;
 $("#castOffBtn").onclick=disable;
 $("#castCopy").onclick=copyLink;
 camSwitch.onclick=toggleCam;
-$("#castShare").onclick=()=>{const url=roomUrl();if(url)share(url,`NovaCore didelis ekranas · kodas ${code}. Atidaryk televizoriuje ir žaisk.`,noteEl)};
+$("#castShare").onclick=()=>{const url=roomUrl();if(url)share(url,t("cast.shareTxt",{code:code!}),noteEl)};
 $("#castOpenPage").onclick=()=>{
   const url=roomUrl();
   if(!url)return;
   const w=window.open(url,"_blank");
   if(w){try{w.opener=null}catch(e){}}
-  else noteEl.textContent="Naršyklė užblokavo langą. Nukopijuok nuorodą ir atidaryk ją TV naršyklėje.";
+  else noteEl.textContent=t("cast.popup");
 };
 if(!sb)netEl.hidden=false;
 const host=`${WEB.replace(/^https?:\/\//,"")}/#/ekranas`; // the address to type on a TV without the link

@@ -3,13 +3,14 @@
 import {EX} from "../detect/exercises.ts";
 import {S} from "../game/state.ts";
 import {recordGame} from "../history/history.ts";
-import {$,setDigits,plural} from "./dom.ts";
+import {$,setDigits} from "./dom.ts";
+import {t,tn} from "../i18n/i18n.ts";
 import {afterGame} from "./social.ts";
 import {toneOf} from "./coach.ts";
 import {mascot} from "./mascots.ts";
 import {getChar} from "./avatar.ts";
 
-const NAME=["Raudonas","Mėlynas"];
+const NAME=[t("p.red"),t("p.blue")];
 // winner / loser art; duel.ts calls it again when the remote result is in (w: "1" me, "2" opponent, "0" tie)
 export function resultArt(w:string,solo=false){
   const st=$("#resStage");
@@ -25,11 +26,11 @@ export function renderResults(){
   setDigits($("#r1"),String(score[0]));setDigits($("#r2"),String(score[1]));
   const top=Math.max(score[0],score[1],1);
   requestAnimationFrame(()=>{$("#b1").style.width=`${score[0]/top*100}%`;$("#b2").style.width=`${score[1]/top*100}%`});
-  const w=$("#winner"),end=$("#end"),mode=`${players===1?"Solo":"Dvikova"} · ${duration/60} min`;
+  const w=$("#winner"),end=$("#end"),mode=t("res.mode",{mode:t(players===1?"mode.Solo":"mode.Duel"),min:duration/60});
   const reps=scoreEvents.length, sub=$("#endsub");
-  if(players===1){$("#wl").textContent="Tavo rezultatas";w.textContent=`${score[0]} tšk.`;end.dataset.w="1";sub.textContent=`${reps} ${plural(reps,["judesys","judesiai","judesių"])} · ${mode}`}
-  else if(score[0]===score[1]){$("#wl").textContent="Rezultatas";w.textContent="Lygiosios!";end.dataset.w="0";sub.textContent=`Abu po ${score[0]} tšk. · ${mode}`}
-  else{const k=score[0]>score[1]?1:2;$("#wl").textContent="Laimėjo";w.textContent=`${NAME[k-1]}!`;end.dataset.w=String(k);sub.textContent=`Žaidėjas ${k} · ${mode}`}
+  if(players===1){$("#wl").textContent=t("res.yours");w.textContent=t("u.pts",{n:score[0]});end.dataset.w="1";sub.textContent=`${tn("u.moves",reps)} · ${mode}`}
+  else if(score[0]===score[1]){$("#wl").textContent=t("res.result");w.textContent=t("res.tie");end.dataset.w="0";sub.textContent=t("res.both",{n:score[0],mode})}
+  else{const k=score[0]>score[1]?1:2;$("#wl").textContent=t("res.won");w.textContent=`${NAME[k-1]}!`;end.dataset.w=String(k);sub.textContent=t("res.player",{n:k,mode})}
   resultArt(end.dataset.w!,players===1);
   scoreDiff(score[0],score[1]);
   // per-exercise breakdown (reps, not points) in the order the rounds were played

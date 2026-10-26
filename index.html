@@ -45,10 +45,10 @@
     </div>
   </div>
   <div class="hud-bot">
-    <div class="rnd"><span class="rnd-n" id="roundN">Raundas 1 / 6</span><span class="rnd-next" id="roundNext"></span></div>
+    <div class="rnd"><span class="rnd-n" id="roundN"></span><span class="rnd-next" id="roundNext"></span></div>
     <ol class="rnd-chips" id="roundChips" aria-hidden="true"></ol>
   </div>
-  <div class="round d" id="round">Raundas 2 · ×2</div>
+  <div class="round d" id="round"></div>
   <div class="sr-only" id="hint" aria-live="polite"></div>
   <div class="cue hint-cue" id="hintCue" data-cue="none" aria-hidden="true">
     <svg class="cue-arrow" viewBox="0 0 60 60"><path class="cue-arrow-main" d="M30 10v28M16 26l14 14 14-14"/><path class="cue-trail" d="M20 4l10 8 10-8"/></svg>
@@ -188,11 +188,11 @@
       <h2 class="eyebrow sec-lbl" id="exPickLabel">Pratimai</h2>
       <div class="box exercises">
         <div class="row-between">
-          <p class="ex-summary" id="exSummary">Visi 7 pratimai</p>
+          <p class="ex-summary" id="exSummary"></p>
           <button class="btn sm tap" id="exOpen" type="button" aria-haspopup="dialog" aria-controls="exSheet" aria-expanded="false"><span class="sr-only" id="exCount">7</span>Keisti<span data-icon="pencil"></span></button>
         </div>
         <div class="ex-chips" id="exPreview" aria-hidden="true"></div>
-        <p class="help ex-note" id="exNote" aria-live="polite">Pasirinkti 7 pratimai. Raundai keisis tik tarp jų.</p>
+        <p class="help ex-note" id="exNote" aria-live="polite"></p>
       </div>
     </section>
     <div class="set-row">
@@ -317,6 +317,7 @@
         <div class="set-row"><span class="set-ic" data-icon="volume-2"></span><div class="set-txt"><b>Garsas</b><small>Už judesį, raundą ir finišą</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-snd aria-label="Garsas"><i></i></button></div>
         <div class="set-row"><span class="set-ic" data-icon="vibrate"></span><div class="set-txt"><b>Vibracija</b><small>Trumpas virptelėjimas už judesį</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-vibe aria-label="Vibracija"><i></i></button></div>
         <button class="set-row tap-row" type="button" data-tv aria-haspopup="dialog" aria-controls="screenSheet"><span class="set-ic" data-icon="tv"></span><div class="set-txt"><b>Rodyti per TV</b><small>TV lenta su kodu arba ekrano dubliavimas</small></div><span class="chev" data-icon="chevron-right"></span></button>
+        <div class="set-row"><span class="set-ic" data-icon="globe"></span><div class="set-txt"><b>Kalba</b><small>Language · lietuvių arba English</small></div><div class="char-pick lang-pick" role="radiogroup" aria-label="Kalba"><button class="tap" type="button" role="radio" data-lang="lt" aria-checked="true" lang="lt">LT</button><button class="tap" type="button" role="radio" data-lang="en" aria-checked="false" lang="en">EN</button></div></div>
         <button class="set-row tap-row" id="onbAgain" type="button"><span class="set-ic" data-icon="info"></span><div class="set-txt"><b>Kaip žaisti</b><small>Parodyti įvadą dar kartą</small></div><span class="chev" data-icon="chevron-right"></span></button>
         <div class="set-row"><span class="set-ic" data-icon="shield-check"></span><div class="set-txt"><b>Privatumas</b><small>Pagal nutylėjimą vaizdas niekur nesiunčiamas. Įjungus „Kamera per TV“, jis tiesiogiai (WebRTC) siunčiamas tik tam TV, kuris turi kodą. Serveriui – tik slapyvardis ir taškai.</small></div></div>
       </div>
@@ -537,7 +538,7 @@
     </header>
     <div class="ex-grid" id="exGrid" role="group" aria-label="Pratimų sąrašas"></div>
     <footer class="ex-sheet-foot">
-      <p class="ex-sheet-note" id="exSheetNote" aria-live="polite">Pasirinkti 7 pratimai</p>
+      <p class="ex-sheet-note" id="exSheetNote" aria-live="polite"></p>
       <button class="go ex-done" id="exDone" type="button"><span data-icon="check"></span>Gerai</button>
     </footer>
   </div>

@@ -4,6 +4,7 @@
 import {$} from "./dom.ts";
 import {render,showOnly} from "./router.ts";
 import * as api from "../online/api.ts";
+import {t} from "../i18n/i18n.ts";
 
 const KEY="novacore.onb";
 const ls={get(k:string){try{return localStorage.getItem(k)}catch(e){return null}},set(k:string,v:string){try{localStorage.setItem(k,v)}catch(e){}}};
@@ -18,7 +19,7 @@ function step(n:number){
   dots.setAttribute("aria-valuenow",String(n+1));
   dots.style.setProperty("--n",String(n));
   back.hidden=n===0;
-  nextTxt.textContent=n===steps.length-1?"Pradėti":"Toliau";
+  nextTxt.textContent=t(n===steps.length-1?"setup.start":"app.next");
   steps[n].querySelector<HTMLElement>("h1,h2")?.focus?.({preventScroll:true});
 }
 function finish(){
@@ -38,8 +39,8 @@ camBtn.onclick=async()=>{
   try{
     const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:false});
     s.getTracks().forEach(t=>t.stop());
-    camBtn.textContent="Leista";camBtn.classList.add("ok");camBtn.disabled=true;
-  }catch(e){camBtn.textContent="Neleista";camBtn.classList.add("warn")}
+    camBtn.textContent=t("onb.allowed");camBtn.classList.add("ok");camBtn.disabled=true;
+  }catch(e){camBtn.textContent=t("onb.denied");camBtn.classList.add("warn")}
   finally{camBtn.removeAttribute("aria-busy")}
 };
 steps.forEach(s=>s.querySelector("h1,h2")?.setAttribute("tabindex","-1"));

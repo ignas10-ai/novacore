@@ -5,22 +5,23 @@ import {startFlow} from "../game/game.ts";
 import {loadHist} from "../history/history.ts";
 import {streak,weekGames,WEEK_GOAL} from "../history/stats.ts";
 import {cachedNick} from "../online/api.ts";
-import {$,plural} from "./dom.ts";
+import {$} from "./dom.ts";
+import {t,tn} from "../i18n/i18n.ts";
 import {onView,go} from "./router.ts";
 import {renderHomeRank} from "./social.ts";
 
 function render(){
   const now=Date.now(), h=loadHist(), nick=cachedNick();
-  $("#homeTitle").textContent=nick?`Labas, ${nick}!`:"Labas!";
+  $("#homeTitle").textContent=nick?t("home.hi",{nick}):t("home.hello");
   const n=streak(h,now), today=h.some(g=>new Date(g.t).toDateString()===new Date(now).toDateString());
   $("#streakN").textContent=String(n);
-  $("#streakTxt").textContent=!n?"Serijos dar nėra – pradėk šiandien":`${n} ${plural(n,["diena","dienos","dienų"])} iš eilės${today?"":" · žaisk šiandien"}`;
+  $("#streakTxt").textContent=!n?t("home.noStreak"):tn("home.streak",n)+(today?"":t("home.playToday"));
   $("#streakCard").classList.toggle("hot",n>0&&today);
   const w=weekGames(h,now), left=WEEK_GOAL-w;
   $("#goalN").textContent=`${Math.min(w,WEEK_GOAL)}/${WEEK_GOAL}`;
   $("#goalBar").querySelectorAll("i").forEach((el,i)=>el.classList.toggle("on",i<w));
-  $("#goalTxt").textContent=left<=0?"Tikslas pasiektas! Žaisk toliau.":`Liko ${left} ${plural(left,["žaidimas","žaidimai","žaidimų"])} iki savaitės tikslo`;
-  $("#quickFast").textContent=S.players===1?"1 min solo":"1 min";
+  $("#goalTxt").textContent=left<=0?t("home.goalDone"):tn("home.goalLeft",left);
+  $("#quickFast").textContent=t(S.players===1?"home.fastSolo":"u.min1");
   renderHomeRank();
 }
 onView("home",render);

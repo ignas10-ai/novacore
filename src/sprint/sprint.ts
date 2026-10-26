@@ -14,23 +14,24 @@ import {onView,home} from "../ui/router.ts";
 import {fillIcons} from "../ui/icons.ts";
 import {loadHist,saveHist} from "../history/history.ts";
 import type {Game} from "../history/stats.ts";
-import {$,plural} from "../ui/dom.ts";
+import {$} from "../ui/dom.ts";
+import {t as tr,tn,dec} from "../i18n/i18n.ts";
 import {RACE_M,V_MAX,runner,onStep,advance,simulate,ghostX,type Runner} from "./speed.ts";
 import {LOOKS,newPose,runPose,setPose,standPose,winPose,drawRunner,type Pose} from "./runner.ts";
 import {mascot,avatar} from "../ui/mascots.ts";
 import {layout,build,drawBack,drawFinishBack,drawFinishFront,drawFront,sx,SKEW,type Layout} from "./scene.ts";
 
-const NAMES=["Raudonas","Mėlynas"];
+const NAMES=[tr("p.red"),tr("p.blue")];
 const DEFAULT_GHOST=simulate(2.8).splits; // ~15 s: the target before the first run
 const POS_S=1.7, SET_MIN=1.3, SET_MAX=2.3, END_AFTER=8, LIMIT_S=60, RESULTS_DELAY=2200;
-const fmt=(s:number)=>s.toFixed(2).replace(".",",");
+const fmt=(s:number)=>dec(s,2);
 const kmh=(v:number)=>Math.round(v*3.6);
 const face=(i:number,cls="")=>`<span class="${cls}">${avatar(i?"b":"r")}</span>`;
 
 // ---------- markup (built here so the shared index.html stays untouched) ----------
 const tile=document.createElement("a");
 tile.className="sp-tile tap";tile.href="#/sprintas";tile.dataset.tone="yellow";
-tile.innerHTML=`<span class="sp-tile-txt"><span class="eyebrow">Naujas žaidimas</span><b class="d">Sprintas 100&nbsp;m</b><small>Bėk vietoje – kas pirmas iki finišo?</small></span>
+tile.innerHTML=`<span class="sp-tile-txt"><span class="eyebrow">${tr("setup.title")}</span><b class="d">${tr("sp.title").replace(/(\d) m\b/,"$1&nbsp;m")}</b><small>${tr("sp.tileSub")}</small></span>
 <span class="sp-tile-art" aria-hidden="true">${mascot("b","knees",{anim:true})}${mascot("r","knees",{anim:true})}</span><span class="sp-tile-go" data-icon="arrow-right"></span>`;
 (document.getElementById("rankCard")??document.querySelector("#home .col:last-child"))?.after(tile);
 
@@ -38,32 +39,32 @@ const app=document.getElementById("app")??document.body;
 app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="sprint" aria-labelledby="spTitle">
   <div class="wrap">
-    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="Atgal"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="spTitle" tabindex="-1">Sprintas 100 m</h1><span class="nav-spacer"></span></div></header>
-    <div class="sp-hero"><canvas id="spHeroCv" aria-hidden="true"></canvas><span class="sp-hero-big">100 M</span><span class="sp-hero-sub">Sprintas</span></div>
-    <section class="pick" aria-label="Žaidėjai">
-      <div class="seg sp-seg" role="group" aria-label="Bėgikų skaičius">
-        <button data-sp="2" aria-pressed="true"><span><b class="d">2</b><small>dvikova</small></span></button>
-        <button data-sp="1" aria-pressed="false"><span><b class="d">1</b><small>prieš šešėlį</small></span></button>
+    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="spTitle" tabindex="-1">${tr("sp.title")}</h1><span class="nav-spacer"></span></div></header>
+    <div class="sp-hero"><canvas id="spHeroCv" aria-hidden="true"></canvas><span class="sp-hero-big">100 M</span><span class="sp-hero-sub">${tr("sp.hero")}</span></div>
+    <section class="pick" aria-label="${tr("setup.players")}">
+      <div class="seg sp-seg" role="group" aria-label="${tr("sp.runners")}">
+        <button data-sp="2" aria-pressed="true"><span><b class="d">2</b><small>${tr("mode.duel")}</small></span></button>
+        <button data-sp="1" aria-pressed="false"><span><b class="d">1</b><small>${tr("sp.vsGhost")}</small></span></button>
       </div>
     </section>
-    <div class="card sp-pb"><span class="sp-pb-ic" data-icon="trophy"></span><div><small class="eyebrow">Tavo rekordas</small><b class="d" id="spPb">–</b><p class="help" id="spPbTxt"></p></div></div>
+    <div class="card sp-pb"><span class="sp-pb-ic" data-icon="trophy"></span><div><small class="eyebrow">${tr("sp.pb")}</small><b class="d" id="spPb">–</b><p class="help" id="spPbTxt"></p></div></div>
     <section class="card sp-how" aria-labelledby="spHowT">
-      <h2 class="card-title" id="spHowT">Kaip bėgti</h2>
+      <h2 class="card-title" id="spHowT">${tr("sp.how")}</h2>
       <ol>
-        <li><span data-icon="smartphone"></span><span>Pastatyk telefoną 2–3 m atstumu, kad matytųsi visas kūnas.</span></li>
-        <li><span data-icon="timer"></span><span>Pakelk rankas – po šūvio „Marš!“ bėk vietoje.</span></li>
-        <li><span data-icon="footprints"></span><span>Kuo dažniau keli kelius, tuo greičiau bėga tavo personažas.</span></li>
+        <li><span data-icon="smartphone"></span><span>${tr("sp.how1")}</span></li>
+        <li><span data-icon="timer"></span><span>${tr("sp.how2")}</span></li>
+        <li><span data-icon="footprints"></span><span>${tr("sp.how3")}</span></li>
       </ol>
     </section>
     <div class="cta">
-      <button class="go tap" id="spGo" type="button"><span>Į startą</span><span data-icon="arrow-right"></span></button>
-      <p class="fine">Vaizdas apdorojamas tik telefone ir niekur nesiunčiamas.</p>
+      <button class="go tap" id="spGo" type="button"><span>${tr("sp.toStart")}</span><span data-icon="arrow-right"></span></button>
+      <p class="fine">${tr("sp.private")}</p>
     </div>
   </div>
 </section>`);
 document.body.insertAdjacentHTML("beforeend",`
 <div class="screen sp-run hide" id="sprintRun">
-  <canvas id="spCv" role="img" aria-label="Bėgimo takas"></canvas>
+  <canvas id="spCv" role="img" aria-label="${tr("sp.track")}"></canvas>
   <div class="sp-hud">
     <div class="sp-top">
       <div class="sp-card p1" id="spC1">${face(0,"sp-face")}<div class="sp-card-in"><b class="d" id="spD1">0 m</b><span class="sp-bar"><i id="spV1"></i></span></div></div>
@@ -79,15 +80,15 @@ document.body.insertAdjacentHTML("beforeend",`
   <div class="wrap">
     <header class="sp-res-head" id="spResHead">
       <span class="sp-res-art" id="spResArt" aria-hidden="true"></span>
-      <span class="wl">Sprintas 100 m</span>
-      <h2 class="d" id="spWin">Raudonas laimi!</h2>
+      <span class="wl">${tr("sp.title")}</span>
+      <h2 class="d" id="spWin">${tr("sp.wins",{name:tr("p.red")})}</h2>
       <p id="spSub"></p>
-      <span class="rec-badge" id="spRec" hidden>Naujas rekordas!</span>
+      <span class="rec-badge" id="spRec" hidden>${tr("sp.newPb")}</span>
     </header>
-    <ol class="sp-rows" id="spRows" aria-label="Rezultatai"></ol>
+    <ol class="sp-rows" id="spRows" aria-label="${tr("sp.results")}"></ol>
     <div class="cta">
-      <button class="go" id="spAgain" type="button"><span data-icon="rotate-ccw"></span>Bėgti dar kartą</button>
-      <button class="go alt" id="spHome" type="button"><span data-icon="house"></span>Į pradžią</button>
+      <button class="go" id="spAgain" type="button"><span data-icon="rotate-ccw"></span>${tr("sp.again")}</button>
+      <button class="go alt" id="spHome" type="button"><span data-icon="house"></span>${tr("app.home")}</button>
     </div>
   </div>
 </section>`);
@@ -115,7 +116,7 @@ segBtns.forEach(b=>b.onclick=()=>{
 function renderPb(){
   const b=bestRun(loadHist());
   $("#spPb").textContent=b?`${fmt(b.t)} s`:"–";
-  $("#spPbTxt").textContent=S.players===1?(b?"Šešėlis bėgs tavo rekordo tempu.":`Dar nebėgai. Šešėlis bėgs ${fmt(DEFAULT_GHOST[9])} s.`):(b?"Geriausias laikas šiame telefone.":"Dar nebėgai – nustatyk pirmą rekordą.");
+  $("#spPbTxt").textContent=S.players===1?(b?tr("sp.pbGhost"):tr("sp.pbNoneSolo",{t:fmt(DEFAULT_GHOST[9])})):tr(b?"sp.pbBest":"sp.pbNone");
 }
 let heroRaf=0;
 const heroCv=$<HTMLCanvasElement>("#spHeroCv"), heroCtx=heroCv.getContext("2d")!, heroPose=newPose();
@@ -162,15 +163,15 @@ function call(t:string,s="",cls="",ms=0){
 }
 function enter(p:Phase,now:number){
   phase=p;phaseAt=now;
-  if(p==="pos"){call("Į starto pozicijas","Bėk vietoje, kai nuskambės šūvis");sfx.tick()}
-  else if(p==="set"){setDur=SET_MIN+Math.random()*(SET_MAX-SET_MIN);call("Dėmesio…","","is-set");sfx.tick()}
-  else if(p==="race"){t0=now;call("Marš!","","is-go",900);sfx.gun()}
+  if(p==="pos"){call(tr("sp.marks"),tr("sp.marksSub"));sfx.tick()}
+  else if(p==="set"){setDur=SET_MIN+Math.random()*(SET_MAX-SET_MIN);call(tr("sp.set"),"","is-set");sfx.tick()}
+  else if(p==="race"){t0=now;call(tr("sp.go"),"","is-go",900);sfx.gun()}
 }
 function knee(i:number,now:number){
   S.fl[i]=now; // skeleton glow in the camera corner
   if(phase==="set"&&falseStarts<2){
     falseStarts++;
-    call("Per anksti!",`${S.players===2?`P${i+1} `:""}pajudėjo prieš šūvį – iš naujo`,"is-bad");
+    call(tr("sp.early"),tr("sp.earlySub",{who:S.players===2?`P${i+1} `:""}),"is-bad");
     sfx.round();phase="pos";phaseAt=now+700; // a beat longer on the false-start call
     return;
   }
@@ -199,7 +200,7 @@ function begin(){
   document.body.classList.add("sprinting");
   resize();
   cam=-(L.W/L.ppm)*.3;
-  document.fonts?.load("400 40px \"Titan One\"","FINIŠAS 0123456789").then(()=>{if(phase!=="off")build(ctx,L)}).catch(()=>{});
+  document.fonts?.load("400 40px \"Titan One\"",`${tr("sp.finishLine")} 0123456789`).then(()=>{if(phase!=="off")build(ctx,L)}).catch(()=>{});
   S.running=true; // game.ts swallows Android back while running
   last=performance.now();fn=0;
   enter("pos",last);
@@ -231,7 +232,7 @@ function frame(now:number){
     if(solo){const x=ghostX(ghost,t);G.v=dt?(x-G.x)/dt:0;G.x=x;if(G.fin<0&&x>=RACE_M)G.fin=ghost[9]}
     if(phase==="race"){
       const all=R.slice(0,S.players).every(r=>r.fin!=null);
-      if(all||(firstFin>=0&&t-firstFin>END_AFTER)||t>LIMIT_S){phase="done";doneAt=now;if(!all&&firstFin<0)call("Laikas baigėsi","","is-bad")}
+      if(all||(firstFin>=0&&t-firstFin>END_AFTER)||t>LIMIT_S){phase="done";doneAt=now;if(!all&&firstFin<0)call(tr("sp.timeUp"),"","is-bad")}
     }else if(now-doneAt>RESULTS_DELAY){finishRace();return}
   }
   const d0=performance.now();render(now,dt);DT[fn%600]=performance.now()-d0;
@@ -242,7 +243,7 @@ function finished(i:number,now:number){
   order.push(i);
   if(firstFin<0){firstFin=R[i].fin!;brokeAt=raceT;confettiBurst();sfx.finish()}
   else sfx.round();
-  call("Finišas!",`${NAMES[i]} · ${fmt(R[i].fin!)} s`,`is-fin p${i+1}`);
+  call(tr("sp.finish"),`${NAMES[i]} · ${fmt(R[i].fin!)} s`,`is-fin p${i+1}`);
   void now;
 }
 function confettiBurst(){
@@ -326,7 +327,7 @@ function render(now:number,dt:number){
   const v0=solo?G.v:R[0].v, v1=solo?R[0].v:R[1].v;
   const won=(i:number)=>order[0]===i&&(!solo||R[0].fin!=null&&(G.fin<0||R[0].fin<=G.fin));
   if(solo){
-    animate(0,G.v,G.fin>=0,false,dt,t);body(0,1,G.x,G.v,.42,"Šešėlis");
+    animate(0,G.v,G.fin>=0,false,dt,t);body(0,1,G.x,G.v,.42,tr("sp.ghost"));
     animate(1,R[0].v,R[0].fin!=null,won(0),dt,t);body(1,0,R[0].x,R[0].v,1,"");
   }else{
     animate(0,v0,R[0].fin!=null,won(0),dt,t);body(0,0,R[0].x,v0,1,"");
@@ -375,21 +376,21 @@ function finishRace(){
   const head=$("#spResHead"),win=$("#spWin"),sub=$("#spSub");
   let w=-1;
   if(solo){
-    const t=times[0];
-    w=t!=null&&t<=ghost[9]?0:1;
-    win.textContent=t!=null?`${fmt(t)} s`:"Nebaigta";
-    sub.textContent=t==null?"Iki finišo neprabėgta – bandyk dar kartą!":w===0?`Aplenkei šešėlį (${fmt(ghost[9])} s)!`:`Šešėlis buvo greitesnis: ${fmt(ghost[9])} s`;
+    const my=times[0];
+    w=my!=null&&my<=ghost[9]?0:1;
+    win.textContent=my!=null?`${fmt(my)} s`:tr("sp.dnf");
+    sub.textContent=my==null?tr("sp.dnfSub"):w===0?tr("sp.beatGhost",{t:fmt(ghost[9])}):tr("sp.ghostFaster",{t:fmt(ghost[9])});
   }else{
     w=order.length?order[0]:-1;
     const tie=times[0]!=null&&times[0]===times[1];
-    win.textContent=tie?"Lygiosios!":w<0?"Nebaigta":`${NAMES[w]} laimi!`;
-    sub.textContent=w<0?"Niekas nepasiekė finišo per minutę.":times[1-w]!=null?`Skirtumas ${fmt(Math.abs((times[0]??0)-(times[1]??0)))} s`:`${NAMES[1-w]} nepasiekė finišo`;
+    win.textContent=tie?tr("res.tie"):w<0?tr("sp.dnf"):tr("sp.wins",{name:NAMES[w]});
+    sub.textContent=w<0?tr("sp.nobody"):times[1-w]!=null?tr("sp.gap",{t:fmt(Math.abs((times[0]??0)-(times[1]??0)))}):tr("sp.didNotFinish",{name:NAMES[1-w]});
     if(tie)w=-1;
   }
   head.dataset.w=String(w+1);
   const artI=w<0?0:solo?0:w;
   $("#spResArt").innerHTML=mascot(artI?"b":"r",w<0&&!solo?"idle":"win",{anim:true});
-  const rb=$("#spRec");rb.hidden=!pb;rb.textContent=prev?"Naujas rekordas!":"Pirmasis rekordas!";
+  const rb=$("#spRec");rb.hidden=!pb;rb.textContent=tr(prev?"sp.newPb":"sp.firstPb");
   // rows: place, face, name, details, time
   const rows=[...Array(S.players).keys()].map(i=>({i,t:times[i],r:R[i],ghost:false}));
   if(solo)rows.push({i:1,t:ghost[9],r:runner(),ghost:true});
@@ -398,10 +399,10 @@ function finishRace(){
     const li=document.createElement("li");li.className=`sp-row p${row.i+1}${row.ghost?" ghost":""}`;li.style.setProperty("--i",String(k));
     const cad=row.r.steps&&row.t?row.r.steps/row.t:0;
     li.innerHTML=`<span class="sp-place d">${row.t!=null?k+1:"–"}</span>${face(row.i,"sp-row-face")}<span class="sp-row-txt"><b></b><small></small></span><b class="d sp-row-t"></b>`;
-    li.querySelector(".sp-row-txt b")!.textContent=row.ghost?"Šešėlis":`${NAMES[row.i]}${S.players===2?` · P${row.i+1}`:""}`;
-    li.querySelector(".sp-row-txt small")!.textContent=row.ghost?(bestRun(h.slice(1))?"Tavo ankstesnis rekordas":"Tikslinis laikas"):
-      `${kmh(row.r.vTop)} km/h · ${row.r.steps} ${plural(row.r.steps,["žingsnis","žingsniai","žingsnių"])}${cad?` · ${cad.toFixed(1).replace(".",",")}/s`:""}`;
-    li.querySelector(".sp-row-t")!.textContent=row.t!=null?`${fmt(row.t)} s`:"Nebaigė";
+    li.querySelector(".sp-row-txt b")!.textContent=row.ghost?tr("sp.ghost"):`${NAMES[row.i]}${S.players===2?` · P${row.i+1}`:""}`;
+    li.querySelector(".sp-row-txt small")!.textContent=row.ghost?tr(bestRun(h.slice(1))?"sp.prevPb":"sp.target"):
+      `${kmh(row.r.vTop)} km/h · ${tn("u.steps",row.r.steps)}${cad?` · ${dec(cad,1)}/s`:""}`;
+    li.querySelector(".sp-row-t")!.textContent=row.t!=null?`${fmt(row.t)} s`:tr("sp.dnfRow");
     return li;
   }));
   runRoot.classList.add("hide");document.body.classList.remove("sprinting");
