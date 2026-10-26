@@ -16,13 +16,15 @@ assert.equal(targetSpeed(99),V_MAX);
 assert.ok(Math.abs(simulate(3,.3,30).fin-simulate(3,.3,120).fin)<.06,"30 vs 120 Hz");
 // stopping: cadence decays, speed falls to ~0 within ~2 s, distance stops growing
 const r=runner();let t=0;
-for(let k=0;k<12;k++)onStep(r,k/3);
+for(let k=0;k<12;k++)onStep(r,k/3,k%2);
 for(;t<4;t+=1/60)advance(r,t,1/60);
 const vRun=r.v;assert.ok(vRun>6,`running speed ${vRun}`);
 for(;t<6.5;t+=1/60)advance(r,t,1/60);
 assert.ok(r.v<0.3,`stopped speed ${r.v}`);assert.equal(cadenceAt(r,t),0);
 // one glitchy double count (<DT_MIN) does not spike the cadence
-const g=runner();onStep(g,0);onStep(g,.33);onStep(g,.36);assert.ok(Math.abs(g.cad-3.03)<.01,`glitch cad ${g.cad}`);
+const g=runner();onStep(g,0,0);onStep(g,.33,1);onStep(g,.36,0);assert.ok(cadenceAt(g,.4)<3.05,`glitch cad ${cadenceAt(g,.4)}`);
+// same leg twice (left/right knee swap while a knee is held high) is not a running step
+const h=runner();onStep(h,0,0);onStep(h,1,1);onStep(h,1.25,1);assert.equal(cadenceAt(h,1.3),1,"same-leg repeat ignored");
 // 10 splits, last = finish; ghost replays them
 const s=simulate(3);assert.equal(s.splits.length,10);assert.equal(s.splits[9],s.fin);
 assert.ok(Math.abs(ghostX(s.splits,s.splits[4])-50)<1e-6&&Math.abs(ghostX(s.splits,s.fin)-100)<1e-6);

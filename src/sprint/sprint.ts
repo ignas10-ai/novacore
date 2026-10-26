@@ -167,7 +167,7 @@ function enter(p:Phase,now:number){
   else if(p==="set"){setDur=SET_MIN+Math.random()*(SET_MAX-SET_MIN);call(tr("sp.set"),"","is-set");sfx.tick()}
   else if(p==="race"){t0=now;call(tr("sp.go"),"","is-go",900);sfx.gun()}
 }
-function knee(i:number,now:number){
+function knee(i:number,now:number,leg:number){
   S.fl[i]=now; // skeleton glow in the camera corner
   if(phase==="set"&&falseStarts<2){
     falseStarts++;
@@ -175,7 +175,7 @@ function knee(i:number,now:number){
     sfx.round();phase="pos";phaseAt=now+700; // a beat longer on the false-start call
     return;
   }
-  if((phase==="race"||phase==="done")&&R[i].fin==null){onStep(R[i],(now-t0)/1000);sfx.step(i)} // past the line: coast to a stop
+  if((phase==="race"||phase==="done")&&R[i].fin==null){onStep(R[i],(now-t0)/1000,leg);sfx.step(i)} // past the line: coast to a stop
 }
 
 function resize(){
@@ -216,7 +216,8 @@ function frame(now:number){
   const ps=sampleCamera(now);
   if(ps)for(let i=0;i<ps.length;i++){
     S.st[i].ar=detCv.width/detCv.height||1;
-    if(step(S.st[i],ps[i].lm,"knees",now))knee(i,now);
+    const st=S.st[i],up0=st.leg?.[0]; // which knee went up: speed.ts only counts alternating legs
+    if(step(st,ps[i].lm,"knees",now))knee(i,now,st.leg[0]&&!up0?0:1);
     draw(ps[i].lm,i);
   }
   const tp=(now-phaseAt)/1000;

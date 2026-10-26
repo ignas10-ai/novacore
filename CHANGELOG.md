@@ -1,5 +1,12 @@
 # Pakeitimų žurnalas
 
+## 2026-10-26 — sprintas: greitis pagal kojų keitimo tempą (šaka `sprint-cadence`)
+
+- **Kas buvo blogai (Martyno testas telefonu – ačiū!):** „net jei kelius keli labai lėtai, bet labai aukštai – skrendi greitai“. Priežastis: kadencija buvo 1/Δt vidurkis (EMA), tarpai ilgesni nei 1,2 s ignoruoti, o tos pačios kojos pakartojimas skaičiuotas kaip žingsnis. Laikant kelį aukštai MediaPipe kartais vienam kadrui sukeičia kairį ir dešinį kelį (knees.json 12,9 s) – tai papildomas „žingsnis“ po 0,26 s, kuris kadenciją padvigubindavo, o lėti žingsniai po jo jos nebesumažindavo. Labai lėtai (1 žingsnis per 1,4 s) su tokiais sukeitimais 100 m buvo ~25 s, dabar ~56 s.
+- **Dabar:** greitis = kaip dažnai keičiasi kojos (K, D, K…), aukštis nieko neprideda. Tos pačios kojos pakartojimas neskaičiuojamas; kadencija = žingsniai per laiką paskutinėse ~1,25 s (vienas klaidingas žingsnis beveik nieko nekeičia, lėti žingsniai ją mažina); sustojus greitis per 1 s nukrenta perpus, per 2 s – beveik iki nulio.
+- **Kreivė (100 m):** 1 žingsnis/s ~40 s (ėjimas) · 1,5/s ~27 s (risnojimas) · 2/s ~21 s · 2,5/s ~17 s · 3/s ~14 s · 4/s ~11 s · 4,5/s ir greičiau ~10,3 s (riba). Normalaus bėgimo laikai nepakito. Tikri įrašai: lėta aukštų kelių dalis 28,5 → 35,8 s, greiti žemi keliai 12,9 s.
+- **Testai:** lėtai-aukštai (tas pats įrašas sulėtintas = lėtas), greitai-žemai (greitas), tos pačios kojos pakartojimai, sustojimas, du žaidėjai nepriklausomi, dokumentuoti laikai.
+
 ## 2026-10-26 — anglų kalba (šaka `en`)
 
 - **Kam:** Solve for Tomorrow finalas vyks angliškai, o vėliau – kitos rinkos. Programėlė dabar dviem kalbomis: lietuvių (numatyta, tekstai nepakeisti) ir anglų.

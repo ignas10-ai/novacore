@@ -1,33 +1,45 @@
 // Sprint speed model. PURE (no DOM): knee-lift steps -> cadence -> running speed -> distance. test-sprint.cjs imports it.
 // One "step" = one knee lift counted by step(...,"knees") (each leg separately), so cadence is steps per second.
-// Tuning (2026-10-25): normal in-place high knees 2.5-3.5 steps/s -> 100 m in ~12-17 s; fast 4.5+/s hits V_MAX -> ~10.5 s.
+// Speed follows ONLY how often the legs alternate, never how high they go (2026-10-26, Martynas on a real phone:
+// slow but very high lifts "flew"). Old cause: cadence was an EMA of 1/Δt, intervals > 1.2 s were ignored, and a
+// same-leg repeat (one-frame left/right knee swap while a knee is held high, knees.json 12.9 s) counted as a step:
+// one 0.26 s glitch doubled the cadence and the slow intervals after it never pulled it back down.
+// Now: cadence = alternating steps / time over the last ~1.25 s (mean interval, so one extra step adds little),
+// same-leg repeats ignored, slow intervals lower it, an overdue step decays it as 1/gap, 0 after DT_MAX.
+// Curve: v* = 2.6 m/s per step/s, cap 11.5: 0.7/s 1.7 m/s walk · 1/s 2.6 · 1.5/s 3.9 jog · 3/s 7.8 run · 4.4+/s cap (100 m below).
 export const RACE_M=100;
 export const K_SPEED=2.6;              // m/s per step/s: 3 steps/s = 7.8 m/s
 export const V_MAX=11.5;               // m/s cap
 export const A_MAX=6.5;                // m/s² acceleration cap (a sprinter's start, not a car)
 export const TAU_UP=0.8, TAU_DOWN=0.45; // s: speed eases toward the target (slower up than down: stopping is felt at once)
-export const DT_MIN=0.12, DT_MAX=1.2;  // s between steps: faster = detector jitter, slower = not running any more
-export const CAD_EMA=0.35;             // smoothing per step
+export const DT_MIN=0.12, DT_MAX=1.5;  // s between steps: faster = detector jitter, slower = stopped (next step starts over)
+export const WIN=1.25;                 // s: cadence window (intervals ending in the last WIN s; at least one)
 export const SPLIT_M=10;
 
-export interface Runner{x:number;v:number;cad:number;last:number;steps:number;vTop:number;fin:number|null;splits:number[]}
-export const runner=():Runner=>({x:0,v:0,cad:0,last:-1,steps:0,vTop:0,fin:null,splits:[]});
+// ts = recent counted step times (oldest first), leg = leg of the last counted step (-1 unknown)
+export interface Runner{x:number;v:number;ts:number[];leg:number;steps:number;vTop:number;fin:number|null;splits:number[]}
+export const runner=():Runner=>({x:0,v:0,ts:[],leg:-1,steps:0,vTop:0,fin:null,splits:[]});
 
-// a knee lift at race time t (s)
-export function onStep(r:Runner,t:number){
+// a knee lift at race time t (s); leg 0/1 from the detector, -1 = unknown (alternation not checked)
+export function onStep(r:Runner,t:number,leg=-1){
   r.steps++;
-  if(r.last>=0){
-    const dt=t-r.last;
-    if(dt>=DT_MIN&&dt<=DT_MAX){const c=1/dt;r.cad=r.cad?r.cad+(c-r.cad)*CAD_EMA:c}
-  }
-  r.last=t;
+  const last=r.ts[r.ts.length-1];
+  if(last!=null&&t-last<DT_MIN){r.ts[r.ts.length-1]=t;return} // detector double count / burst: one step
+  if(leg>=0&&leg===r.leg)return;                 // same leg again: not a running step (leg swap glitch / hopping)
+  if(last!=null&&t-last>DT_MAX)r.ts.length=0;    // after a stop the next step starts over
+  r.leg=leg;r.ts.push(t);
+  if(r.ts.length>8)r.ts.shift();
 }
-// cadence right now: decays once the next step is overdue (1.5x the current interval), 0 after DT_MAX
+// cadence right now: mean step rate over the window, decaying as 1/gap once the next step is overdue, 0 after DT_MAX
 export function cadenceAt(r:Runner,t:number){
-  if(!r.cad||r.last<0)return 0;
-  const gap=t-r.last;
+  const ts=r.ts,n=ts.length;
+  if(n<2)return 0;
+  const last=ts[n-1],gap=t-last;
   if(gap>DT_MAX)return 0;
-  return gap*r.cad>1.5?1.5/gap:r.cad;
+  let k=n-2;
+  while(k>0&&ts[k-1]>=last-WIN)k--;
+  const cad=(n-1-k)/(last-ts[k]);
+  return gap*cad>1?1/gap:cad;
 }
 export const targetSpeed=(cad:number)=>Math.min(V_MAX,K_SPEED*cad);
 
@@ -54,7 +66,7 @@ export function simulate(cad:number,react=0.3,hz=60,limit=60){
   const r=runner(),dt=1/hz;
   let next=react;
   for(let t=dt;t<=limit&&r.fin==null;t+=dt){
-    while(cad>0&&t>=next){onStep(r,next);next+=1/cad}
+    while(cad>0&&t>=next){onStep(r,next,r.steps%2);next+=1/cad}
     advance(r,t,dt);
   }
   return r;
