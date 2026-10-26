@@ -1,5 +1,11 @@
 # Pakeitimų žurnalas
 
+## 2026-10-26 — Google Play: „Ištrinti mano duomenis“ + privatumo politika (šaka `privacy`)
+
+- **Profilis → Nustatymai:** „Privatumo politika“ (atidaro `privacy.html`, Android'e – svetainės kopiją) ir „Ištrinti mano duomenis“: patvirtinimas → `delete_my_data()` serveryje (dvikovos, savo sukurtos kompanijos, profilis su žaidimais ir narystėmis, anoniminis vartotojas) → išvalomi visi `novacore.*` ir Supabase raktai telefone → programėlė atsidaro iš naujo. Jei serveris neatsako – nieko neištrinama, rodoma klaida. LT + EN.
+- **`supabase/migrations/003_delete_me.sql`** (Ignas paleido 10-26). **`public/privacy.html`** – LT + EN (`#en`), kontaktas naujas.verslas.geras@gmail.com, be asmenų vardų.
+- **`tools/delete-check.mjs`** (įtrauktas į `npm run check:live`): gyvas Supabase – A ištrina viską, B duomenys lieka. OK.
+
 ## 2026-10-26 — sprintas: greitis pagal kojų keitimo tempą (šaka `sprint-cadence`)
 
 - **Kas buvo blogai (Martyno testas telefonu – ačiū!):** „net jei kelius keli labai lėtai, bet labai aukštai – skrendi greitai“. Priežastis: kadencija buvo 1/Δt vidurkis (EMA), tarpai ilgesni nei 1,2 s ignoruoti, o tos pačios kojos pakartojimas skaičiuotas kaip žingsnis. Laikant kelį aukštai MediaPipe kartais vienam kadrui sukeičia kairį ir dešinį kelį (knees.json 12,9 s) – tai papildomas „žingsnis“ po 0,26 s, kuris kadenciją padvigubindavo, o lėti žingsniai po jo jos nebesumažindavo. Labai lėtai (1 žingsnis per 1,4 s) su tokiais sukeitimais 100 m buvo ~25 s, dabar ~56 s.

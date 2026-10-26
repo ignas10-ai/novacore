@@ -3,7 +3,8 @@
 import {EX} from "../detect/exercises.ts";
 import {loadHist,histItem,bests} from "../history/history.ts";
 import {totals,last7,exTotals,badges} from "../history/stats.ts";
-import {cachedNick,sb} from "../online/api.ts";
+import {cachedNick,sb,deleteMyData,errText} from "../online/api.ts";
+import {WEB} from "./social.ts";
 import {icon} from "./icons.ts";
 import {$} from "./dom.ts";
 import {t,tn,lang,weekday,isLang,LANG_KEY} from "../i18n/i18n.ts";
@@ -71,4 +72,14 @@ langBtns.forEach(b=>{
     location.replace(u);
   };
 });
+// privacy policy lives on the web build (public/privacy.html); the Android app opens the hosted copy
+($("#policyLink") as HTMLAnchorElement).href=`${WEB}/privacy.html${lang==="en"?"#en":""}`;
+// „Ištrinti mano duomenis": server first (if that fails, nothing local is touched), then every novacore.* / Supabase key
+$("#delData").onclick=async()=>{
+  if(!confirm(t("prof.delConfirm")))return;
+  try{if(sb)await deleteMyData()}catch(e){alert(t("prof.delFail")+" "+errText(e));return}
+  try{for(const k of Object.keys(localStorage))if(k.startsWith("novacore.")||k.startsWith("sb-"))localStorage.removeItem(k)}catch(e){}
+  alert(t("prof.delDone"));
+  location.replace(location.pathname);
+};
 $("#appVer").textContent=`NovaCore ${APP_VERSION} · Samsung Solve for Tomorrow 2026`;

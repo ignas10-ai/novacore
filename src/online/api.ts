@@ -62,6 +62,12 @@ export async function saveNick(nick:string){
   ls.set(NICK_KEY,nick);
 }
 
+// „Ištrinti mano duomenis" (003_delete_me.sql): server rows + the anonymous user, then this device's session.
+export async function deleteMyData(){
+  if(await userId())must(await client().rpc("delete_my_data"));
+  await client().auth.signOut({scope:"local"}).catch(()=>{});
+}
+
 export async function myGroups(){return must(await client().from("groups").select("id,name,code,owner_id").order("created_at")) as Group[]}
 export async function createGroup(name:string){return must(await client().rpc("create_group",{p_name:name})) as Group}
 export async function joinGroup(code:string){return must(await client().rpc("join_group",{p_code:code})) as Group}
