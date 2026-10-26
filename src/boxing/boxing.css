@@ -1,0 +1,129 @@
+/* Boksas (src/boxing), Claude Design sticker style. Reuses the sprint tile / setup / call / results classes from
+   sprint.css (.sp-tile, .sp-seg, .sp-pb, .sp-how, .sp-call, .sp-res-head, .sp-row) - only the differences live here.
+   Uses only the app tokens from main.css :root. */
+
+/* ---------- Pradžia tile (red, under the yellow sprint tile) ---------- */
+.bx-tile{background:linear-gradient(100deg,var(--red-deep) 0 64%,color-mix(in srgb,var(--red) 72%,#fff) 64% 100%);color:#fff;margin-top:-4px}
+.bx-tile .sp-tile-txt .eyebrow,.bx-tile .sp-tile-txt small{color:#fff}
+.bx-tile .sp-tile-txt b{color:#fff;text-shadow:0 3px 0 var(--ink)}
+.bx-tile-art{position:relative}
+.bx-tile-art .mascot+.bx-pad+.mascot{margin-left:-24px}
+.bx-tile-art .bx-pad{position:absolute;left:4px;top:-6px;width:34px;height:34px;animation:bx-float 1.4s ease-in-out infinite alternate}
+
+/* ---------- setup ---------- */
+#boxing .wrap{gap:18px}
+#boxing .pick{display:block}
+.bx-hero{position:relative;height:clamp(210px,56vw,270px);border:var(--bw-lg) solid var(--ol);border-radius:var(--r-lg);overflow:hidden;isolation:isolate;box-shadow:var(--sh-lg);
+  background:radial-gradient(ellipse 60% 55% at 62% 8%,#4A50A8 0,transparent 70%),var(--ink)}
+/* ropes behind the boxers, the canvas mat in front */
+.bx-hero::before{content:"";position:absolute;left:0;right:0;top:40%;height:34%;z-index:-1;
+  background:linear-gradient(180deg,transparent 0 8%,var(--red) 8% 16%,transparent 16% 46%,#fff 46% 54%,transparent 54% 84%,var(--blue) 84% 92%,transparent 92%)}
+.bx-hero::after{content:"";position:absolute;inset:auto 0 0;height:26%;z-index:-1;background:linear-gradient(180deg,#EDE8DF,#D6CFC2);border-top:var(--bw) solid var(--ink)}
+.bx-hero-big{position:absolute;left:16px;top:10px;font:400 clamp(48px,14vw,72px)/1.1 var(--disp);color:#fff;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:0 5px 0 var(--red)}
+.bx-hero-sub{position:absolute;left:20px;top:calc(16px + clamp(48px,14vw,72px)*1.06);padding:3px 10px;border-radius:8px;background:var(--yellow);color:var(--ink);font:900 12px/1.2 var(--body);letter-spacing:.14em;text-transform:uppercase}
+.bx-hero-m{position:absolute;bottom:3%;width:31%;max-width:150px}
+.bx-hero-m.r{left:13%}
+.bx-hero-m.b{right:9%}
+.bx-hero-pad{position:absolute;width:15%;max-width:64px;animation:bx-float 1.6s ease-in-out infinite alternate}
+.bx-hero-pad .bx-pad{display:block;width:100%;height:auto}
+.bx-hero-pad.a{left:3%;top:47%;animation-delay:-.4s}
+.bx-hero-pad.b{right:2%;top:30%;width:13%;animation-delay:-.9s}
+.bx-hero-pad.c{right:4%;top:5%;width:12%;animation-delay:-1.2s}
+.bx-hero-pad.d{left:45%;top:43%;width:11%}
+@keyframes bx-float{from{translate:0 0}to{translate:0 -7px}}
+.bx-hero .bx-pad.bomb>circle:first-of-type{stroke:#fff}
+@media (orientation:landscape) and (max-height:500px){.bx-hero-m{width:20%;max-width:130px}.bx-hero-m.r{left:22%}.bx-hero-m.b{right:20%}}
+.bx-legend{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.bx-legend li{display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 6px 10px;border:var(--bw) solid var(--ol);border-radius:18px;background:var(--surface);box-shadow:var(--sh);text-align:center}
+.bx-legend .bx-pad{width:46px;height:46px}
+.bx-legend b{font-size:22px;line-height:1.15;color:var(--red-ink)}
+.bx-legend li:nth-child(2) b{color:var(--yellow-ink)}
+.bx-legend li:nth-child(3) b{color:var(--ink)}
+.bx-legend span{font:800 13px/1.25 var(--body);color:var(--fg-mute);overflow-wrap:anywhere}
+.sp-how li:nth-child(3)>span:first-child{--ic:18px}
+
+/* ---------- round: camera full screen, pads on #bxCv over it, compact sticker HUD ---------- */
+body.boxing #stage{background:var(--cam-bg);z-index:0}
+#bxCv{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;display:none}
+body.boxing #bxCv{display:block}
+body.boxing .fs,body:has(#boxEnd:not(.hide)) .fs{display:none}
+#stage.bx-shake{animation:bx-shake 380ms ease-out}
+@keyframes bx-shake{20%{translate:-8px 3px}40%{translate:7px -3px}60%{translate:-5px 2px}80%{translate:3px -1px}}
+.bx-run{position:fixed;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+.bx-run.hide{display:none}
+.bx-top{position:absolute;left:0;right:0;top:0;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:8px;
+  padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));animation:hud-in var(--duration-very-slow) var(--ease-smooth-out) both}
+.bx-card{display:flex;align-items:center;gap:8px;min-width:0;max-width:100%;padding:4px 14px 4px 4px;border:var(--bw) solid var(--ink);border-radius:var(--r-pill);background:#fff;box-shadow:0 3px 0 #070920;--tone:var(--red);justify-self:start;
+  transition:background var(--duration-fast) var(--ease-ui)}
+.bx-card.p2,.bx-pbc{--tone:var(--blue);flex-direction:row-reverse;padding:4px 4px 4px 16px;justify-self:end;text-align:right}
+.bx-pbc{display:none;--tone:var(--ink)}
+.bx-run.solo .bx-card.p2{display:none}
+.bx-run.solo .bx-pbc{display:flex;grid-column:3}
+.bx-run[data-lead="1"] .bx-card.p1,.bx-run[data-lead="2"] .bx-card.p2{background:var(--yellow-tint)}
+.bx-face{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#fff;border:3px solid var(--tone);overflow:hidden}
+.bx-face .m-avatar{width:100%;height:100%}
+.bx-tro{background:var(--yellow);border-color:var(--ink);color:var(--ink);--ic:22px}
+.bx-card-in{display:flex;flex-direction:column;min-width:0}
+.bx-card.p2 .bx-card-in,.bx-pbc .bx-card-in{align-items:flex-end}
+.bx-sc{font-size:32px;line-height:1.05;color:var(--tone);white-space:nowrap}
+.bx-combo{display:none;align-items:center;gap:2px;font:900 13px/1.2 var(--body);color:var(--fg-mute);white-space:nowrap;--ic:13px}
+.bx-combo svg{fill:currentColor}
+.bx-combo.on{display:inline-flex;animation:zen-pick 360ms var(--ease-bounce)}
+.bx-combo.hot{color:var(--ink);background:var(--yellow);border-radius:6px;padding:0 5px;margin:1px -2px 0}
+.bx-pbc .bx-combo{font-size:12px}
+.bx-clock{display:flex;flex-direction:column;align-items:center;gap:5px;padding:5px 12px 7px;border:var(--bw) solid #070920;border-radius:16px;background:var(--ink);color:#fff;box-shadow:0 3px 0 #070920;min-width:92px}
+.bx-clock .d{font-size:30px;line-height:1.1}
+.bx-bar{display:block;width:100%;height:6px;border-radius:3px;background:var(--cam-surface-2);overflow:hidden}
+.bx-bar i{display:block;height:100%;background:var(--yellow);transform-origin:left;transition:transform 120ms linear}
+.bx-run.last .bx-clock{background:var(--red-deep);animation:bx-tick 1s steps(1) infinite}
+.bx-run.last .bx-bar i{background:#fff}
+@keyframes bx-tick{50%{scale:1.06}}
+/* screen-edge flash in the player's colour (solo: a vignette) */
+.bx-edge{position:absolute;top:0;bottom:0;width:50%;opacity:0;--c:var(--red)}
+.bx-edge.p1{left:0;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 75%,transparent),transparent 26%)}
+.bx-edge.p2{right:0;--c:var(--blue);background:linear-gradient(270deg,color-mix(in srgb,var(--c) 75%,transparent),transparent 26%)}
+.bx-run.solo .bx-edge.p1{width:100%;background:radial-gradient(ellipse at center,transparent 52%,color-mix(in srgb,var(--c) 70%,transparent))}
+.bx-edge[data-k="gold"]{--c:var(--yellow)}
+.bx-edge[data-k="bomb"]{--c:#070920}
+.bx-edge.on{animation:bx-edge 460ms ease-out}
+@keyframes bx-edge{0%{opacity:1}100%{opacity:0}}
+/* mascots in the bottom corners: guard, the punch pose flashes on every hit, a shake on a bomb */
+.bx-mas{position:absolute;bottom:max(6px,env(safe-area-inset-bottom));width:clamp(86px,25vw,128px)}
+.bx-mas.p1{left:max(6px,env(safe-area-inset-left))}
+.bx-mas.p2{right:max(6px,env(safe-area-inset-right))}
+.bx-run.solo .bx-mas.p2{display:none}
+.bx-mas>span{display:block}
+.bx-punch,.bx-mas.hit .bx-guard{display:none !important}
+.bx-mas.hit .bx-punch{display:block !important;animation:bx-pow 300ms var(--ease-bounce)}
+.bx-mas.hurt{animation:bx-hurt 460ms ease-out}
+@keyframes bx-pow{from{scale:.86}to{scale:1}}
+@keyframes bx-hurt{20%,60%{translate:-7px 0;rotate:-5deg}40%,80%{translate:7px 0;rotate:5deg}}
+/* calls: Pasiruošk / 3 2 1 / Kova! / Serija ×2 / Laikas! (base styles = .sp-call in sprint.css) */
+.bx-call{top:36%;z-index:2}
+.bx-call.is-num b{font-size:clamp(84px,26vmin,170px);color:#fff}
+.bx-call.is-combo b{font-size:clamp(34px,9vmin,62px);color:var(--yellow)}
+.bx-call.is-combo.p1 small{background:var(--red);color:#fff}
+.bx-call.is-combo.p2 small{background:var(--blue);color:#fff}
+@media (orientation:landscape) and (max-height:500px){
+  .bx-top{grid-template-columns:minmax(0,240px) auto minmax(0,240px);justify-content:space-between;padding-top:max(8px,env(safe-area-inset-top))}
+  .bx-face{width:36px;height:36px}.bx-sc{font-size:26px}.bx-clock .d{font-size:24px}.bx-clock{min-width:80px;padding:3px 10px 6px}
+  .bx-mas{width:clamp(64px,13vw,96px)}
+  .bx-call{top:26%}
+}
+
+/* ---------- results (base = .sp-res-head / .sp-row from sprint.css) ---------- */
+#boxEnd{background:var(--bg)}
+#boxEnd .wrap{gap:16px}
+#boxEnd:not(.hide)>.wrap{animation:modal-in var(--duration-slow) var(--ease-smooth-out) both}
+#boxEnd .cta{display:flex;flex-direction:column;gap:12px;padding-top:6px}
+#bxClip .clip-txt small{color:var(--fg-mute)}
+#bxRec{white-space:nowrap;align-self:flex-start}
+#bxClip[hidden]{display:none}
+.bx-res-head .rec-badge{font-size:15px;letter-spacing:.04em;padding:7px 13px 5px}
+@media (orientation:landscape) and (max-height:500px){
+  #boxEnd .wrap{max-width:820px;display:grid;grid-template-columns:1fr 1fr;column-gap:20px;align-content:center}
+  #boxEnd .bx-res-head{margin-top:0;grid-row:1 / span 2;min-height:0;align-self:stretch;justify-content:center}
+  #boxEnd .cta{grid-column:2}
+  #boxEnd .sp-res-head h2{font-size:clamp(28px,4.6vw,40px)}
+}
+@media (prefers-reduced-motion:reduce){.bx-hero-pad,.bx-tile-art .bx-pad,#stage.bx-shake,.bx-mas.hurt{animation:none}}

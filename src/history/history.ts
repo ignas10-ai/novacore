@@ -24,10 +24,10 @@ export function histItem(g:Game,i:number,best:number[]){
   const when=document.createElement("span");when.className="when";when.dataset.rec=t("prof.best"); // .best badge (CSS ::after)
   when.textContent=new Date(g.t).toLocaleString(locale(),{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
   const what=document.createElement("span");what.className="what";
-  const sprint=g.mode==="sprint";
-  what.textContent=sprint?t("hist.sprint",{mode:t(g.players===1?"mode.solo":"mode.duel")}):t("hist.game",{mode:t(g.players===1?"mode.Solo":"mode.Duel"),min:Math.round(g.duration/60),ex:(g.ex||[]).map(exName).join(", ")});
+  const sprint=g.mode==="sprint", boxing=g.mode==="boxing";
+  what.textContent=boxing?t("hist.boxing",{mode:t(g.players===1?"mode.solo":"mode.duel"),n:g.duration}):sprint?t("hist.sprint",{mode:t(g.players===1?"mode.solo":"mode.duel")}):t("hist.game",{mode:t(g.players===1?"mode.Solo":"mode.Duel"),min:Math.round(g.duration/60),ex:(g.ex||[]).map(exName).join(", ")});
   const pts=document.createElement("span");pts.className="pts";
-  for(let p=0;p<g.players;p++){const b=document.createElement("b");b.className=`d p${p+1}`;const s=g.times?.[p];b.textContent=sprint?(s!=null?`${dec(s,2)} s`:"–"):String(g.score[p]??0);pts.append(b)}
+  for(let p=0;p<g.players;p++){const b=document.createElement("b");b.className=`d p${p+1}`;const s=g.times?.[p];b.textContent=boxing?String(g.pts?.[p]??0):sprint?(s!=null?`${dec(s,2)} s`:"–"):String(g.score[p]??0);pts.append(b)}
   li.append(when,what,pts);
   return li;
 }

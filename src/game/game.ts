@@ -53,7 +53,7 @@ function detect(lm:Lm[],i:number,ex:string,mult:number){
 
 // Other game modes (src/sprint) take over after the ready gate: start() replaces startGame(), reset() runs in resetGame(),
 // shown() = its result screen is up (back closes it like #end). null = the rep game.
-export interface GameMode{start():void;reset():void;shown():boolean}
+export interface GameMode{start():void;reset():void;shown():boolean;tv?:boolean} // tv: the mode publishes to the TV board (cast.ts)
 let flowMode:GameMode|null=null;
 const inGameEntry=()=>!!history.state?.game;
 export async function startFlow(mode:GameMode|null=null){
@@ -75,7 +75,7 @@ export async function startFlow(mode:GameMode|null=null){
     if(!inGameEntry())history.pushState({d:depth()+1,game:1},"","#/zaidimas");
     document.body.classList.toggle("solo",S.players===1);
     readyRoot.classList.remove("hide");
-    if(!mode)screenPhase("ready"); // the TV/laptop shows "Rankos aukštyn" while the gate runs (rep game only, not sprint)
+    if(!mode||mode.tv)screenPhase("ready"); // the TV/laptop shows "Rankos aukštyn" while the gate runs (rep game + boxing, not sprint)
     keepScreenAwake();
     loadingRoot.classList.add("hide");
     readying=true;
@@ -176,7 +176,7 @@ export function resetGame(){
   $("#goTxt").textContent=t("setup.start");$("#go").removeAttribute("aria-busy");
 }
 const afterGameShown=()=>!$("#end").classList.contains("hide")||!$("#clips").classList.contains("hide")||!!flowMode?.shown();
-document.querySelectorAll<HTMLElement>("[data-again]").forEach(b=>b.onclick=()=>{resetGame();startFlow()});
+document.querySelectorAll<HTMLElement>("[data-again]").forEach(b=>b.onclick=()=>{const m=flowMode;resetGame();startFlow(m)}); // #clips after boxing -> boxing again
 document.querySelectorAll<HTMLElement>("[data-home]").forEach(b=>b.onclick=()=>{resetGame();screenPhase("idle");document.body.classList.remove("ingame");home()});
 setBackHandler(()=>{
   if(S.running){history.pushState({d:depth()+1,game:1},"","#/zaidimas");return true} // ponytail: no exit mid-game (max 3 min)

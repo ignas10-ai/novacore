@@ -33,6 +33,12 @@ export const sfx={
   step:(i:number)=>tone(i?150:120,.045,.09,"sine"), // sprint footfall
   gun:()=>{noise(.32,.5);tone(90,.18,.3,"sine");buzz(80)}, // sprint start
   finish:()=>[523,659,784,1046].forEach((f,k)=>tone(f,k===3?.55:.14,.2,"triangle",k*.13)),
+  // Boksas (src/boxing)
+  punch:(i:number)=>{noise(.07,.32);tone(i?200:160,.09,.22);buzz(28)},
+  gold:()=>{noise(.06,.25);[1046,1318,1568].forEach((f,k)=>tone(f,.12,.14,"triangle",k*.06));buzz(45)},
+  bomb:()=>{noise(.35,.55);tone(70,.3,.32,"sawtooth");buzz(160)},
+  miss:()=>tone(196,.12,.06,"sine"),
+  bell:()=>{tone(1318,.9,.18,"sine");tone(1976,.6,.08,"sine");tone(1318,.6,.12,"sine",.22)},
 };
 const save=(k:string,on:boolean)=>{try{localStorage.setItem(k,on?"1":"0")}catch(e){}};
 document.addEventListener("click",e=>{

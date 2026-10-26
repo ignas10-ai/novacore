@@ -232,6 +232,9 @@ function toggleCam(){
   refreshCamUI();
 }
 
+// other game modes (src/boxing) override what the board shows (exercise, clock, scores); null = the rep game
+let modeState:(()=>Partial<ScreenState>)|null=null;
+export function setScreenMode(fn:(()=>Partial<ScreenState>)|null){modeState=fn}
 function buildState():ScreenState{
   const now=performance.now();
   const playing=phase==="play", done=phase==="done";
@@ -257,6 +260,7 @@ function buildState():ScreenState{
     cam:camOn,
     sent:Date.now(),
     lang,
+    ...modeState?.(),
   };
 }
 function publish(force=false){
