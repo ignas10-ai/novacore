@@ -5,7 +5,7 @@ import {S} from "../game/state.ts";
 import {$} from "../ui/dom.ts";
 import {refresh} from "../ui/router.ts";
 import type {Game} from "./stats.ts";
-import {t,dec,locale} from "../i18n/i18n.ts";
+import {t,tn,dec,locale} from "../i18n/i18n.ts";
 
 const HIST_KEY="novacore.history", HIST_MAX=50, HIST_SHOW=10;
 export function loadHist():Game[]{try{const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");return Array.isArray(h)?h:[]}catch(e){return []}}
@@ -24,10 +24,12 @@ export function histItem(g:Game,i:number,best:number[]){
   const when=document.createElement("span");when.className="when";when.dataset.rec=t("prof.best"); // .best badge (CSS ::after)
   when.textContent=new Date(g.t).toLocaleString(locale(),{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
   const what=document.createElement("span");what.className="what";
-  const sprint=g.mode==="sprint", boxing=g.mode==="boxing";
-  what.textContent=boxing?t("hist.boxing",{mode:t(g.players===1?"mode.solo":"mode.duel"),n:g.duration}):sprint?t("hist.sprint",{mode:t(g.players===1?"mode.solo":"mode.duel")}):t("hist.game",{mode:t(g.players===1?"mode.Solo":"mode.Duel"),min:Math.round(g.duration/60),ex:(g.ex||[]).map(exName).join(", ")});
+  const sprint=g.mode==="sprint", boxing=g.mode==="boxing", lj=g.mode==="longjump";
+  what.textContent=lj?tn("hist.longjump",g.players):boxing?t("hist.boxing",{mode:t(g.players===1?"mode.solo":"mode.duel"),n:g.duration}):sprint?t("hist.sprint",{mode:t(g.players===1?"mode.solo":"mode.duel")}):t("hist.game",{mode:t(g.players===1?"mode.Solo":"mode.Duel"),min:Math.round(g.duration/60),ex:(g.ex||[]).map(exName).join(", ")});
   const pts=document.createElement("span");pts.className="pts";
-  for(let p=0;p<g.players;p++){const b=document.createElement("b");b.className=`d p${p+1}`;const s=g.times?.[p];b.textContent=boxing?String(g.pts?.[p]??0):sprint?(s!=null?`${dec(s,2)} s`:"–"):String(g.score[p]??0);pts.append(b)}
+  // long jump: 1-4 players -> one number, the longest valid jump of the series
+  if(lj){const b=document.createElement("b");b.className="d p1";const d=Math.max(0,...(g.jumps||[]).flat().map(x=>x??0));b.textContent=d?`${dec(d,2)} m`:"X";pts.append(b)}
+  else for(let p=0;p<g.players;p++){const b=document.createElement("b");b.className=`d p${p+1}`;const s=g.times?.[p];b.textContent=boxing?String(g.pts?.[p]??0):sprint?(s!=null?`${dec(s,2)} s`:"–"):String(g.score[p]??0);pts.append(b)}
   li.append(when,what,pts);
   return li;
 }

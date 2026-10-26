@@ -39,6 +39,8 @@
   --yellow:#FFC61A;      /* streaks, records, multiplier, celebration – never as text on white */
   --yellow-ink:#8A5F00;
   --yellow-tint:#FFF2C7;
+  --green:#16B67A;       /* 4th player colour (Šuolis į tolį party mode) – like yellow, never as small text */
+  --green-ink:#0B7A50;
   --on-color:#fff;
   /* roles */
   --accent:var(--red);--on-accent:var(--on-color);

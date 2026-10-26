@@ -17,7 +17,7 @@ export function layout(W:number,H:number,dpr:number):Layout{
 // palette (scene only; UI colours stay in main.css tokens)
 const C={skyTop:"#A9D3FF",skyBot:"#E6F2FF",roof:"#1E2552",stand:["#2B3470","#323C7E","#28306A"],track:"#D9604A",trackDark:"#C24F3C",
   line:"rgba(255,255,255,.92)",grass:"#7CC36E",grassDark:"#6BB15F",ink:"#14183A",crowd:["#FF3B3B","#2F6BFF","#FFC61A","#FFFFFF","#FF4F93","#12B886","#1FB0EA","#F4C3A0","#A86A45"]};
-const BOARDS:[string,string,string][]=[["#14183A","#FFFFFF","NOVACORE"],["#FF3B3B","#FFFFFF",tr("sp.board")],["#FFC61A","#14183A","NOVACORE"],["#2F6BFF","#FFFFFF",tr("sp.boardRun")]];
+const boardSet=(a:string,b:string):[string,string,string][]=>[["#14183A","#FFFFFF","NOVACORE"],["#FF3B3B","#FFFFFF",a],["#FFC61A","#14183A","NOVACORE"],["#2F6BFF","#FFFFFF",b]];
 export const SKEW=.28; // lines across the lanes lean back with depth (x shift per px of track depth)
 
 let L:Layout, skyG:CanvasGradient, trackG:CanvasGradient, stands:HTMLCanvasElement, boards:HTMLCanvasElement, grass:HTMLCanvasElement;
@@ -25,8 +25,10 @@ const off=(w:number,h:number)=>{const c=document.createElement("canvas");c.width
 // seeded random so the crowd looks the same every race
 let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
 
-export function build(ctx:CanvasRenderingContext2D,l:Layout){
+// boardTexts = the two ad board texts (the long jump passes its own)
+export function build(ctx:CanvasRenderingContext2D,l:Layout,boardTexts?:[string,string]){
   L=l;seed=7;
+  const BOARDS=boardSet(...(boardTexts??[tr("sp.board"),tr("sp.boardRun")]));
   skyG=ctx.createLinearGradient(0,0,0,L.boardsTop);skyG.addColorStop(0,C.skyTop);skyG.addColorStop(1,C.skyBot);
   trackG=ctx.createLinearGradient(0,L.trackTop,0,L.trackBot);trackG.addColorStop(0,C.trackDark);trackG.addColorStop(.3,C.track);trackG.addColorStop(1,"#E2735C");
   // stands: stepped tiers, crowd heads + shirts, soft blur (depth of field), roof edge with floodlights
@@ -73,12 +75,17 @@ function across(ctx:CanvasRenderingContext2D,m:number,cam:number,w:number){
   ctx.beginPath();ctx.moveTo(x+th*SKEW,L.trackTop);ctx.lineTo(x+th*SKEW+w,L.trackTop);ctx.lineTo(x+w,L.trackBot);ctx.lineTo(x,L.trackBot);ctx.closePath();ctx.fill();
 }
 const laneLines=[0,.5,1];
-export function drawBack(ctx:CanvasRenderingContext2D,cam:number){
-  const {W,trackTop:tt,trackBot:tb}=L,th=tb-tt;
+// sky, stands, ad boards and the track surface (also the long jump backdrop, src/longjump)
+export function drawSky(ctx:CanvasRenderingContext2D,cam:number){
+  const {W,trackTop:tt,trackBot:tb}=L;
   ctx.fillStyle=skyG;ctx.fillRect(0,0,W,L.standsTop+2);
   strip(ctx,stands,cam,.22,L.standsTop,L.boardsTop-L.standsTop);
   strip(ctx,boards,cam,.62,L.boardsTop,L.boardsH);
-  ctx.fillStyle=trackG;ctx.fillRect(0,tt,W,th);
+  ctx.fillStyle=trackG;ctx.fillRect(0,tt,W,tb-tt);
+}
+export function drawBack(ctx:CanvasRenderingContext2D,cam:number){
+  const {W,trackTop:tt,trackBot:tb}=L,th=tb-tt;
+  drawSky(ctx,cam);
   ctx.fillStyle=C.line;
   for(const f of laneLines)ctx.fillRect(0,tt+th*(.04+f*.9)-1.5,W,3);
   // 10 m ticks on the near edge, painted metre numbers at 25/50/75, start + finish lines
