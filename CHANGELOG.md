@@ -7,6 +7,12 @@
 ## 2026-10-26 — Google Play grafika (#6)
 
 - **`npm run store`** (`tools/store-assets.mjs`): pats paleidžia Vite, nufotografuoja tikrus programėlės ekranus ir sudeda Play parduotuvės grafiką į `_playthrough/store/`: 512×512 ikona (Raudono galva, be pavadinimo), 1024×500 viršelis (LT + EN, maskotai VS), po 5 kadrus 1080×1920 su antrašte (LT + EN): pradžia, šuolis į tolį ore, 4 žaidėjų rezultatai, žaidimų sąrašas, pratimai. Kamera – e2e klipas su mūsų maskotu, jokio tikro žmogaus. Pavadinimas imamas iš `manifest.webmanifest`, tad pervadinus (#8) užtenka paleisti iš naujo.
+## 2026-10-26 — TV kamera: ryškus vaizdas dideliame ekrane (issue #9, šaka `martynas/9-tv-camera-quality`)
+
+- **Kas buvo blogai:** telefonas kamerą (portrete 1080×1920) įspausdavo į fiksuotą 1280×720 drobę su juodomis juostomis – realiai teliko ~400×720 taškų, o TV dar ištempdavo iki viso ekrano. Srautas ėjo tik 20 fps ir be bitrate nustatymų (WebRTC numatytasis ~1–2 Mbps), todėl vaizdas atrodė neryškus ir „blokinis“.
+- **Dabar:** srautas išlaiko kameros proporcijas (portrete iki 720×1280, gulsčiai iki 1280×720, be juostų), 30 fps, 4,5 Mbps, `contentHint="detail"` ir `maintain-resolution` – silpnesnis telefonas geriau nuleidžia kadrų dažnį nei rezoliuciją. TV rodo visą kadrą (`object-fit:contain`) ant neryškaus to paties vaizdo fono (`#bsCamBg`, 96×54 kopija su CSS blur), o ne apkirptą/numestą juostą.
+- **Patikrinta:** `npm test` (292 testai) ir `npm run build`. **Reikia tikro telefono + TV:** WebRTC su tikra kamera automatiškai netestuojamas, todėl verta akimis patikrinti tame pačiame Wi-Fi.
+
 ## 2026-10-26 — Google Play: „Ištrinti mano duomenis“ + privatumo politika (šaka `privacy`)
 
 - **Profilis → Nustatymai:** „Privatumo politika“ (atidaro `privacy.html`, Android'e – svetainės kopiją) ir „Ištrinti mano duomenis“: patvirtinimas → `delete_my_data()` serveryje (dvikovos, savo sukurtos kompanijos, profilis su žaidimais ir narystėmis, anoniminis vartotojas) → išvalomi visi `novacore.*` ir Supabase raktai telefone → programėlė atsidaro iš naujo. Jei serveris neatsako – nieko neištrinama, rodoma klaida. LT + EN.

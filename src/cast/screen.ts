@@ -18,13 +18,14 @@ const root=$("#screen"), s1=$("#bsS1"), s2=$("#bsS2"), p1Label=$("#bsP1Label"),
   staleEl=$("#bsStale"), liveEl=$("#bsLive"), liveTxt=$("#bsLiveTxt"), footCode=$("#bsFootCode"),
   waitLine=$("#bsWaiting"), waitCode=$("#bsWaitCode"), errEl=$("#bsErr"),
   codeIn=$<HTMLInputElement>("#bsCodeIn"), form=$<HTMLFormElement>("#bsConnect"), fsBtn=$("#bsFs"),
-  camVid=$<HTMLVideoElement>("#bsCamVid"), camBtn=$<HTMLButtonElement>("#bsCam"), camBtnTxt=$("#bsCamTxt");
+  camVid=$<HTMLVideoElement>("#bsCamVid"), camBg=$<HTMLCanvasElement>("#bsCamBg"), camBtn=$<HTMLButtonElement>("#bsCam"), camBtnTxt=$("#bsCamTxt");
 
 let room="", bc:BroadcastChannel|null=null, ch:RealtimeChannel|null=null;
 let state:ScreenState|null=null, baseAt=0, baseLeft=0, lastSeenAt=0, seenAny=false, demoId="";
 let hello=0, ticker=0, lastSecond=-1, prevScore:[number,number]=[0,0], mounted=false, tvJoined=false;
 const tPeer=(globalThis.crypto?.randomUUID?.()||`tv-${Math.random().toString(36).slice(2,10)}`).slice(0,36);
 let tpc:RTCPeerConnection|null=null, tCamWanted=false, tRemoteSet=false, tPending:RTCIceCandidateInit[]=[];
+let bgTimer=0; // ambient blurred backdrop, sampled from the video at 2 fps (no second video decoder)
 const fmt=(sec:number)=>{const n=Math.max(0,Math.ceil(sec));return `${Math.floor(n/60)}:${String(n%60).padStart(2,"0")}`};
 
 function cleanup(){
@@ -103,9 +104,28 @@ function stopCamView(){
   const s=camVid.srcObject as MediaStream|null;
   if(s)s.getTracks().forEach(t=>{try{t.stop()}catch(e){}});
   camVid.srcObject=null;
+  clearInterval(bgTimer);bgTimer=0;
+  try{camBg.getContext("2d")?.clearRect(0,0,camBg.width,camBg.height)}catch(e){}
   root.dataset.cam="0";
   tCamWanted=false;tRemoteSet=false;tPending=[];
   updateCamBtn();
+}
+// The stream keeps its own (portrait) aspect now, so the TV shows the whole frame instead of a cropped/letterboxed
+// strip. A 96×54 copy of the video, blurred and stretched behind it, fills the sides with the room itself.
+function paintBg(){
+  if(camVid.readyState<2)return;
+  const vw=camVid.videoWidth,vh=camVid.videoHeight;
+  if(!vw||!vh)return;
+  const c=camBg.getContext("2d");
+  if(!c||!camBg.width||!camBg.height)return;
+  const s=Math.max(camBg.width/vw,camBg.height/vh),dw=vw*s,dh=vh*s;
+  c.drawImage(camVid,(camBg.width-dw)/2,(camBg.height-dh)/2,dw,dh);
+}
+function startBg(){
+  clearInterval(bgTimer);
+  camBg.width=96;camBg.height=54;
+  paintBg();
+  bgTimer=window.setInterval(paintBg,500);
 }
 async function onCamOffer(msg:any){
   if(!room||msg.code!==room||!msg.sdp)return;
@@ -122,6 +142,7 @@ async function onCamOffer(msg:any){
       if(tpc!==connection)return;
       camVid.srcObject=e.streams[0]||new MediaStream([e.track]);
       camVid.play().catch(()=>{});
+      startBg();
       root.dataset.cam="1";
       updateCamBtn();
     };

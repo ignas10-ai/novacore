@@ -1,6 +1,9 @@
 # Debug APK for testers:
 # GitHub -> Releases -> latest Debug Build
 # Obtainium can monitor the GitHub Releases page.
+#
+# Release AAB for Google Play:
+# GitHub -> Actions -> run -> Artifacts -> novacore-release-aab
 
 name: Android APK
 
@@ -19,6 +22,10 @@ concurrency:
 jobs:
   apk:
     runs-on: ubuntu-latest
+
+    env:
+      # Read by android/app/build.gradle (versionCode / versionName).
+      VERSION_CODE: ${{ github.run_number }}
 
     steps:
       - uses: actions/checkout@v7
@@ -58,6 +65,7 @@ jobs:
         run: chmod +x gradlew
         working-directory: android
 
+      # ---------- Debug APK (testers) ----------
       - run: ./gradlew assembleDebug --no-daemon
         working-directory: android
 
@@ -69,7 +77,32 @@ jobs:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
 
-      # Publish the APK to GitHub Releases.
+      # ---------- Release AAB (Google Play) ----------
+      - name: Restore release keystore
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          echo "RELEASE_KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+
+      - name: Build release AAB
+        run: ./gradlew bundleRelease --no-daemon
+        working-directory: android
+        env:
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+
+      # Not published to GitHub Releases on purpose: the AAB is for Play only.
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: novacore-release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 30
+
+      # ---------- Publish debug APK to GitHub Releases ----------
       # A new release is created for every successful workflow run.
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

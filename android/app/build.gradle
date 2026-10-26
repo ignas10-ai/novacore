@@ -3,6 +3,12 @@ apply plugin: 'com.android.application'
 // appId / appName live only in capacitor.config.json (repo root); the launcher label and package come from there
 def capConfig = new groovy.json.JsonSlurper().parse(rootProject.file('../capacitor.config.json'))
 
+// CI passes github.run_number as VERSION_CODE; local builds fall back to 1.
+def ciVersionCode = (System.getenv("VERSION_CODE") ?: "1").toInteger()
+
+// Release signing comes from env vars set by the CI workflow. Locally (no env) the release build stays unsigned.
+def releaseKeystorePath = System.getenv("RELEASE_KEYSTORE_PATH")
+
 android {
     namespace = "lt.novacore.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -10,8 +16,8 @@ android {
         applicationId capConfig.appId
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode ciVersionCode
+        versionName "1.0.${ciVersionCode}"
         resValue "string", "app_name", capConfig.appName
         resValue "string", "title_activity_main", capConfig.appName
         resValue "string", "package_name", capConfig.appId
@@ -33,12 +39,24 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // Private upload key for Google Play, injected by CI from GitHub Secrets. Never commit it.
+        release {
+            if (releaseKeystorePath) {
+                storeFile file(releaseKeystorePath)
+                storePassword System.getenv("RELEASE_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
+            if (releaseKeystorePath) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
