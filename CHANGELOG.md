@@ -5,6 +5,11 @@
 - **Kas buvo blogai:** sprintas 100 m visai neskelbė būsenos TV lentai, todėl televizorius likdavo „Laukiama“ arba sename ekrane. Ilgio šuolio TV lenta siuntė `duration:1,left:0` – laikrodis rodė 0:00, o „Rodyti per TV“ mygtukas buvo tik Pradžioje ir pratimų nustatymuose.
 - **Dabar:** sprintas skelbia `ready → play → done` ir TV rodo gyvus metrus (P1/P2), 60 s laikrodį, žingsnius bei nugalėtoją; ilgio šuolio TV laikrodis rodo bandymo laiką (16 s), ne 0:00. Visų trijų mini žaidimų nustatymų antraštėse yra „Rodyti per TV“ mygtukas (`[data-tv]`, deleguotas `cast.ts`), o sprintui TV demonstracija naudoja bėgančio personažo poziciją.
 - **Patikrinta:** `npm test` (292), `npm run build`, headless Chrome per BroadcastChannel: sprintas TV `ready → play` (1:00), ilgio šuolis `play` (0:16), boksas `Boksas`, kast mygtukas atidaro lapą. **Reikia tikro telefono + TV:** WebRTC kamera tame pačiame tinkle (headless testas jos nepatvirtina).
+## 2026-10-26 — TV kamera: ryškus vaizdas dideliame ekrane (issue #9, šaka `martynas/9-tv-camera-quality`)
+
+- **Kas buvo blogai:** telefonas kamerą (portrete 1080×1920) įspausdavo į fiksuotą 1280×720 drobę su juodomis juostomis – realiai teliko ~400×720 taškų, o TV dar ištempdavo iki viso ekrano. Srautas ėjo tik 20 fps ir be bitrate nustatymų (WebRTC numatytasis ~1–2 Mbps), todėl vaizdas atrodė neryškus ir „blokinis“.
+- **Dabar:** srautas išlaiko kameros proporcijas (portrete iki 720×1280, gulsčiai iki 1280×720, be juostų), 30 fps, 4,5 Mbps, `contentHint="detail"` ir `maintain-resolution` – silpnesnis telefonas geriau nuleidžia kadrų dažnį nei rezoliuciją. TV rodo visą kadrą (`object-fit:contain`) ant neryškaus to paties vaizdo fono (`#bsCamBg`, 96×54 kopija su CSS blur), o ne apkirptą/numestą juostą.
+- **Patikrinta:** `npm test` (292 testai) ir `npm run build`. **Reikia tikro telefono + TV:** WebRTC su tikra kamera automatiškai netestuojamas, todėl verta akimis patikrinti tame pačiame Wi-Fi.
 
 ## 2026-10-26 — Google Play: „Ištrinti mano duomenis“ + privatumo politika (šaka `privacy`)
 

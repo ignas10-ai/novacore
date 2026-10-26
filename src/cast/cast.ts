@@ -116,18 +116,36 @@ function sendCam(event:string,data:Record<string,any>={}){
   try{bc?.postMessage({code,signal:event,payload:msg})}catch(e){}
   if(ch&&joined){try{ch.send({type:"broadcast",event,payload:msg}).catch(()=>{})}catch(e){}}
 }
-// The phone's live canvas already has the camera + skeleton; copy it into a 720p canvas so the TV gets a small,
-// stable 20 fps stream instead of the full camera resolution (the game/pose/clip work must stay smooth).
+// The phone's live canvas already has the camera + skeleton. It is copied into a canvas that matches the CAMERA'S
+// OWN aspect: the old fixed 1280×720 letterboxed a portrait 1080×1920 camera down to ~400×720 of real pixels, so a
+// TV got a tiny, blurry strip with huge dark bars (issue #9). Up to 720×1280/1280×720, 30 fps, high bitrate, and
+// resolution is kept over framerate so the TV picture stays sharp instead of turning into blocks on a weak phone.
+const CAM_FPS=30, CAM_BITRATE=4_500_000, CAM_LONG=1280, CAM_SHORT=720;
+function camSize(w:number,h:number){
+  const s=Math.min(1,CAM_LONG/Math.max(w,h),CAM_SHORT/Math.min(w,h));
+  return {w:Math.max(2,Math.round(w*s/2)*2),h:Math.max(2,Math.round(h*s/2)*2)}; // even sizes for H.264
+}
 function drawCam(){
   const src=document.getElementById("cv") as HTMLCanvasElement|null;
   if(!camCv||!src||!src.width||!src.height)return;
   const c=camCv.getContext("2d");
   if(!c)return;
-  const W=camCv.width,H=camCv.height;
-  c.fillStyle="#0D1030";c.fillRect(0,0,W,H);
-  const s=Math.min(W/src.width,H/src.height);
-  const dw=Math.round(src.width*s),dh=Math.round(src.height*s);
-  c.drawImage(src,(W-dw)/2,(H-dh)/2,dw,dh);
+  const size=camSize(src.width,src.height);
+  if(camCv.width!==size.w||camCv.height!==size.h){camCv.width=size.w;camCv.height=size.h}
+  c.imageSmoothingEnabled=true;c.imageSmoothingQuality="high";
+  c.drawImage(src,0,0,camCv.width,camCv.height);
+}
+// Ask the encoder to keep the resolution and give the 720p picture enough bitrate (the WebRTC default is ~1-2 Mbps).
+function tuneSender(sender:RTCRtpSender,stream:MediaStream){
+  try{
+    const track=stream.getTracks()[0];
+    if(track)try{track.contentHint="detail"}catch(e){}
+    const p=sender.getParameters();
+    p.degradationPreference="maintain-resolution";
+    if(!p.encodings?.length)p.encodings=[{active:true}];
+    for(const enc of p.encodings){enc.maxBitrate=CAM_BITRATE;enc.maxFramerate=CAM_FPS;enc.scaleResolutionDownBy=1}
+    sender.setParameters(p).catch(()=>{});
+  }catch(e){}
 }
 async function startCamCast(){
   if(!code||pc||!camOn||(phase!=="ready"&&phase!=="play"))return;
@@ -135,12 +153,13 @@ async function startCamCast(){
   if(typeof RTCPeerConnection==="undefined"){camOn=false;refreshCamUI();return}
   const src=document.getElementById("cv") as HTMLCanvasElement|null;
   if(!src||typeof src.captureStream!=="function"){camOn=false;refreshCamUI();return}
-  camCv=document.createElement("canvas");camCv.width=1280;camCv.height=720;
+  const size=camSize(src.width||1280,src.height||720);
+  camCv=document.createElement("canvas");camCv.width=size.w;camCv.height=size.h;
   const canvas=camCv;
   drawCam();
-  camDraw=window.setInterval(drawCam,50);
+  camDraw=window.setInterval(drawCam,Math.round(1000/CAM_FPS));
   try{
-    const stream=canvas.captureStream(20);
+    const stream=canvas.captureStream(CAM_FPS);
     camStream=stream;
     const connection=new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});
     pc=connection;
@@ -153,7 +172,7 @@ async function startCamCast(){
         publish(true);refreshCamUI();
       }
     };
-    for(const t of stream.getTracks())connection.addTrack(t,stream);
+    for(const t of stream.getTracks())tuneSender(connection.addTrack(t,stream),stream);
     const offer=await connection.createOffer();
     await connection.setLocalDescription(offer);
     if(gen!==camGen||pc!==connection)return;
