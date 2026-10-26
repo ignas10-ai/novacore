@@ -3,7 +3,7 @@
 // the landing print, the measuring tape and the judge's flag. World x in metres from the start; the foul line at
 // LINE_M. Own zoom (ppm) so the whole jump fits; the backdrop tiles keep their own parallax.
 import {SKEW,drawSky,drawFront,type Layout} from "../sprint/scene.ts";
-import {LINE_M,ZONE_M,PIT_M} from "./logic.ts";
+import {LINE_M,ZONE_M,APPROACH_M,PIT_M} from "./logic.ts";
 import {dec} from "../i18n/i18n.ts";
 
 const GRASS="#7CC36E", GRASS_D="#71B964", TRACK="#D9604A", INK="#14183A", SAND="#F3D49C", SAND_D="#E2B978", EDGE="#B9844C", YEL="#FFC61A", RED="#FF3B3B";
@@ -36,8 +36,10 @@ export function drawField(ctx:CanvasRenderingContext2D,V:View,F:FieldInfo){
   // metre ticks on the near edge every 5 m before the board
   ctx.fillStyle="rgba(255,255,255,.75)";
   for(let m=5;m<LINE_M;m+=5){const x=X(V,m,tb);if(x>-20&&x<W+20)ctx.fillRect(x,tb-th*.05,3,th*.05)}
-  // take-off zone: yellow band + chevrons, brighter while the jumper is in it (F.zone 0..1)
-  ctx.fillStyle=`rgba(255,198,26,${.22+.3*F.zone})`;quad(ctx,V,LINE_M-ZONE_M,LINE_M-.2,R0,R1);ctx.fill();
+  // approach band orange -> yellow, then the green take-off zone + chevrons, brighter while the jumper is in it (F.zone 0..1)
+  const a0=LINE_M-ZONE_M-APPROACH_M, N=16;
+  for(let i=0;i<N;i++){const f=i/(N-1);ctx.fillStyle=`rgba(255,${Math.round(138+60*f)},${Math.round(31-5*f)},${.55+.25*f})`;quad(ctx,V,a0+APPROACH_M*i/N,a0+APPROACH_M*(i+1)/N+.02,R0,R1);ctx.fill()}
+  ctx.fillStyle=`rgba(22,182,122,${.8+.2*F.zone})`;quad(ctx,V,LINE_M-ZONE_M,LINE_M-.2,R0,R1);ctx.fill();
   ctx.strokeStyle=`rgba(255,255,255,${.55+.4*F.zone})`;ctx.lineWidth=Math.max(2,V.ppm*.06);ctx.lineCap="round";ctx.lineJoin="round";
   for(let k=0;k<3;k++){const m=LINE_M-ZONE_M+.35+k*.55,ym=tt+th*(R0+R1)/2,ya=tt+th*(R0+.12),yb=tt+th*(R1-.12);
     ctx.beginPath();ctx.moveTo(X(V,m,ya),ya);ctx.lineTo(X(V,m+.28,ym),ym);ctx.lineTo(X(V,m,yb),yb);ctx.stroke()}

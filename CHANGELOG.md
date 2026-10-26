@@ -1,5 +1,12 @@
 # Pakeitimų žurnalas
 
+## 2026-10-26 — Šuolis į tolį: matoma atsispyrimo zona (Martyno pastaba, #1)
+
+- Takas prieš liniją: 8 m juosta, kuri ryškėja iš oranžinės į geltoną, tada paskutiniai 2,5 m žali (anksčiau buvo tik 2 m geltona). Viršuje – oranžinis „Ruoškis…“, žalioje zonoje didelis žalias „Šok!“. Tas pats spalvų perėjimas ir mažame žemėlapyje.
+- 360 px telefone viršutinėje juostoje telpa visas vardas („Raudonas“, ne „Raudo…“).
+## 2026-10-26 — Google Play grafika (#6)
+
+- **`npm run store`** (`tools/store-assets.mjs`): pats paleidžia Vite, nufotografuoja tikrus programėlės ekranus ir sudeda Play parduotuvės grafiką į `_playthrough/store/`: 512×512 ikona (Raudono galva, be pavadinimo), 1024×500 viršelis (LT + EN, maskotai VS), po 5 kadrus 1080×1920 su antrašte (LT + EN): pradžia, šuolis į tolį ore, 4 žaidėjų rezultatai, žaidimų sąrašas, pratimai. Kamera – e2e klipas su mūsų maskotu, jokio tikro žmogaus. Pavadinimas imamas iš `manifest.webmanifest`, tad pervadinus (#8) užtenka paleisti iš naujo.
 ## 2026-10-26 — TV lenta sporto mini žaidimuose (issue #11, šaka `martynas/11-tv-minigames`)
 
 - **Kas buvo blogai:** sprintas 100 m visai neskelbė būsenos TV lentai, todėl televizorius likdavo „Laukiama“ arba sename ekrane. Ilgio šuolio TV lenta siuntė `duration:1,left:0` – laikrodis rodė 0:00, o „Rodyti per TV“ mygtukas buvo tik Pradžioje ir pratimų nustatymuose.

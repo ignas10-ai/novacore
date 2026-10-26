@@ -18,7 +18,8 @@
 import {runner,onStep,advance,type Runner} from "../sprint/speed.ts";
 
 export const LINE_M=30;        // runway to the foul line: ~4-6 s at 2-3 steps/s (sprint model with its acceleration)
-export const ZONE_M=2;         // highlighted take-off zone before the line
+export const ZONE_M=2.5;       // green take-off zone before the line (~0.4 s at full speed: a reaction to "green" lands near the line)
+export const APPROACH_M=8;     // orange -> yellow approach band before it, so the jump is expected, not a surprise (Martynas, #1)
 export const PIT_M=0.6;        // sand starts this far past the line
 export const ATTEMPTS=3;
 export const D_MAX=8.95, D_BASE=1.6, D_K=0.64;

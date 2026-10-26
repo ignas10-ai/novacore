@@ -636,6 +636,7 @@ export const lt={
   "lj.leader":"Lyderis",
   "lj.best":"Geriausias",
   "lj.jumpNow":"Šok!",
+  "lj.getReady":"Ruoškis…",
   "lj.now":"Dabar šoka",
   "lj.attempt":"Bandymas {n} iš {total}",
   "lj.attemptN":"{n} bandymas",

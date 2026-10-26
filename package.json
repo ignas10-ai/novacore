@@ -9,6 +9,7 @@
     "test": "tsc && vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "store": "node tools/store-assets.mjs",
     "check:live": "node tools/social-check.mjs && node tools/duel-check.mjs && node tools/delete-check.mjs",
     "test:all": "npm test && npm run test:e2e"
   },
