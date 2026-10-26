@@ -55,7 +55,7 @@ export function startRec(){
   }
 }
 
-function openClips(){
+export function openClips(){ // also from Boksas results (src/boxing)
   $("#end").classList.add("hide");
   clipsRoot.classList.remove("hide");
   if(clipState==="ready"){

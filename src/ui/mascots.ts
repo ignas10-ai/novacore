@@ -8,7 +8,7 @@
 export type Who="r"|"b";
 export type Mood="fierce"|"smirk"|"happy"|"sad";
 export type ExId="squat"|"jack"|"knees"|"squatjump"|"sidestep"|"lunge"|"crunch";
-export type Pose="idle"|"vs"|"win"|"lose"|ExId;
+export type Pose="idle"|"vs"|"win"|"lose"|"guard"|"punch"|ExId; // guard / punch = Boksas (src/boxing)
 
 const INK="#14183A";
 const C={r:{body:"#FF3B3B",band:"#FFC61A"},b:{body:"#2F6BFF",band:"#FFFFFF"}};
@@ -70,12 +70,16 @@ const POSES:Record<Pose,P>={
   sidestep:{gl:[50,146],gr:[150,146]},
   lunge:{gl:[50,146],gr:[150,146]},
   crunch:{gl:[56,128],gr:[144,128]},
+  guard:{gl:[52,136],gr:[148,136]},
+  punch:{gl:[58,138],gr:[186,98]}, // front glove jabs toward the side the mascot faces (mirrored for Mėlynas)
 };
 export const EX_IDS:ExId[]=["squat","jack","knees","squatjump","sidestep","lunge","crunch"];
 
 // full-body mascot. anim=true adds the looping exercise / idle animation (CSS, transform-only)
 export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mood?:Mood;label?:string;cls?:string}={}){
-  const p=POSES[pose], f=o.face??(who==="r"?1:-1), c=C[who];
+  const f=o.face??(who==="r"?1:-1), c=C[who];
+  let p=POSES[pose];
+  if(pose==="punch"&&f<0)p={...p,gl:[200-p.gr[0],p.gr[1]],gr:[200-p.gl[0],p.gl[1]]};
   const mood=o.mood||p.mood||(who==="r"?"fierce":"smirk");
   const up=p.up?` transform="${p.up}"`:"";
   const a11y=o.label?`role="img" aria-label="${o.label}"`:`aria-hidden="true"`;
@@ -113,4 +117,4 @@ const ICON:Record<ExId,string>={
 export const exIcon=(id:string)=>`<svg class="ex-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${(ICON as Record<string,string>)[id]||ICON.squat}</svg>`.replace(/<circle /g,'<circle fill="currentColor" stroke="none" ');
 // exercise illustration: alternate red/blue like the picker order (squat red, jack blue, ...)
 export const exWho=(id:string):Who=>EX_IDS.indexOf(id as ExId)%2?"b":"r";
-export const exArt=(id:string,anim=true)=>mascot(exWho(id),(EX_IDS.includes(id as ExId)?id:"idle") as Pose,{anim});
+export const exArt=(id:string,anim=true)=>mascot(exWho(id),(EX_IDS.includes(id as ExId)?id:id==="boxing"?"punch":"idle") as Pose,{anim});

@@ -29,6 +29,16 @@
 @keyframes m-twinkle{from{transform:scale(.7) rotate(0)}to{transform:scale(1.1) rotate(20deg)}}
 @keyframes m-sigh{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
 
+/* Boksas (src/boxing): guard = bouncing on the toes, punch = the front glove jabs (first keyframe = extended, a readable pose) */
+.anim.mp-guard .m-fi{animation:m-bounce .5s ease-in-out infinite alternate}
+.anim.mp-guard .m-glove .m-gl{animation:m-bob .5s var(--ease-ui,ease) infinite alternate}
+.anim.mp-guard .m-glove.r .m-gl{animation-delay:-.25s}
+.anim.m-r.mp-punch .m-glove.r .m-gl{animation:m-jab-r .8s var(--ease-smooth-out,ease) infinite}
+.anim.m-b.mp-punch .m-glove.l .m-gl{animation:m-jab-l .8s var(--ease-smooth-out,ease) infinite}
+@keyframes m-bounce{from{transform:translateY(0)}to{transform:translateY(-5px)}}
+@keyframes m-jab-r{0%,30%{transform:translate(0,0)}65%{transform:translate(-70px,38px) scale(.92)}100%{transform:translate(0,0)}}
+@keyframes m-jab-l{0%,30%{transform:translate(0,0)}65%{transform:translate(70px,38px) scale(.92)}100%{transform:translate(0,0)}}
+
 /* ---- exercises ---- */
 /* squat: upper body drops, legs fold, gloves come together in front */
 .anim.mp-squat .m-ui{animation:mx-sq-up 1.6s var(--ease-bounce,ease) infinite}
