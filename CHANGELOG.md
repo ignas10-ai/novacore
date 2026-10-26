@@ -1,5 +1,11 @@
 # Pakeitimų žurnalas
 
+## 2026-10-26 — TV lenta sporto mini žaidimuose (issue #11, šaka `martynas/11-tv-minigames`)
+
+- **Kas buvo blogai:** sprintas 100 m visai neskelbė būsenos TV lentai, todėl televizorius likdavo „Laukiama“ arba sename ekrane. Ilgio šuolio TV lenta siuntė `duration:1,left:0` – laikrodis rodė 0:00, o „Rodyti per TV“ mygtukas buvo tik Pradžioje ir pratimų nustatymuose.
+- **Dabar:** sprintas skelbia `ready → play → done` ir TV rodo gyvus metrus (P1/P2), 60 s laikrodį, žingsnius bei nugalėtoją; ilgio šuolio TV laikrodis rodo bandymo laiką (16 s), ne 0:00. Visų trijų mini žaidimų nustatymų antraštėse yra „Rodyti per TV“ mygtukas (`[data-tv]`, deleguotas `cast.ts`), o sprintui TV demonstracija naudoja bėgančio personažo poziciją.
+- **Patikrinta:** `npm test` (292), `npm run build`, headless Chrome per BroadcastChannel: sprintas TV `ready → play` (1:00), ilgio šuolis `play` (0:16), boksas `Boksas`, kast mygtukas atidaro lapą. **Reikia tikro telefono + TV:** WebRTC kamera tame pačiame tinkle (headless testas jos nepatvirtina).
+
 ## 2026-10-26 — Google Play: „Ištrinti mano duomenis“ + privatumo politika (šaka `privacy`)
 
 - **Profilis → Nustatymai:** „Privatumo politika“ (atidaro `privacy.html`, Android'e – svetainės kopiją) ir „Ištrinti mano duomenis“: patvirtinimas → `delete_my_data()` serveryje (dvikovos, savo sukurtos kompanijos, profilis su žaidimais ir narystėmis, anoniminis vartotojas) → išvalomi visi `novacore.*` ir Supabase raktai telefone → programėlė atsidaro iš naujo. Jei serveris neatsako – nieko neištrinama, rodoma klaida. LT + EN.
