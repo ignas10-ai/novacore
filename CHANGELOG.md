@@ -1,5 +1,14 @@
 # Pakeitimų žurnalas
 
+## 2026-10-26 — automatiniai testai (šaka `tests`)
+
+- **Kam:** kad trys žmonės ir agentai galėtų keisti kodą nesugadindami to, kas veikia. Prieš kiekvieną push – `npm test` (~10–25 s); keičiant ekranus, žaidimo eigą, sprintą, dvikovas ar TV lentą – ir `npm run test:e2e`.
+- **Vienetiniai testai (Vitest):** `npm test` = `tsc` + Vitest. Seni patikrinimai (`test-detect`, `test-stats`, `test-sprint`, `test-cast`) paleidžiami kaip yra, o kiekvienas tikro žmogaus įrašo atvejis iš `tools/replay-check.cjs` tapo atskiru testu. Nauji kraštutiniai atvejai: tuščia istorija, vidurnaktis, laiko persukimas, savaitės riba pirmadienį 00:00, du žaidėjai, NaN / dingę taškai, localStorage, kuris neveikia ar meta klaidą, nuorodos `?g=` / `?c=`, „atgal“ taisyklės, dvikovos laikrodis ir pratimų tvarka.
+- **Pilni prabėgimai (Playwright, Chromium):** įvadas → Pradžia → nustatymai → rankų vartai → žaidimas → rezultatai → klipas → Pradžia; Pratimai, Profilis, Kompanijos; sprintas iki rezultatų; dvikova dviem naršyklėmis; „Rodyti per TV“ lenta. Kamera netikra (ffmpeg iš personažų paveikslėlių), Supabase visada netikras – tikra duomenų bazė neliečiama. Prieinamumo (axe) patikra pagrindiniuose ekranuose: kritinių klaidų nėra, yra kontrasto pastabų.
+- **GitHub Actions:** `.github/workflows/test.yml` paleidžia abu rinkinius kiekvienam push ir PR (Playwright naršyklė talpinama). `android.yml` nekeistas.
+- **Gyvi patikrinimai atskirai:** `npm run check:live` (tikras Supabase). `duel-check` nebe „kartais krenta“: prieš kvietimą laukia serverio pranešimo, kad prenumerata paruošta.
+- **Rastos klaidos (dar nepataisytos, pažymėtos testuose `it.fails`):** vienas NaN kadras visam raundui „užnuodija“ pritūpimų skaičiavimą; kai localStorage užblokuotas, „Mesti iššūkį“ gali pasidalinti nuoroda į žaidimą, kurio serveryje nėra.
+
 ## 2026-10-26 — Sujungta: Martyno „Didelis ekranas“ (master) į `next`
 
 - **Sujungimas:** `origin/master` (Martyno d7ae985 „TV lenta per nuorodą ir kodą“ + 28d496e „Kamera per TV: WebRTC“) į `next`. Konfliktai AGENTS/CHANGELOG/index.html/package.json/game.ts/main.ts/main.css/icons.ts/router.ts išspręsti paliekant abi puses: sprintas, dvikovos, Capacitor „atgal“/be SW, detect-v5 ir TV lenta. `S.exShift` dabar bendras (dvikova – `S.duel.shift()`, kitaip atsitiktinis), todėl TV mato tą patį pratimą; sprinto režimas (`startFlow(SPRINT)`) TV neskelbia `ready`. `npm test` = detect + stats + sprint + cast + replay.

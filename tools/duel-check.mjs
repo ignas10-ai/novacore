@@ -58,10 +58,15 @@ try{
 
   // gyvas kvietimas: B klauso savo inbox
   const live=[];
-  const inbox=B.channel(`inbox:${ids.B}`).on("postgres_changes",{event:"INSERT",schema:"public",table:"duels",filter:`to_user=eq.${ids.B}`},p=>live.push(p.new));
+  let pgReady=false; // Realtime sends system {extension:"postgres_changes",status:"ok"} once the WAL subscription exists on the server
+  const inbox=B.channel(`inbox:${ids.B}`).on("postgres_changes",{event:"INSERT",schema:"public",table:"duels",filter:`to_user=eq.${ids.B}`},p=>live.push(p.new))
+    .on("system",{},p=>{if(p?.extension==="postgres_changes"&&p.status==="ok")pgReady=true});
   channels.push([B,inbox]);
   assert.equal(await subscribe(inbox,"B inbox"),"ok","B inbox kanalas");
-  await sleep(800); // postgres_changes prenumerata sukuriama serveryje šiek tiek vėliau nei SUBSCRIBED
+  // SUBSCRIBED != the server already streams the table: an INSERT right after SUBSCRIBED was sometimes lost (~2/4 runs).
+  // Wait for the server's own "Subscribed to PostgreSQL" system message (+ a short margin); the live assertion below stays strict.
+  await until(()=>pgReady,"B inbox: postgres_changes prenumerata serveryje (system ok)",20000).catch(e=>console.log("!",e.message,"– tęsiama po 3 s"));
+  await sleep(pgReady?300:3000);
 
   const bad=async(p,re,what)=>{const r=await p;assert.ok(r.error&&re.test(r.error.message),`${what}: ${r.error?.message||"be klaidos"}`)};
   await bad(A.rpc("invite_duel",{p_group:gid,p_to:ids.A,p_duration:60,p_exercises:["squat"]}),/duel_self/,"pats sau");
@@ -73,7 +78,7 @@ try{
 
   const d=must(await A.rpc("invite_duel",{p_group:gid,p_to:ids.B,p_duration:60,p_exercises:["squat","jack"]}),"invite_duel");
   assert.equal(d.status,"pending");assert.equal(d.settings.duration,60);assert.deepEqual(d.settings.exercises,["squat","jack"]);assert.equal(typeof d.settings.seed,"number");
-  await until(()=>live.some(x=>x.id===d.id),"B gauna kvietimą gyvai (postgres_changes)");
+  await until(()=>live.some(x=>x.id===d.id),"B gauna kvietimą gyvai (postgres_changes)",20000);
   ok("kvietimas sukurtas ir B gavo jį gyvai");
 
   const pend=must(await B.rpc("pending_duels"),"B pending");

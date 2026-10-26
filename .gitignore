@@ -4,3 +4,7 @@ node_modules/
 dist/
 .env*.local
 tools/art/raw/
+dist-e2e/
+test-results/
+playwright-report/
+test/e2e/.cache/
