@@ -5,13 +5,14 @@
 // "mascots" in main.css; every animated part is an inner <g> so CSS transform never fights the pose transform attribute.
 // Units: viewBox 0 0 200 230, head centre (100,84) r 60, ground at y 216.
 
-export type Who="r"|"b";
+export type Who="r"|"b"|"y"|"g"; // y / g = Geltonas, Žalias (Šuolis į tolį party mode, src/longjump)
 export type Mood="fierce"|"smirk"|"happy"|"sad";
 export type ExId="squat"|"jack"|"knees"|"squatjump"|"sidestep"|"lunge"|"crunch";
 export type Pose="idle"|"vs"|"win"|"lose"|"guard"|"punch"|ExId; // guard / punch = Boksas (src/boxing)
 
 const INK="#14183A";
-const C={r:{body:"#FF3B3B",band:"#FFC61A"},b:{body:"#2F6BFF",band:"#FFFFFF"}};
+const C={r:{body:"#FF3B3B",band:"#FFC61A"},b:{body:"#2F6BFF",band:"#FFFFFF"},y:{body:"#FFC61A",band:"#FF3B3B"},g:{body:"#16B67A",band:"#FFC61A"}};
+const RIGHT=(w:Who)=>w==="r"||w==="y"; // faces right + the fierce default face; b / g face left with the smirk
 const SW=6; // outline width in viewBox units
 
 // headband = the slice of the head circle between two curved edges; computed, so no clipPath ids (they break in
@@ -77,10 +78,10 @@ export const EX_IDS:ExId[]=["squat","jack","knees","squatjump","sidestep","lunge
 
 // full-body mascot. anim=true adds the looping exercise / idle animation (CSS, transform-only)
 export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mood?:Mood;label?:string;cls?:string}={}){
-  const f=o.face??(who==="r"?1:-1), c=C[who];
+  const f=o.face??(RIGHT(who)?1:-1), c=C[who];
   let p=POSES[pose];
   if(pose==="punch"&&f<0)p={...p,gl:[200-p.gr[0],p.gr[1]],gr:[200-p.gl[0],p.gl[1]]};
-  const mood=o.mood||p.mood||(who==="r"?"fierce":"smirk");
+  const mood=o.mood||p.mood||(RIGHT(who)?"fierce":"smirk");
   const up=p.up?` transform="${p.up}"`:"";
   const a11y=o.label?`role="img" aria-label="${o.label}"`:`aria-hidden="true"`;
   return `<svg class="mascot m-${who} mp-${pose}${o.anim?" anim":""}${o.cls?" "+o.cls:""}" viewBox="0 0 200 230" ${a11y} focusable="false">`
@@ -98,8 +99,8 @@ export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mo
 }
 // head-only avatar (HUD, profile, setup chips): the head fills the box, tails cropped
 export function avatar(who:Who,mood?:Mood,o:{crown?:boolean;label?:string}={}){
-  const m=mood||(who==="r"?"fierce":"smirk");
-  return `<svg class="m-avatar m-${who}" viewBox="${o.crown?"34 -2 132 152":"34 18 132 132"}" ${o.label?`role="img" aria-label="${o.label}"`:'aria-hidden="true"'} focusable="false">${head(who,m,who==="r"?1:-1)}${o.crown?crown(100,-12,50):""}</svg>`;
+  const m=mood||(RIGHT(who)?"fierce":"smirk");
+  return `<svg class="m-avatar m-${who}" viewBox="${o.crown?"34 -2 132 152":"34 18 132 132"}" ${o.label?`role="img" aria-label="${o.label}"`:'aria-hidden="true"'} focusable="false">${head(who,m,RIGHT(who)?1:-1)}${o.crown?crown(100,-12,50):""}</svg>`;
 }
 // VS face-off (home hero, onboarding): both mascots in guard + the yellow VS badge sits in the markup between them
 export const vsPair=()=>mascot("r","vs",{anim:true,cls:"m-vs-l"})+mascot("b","vs",{anim:true,cls:"m-vs-r"});

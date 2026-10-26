@@ -7,6 +7,8 @@ export interface Look{name:string;body:string;dark:string;band:string;bandEdge:s
 export const LOOKS:Look[]=[
   {name:"raudonas",body:"#FF3B3B",dark:"#C9202B",band:"#FFC61A",bandEdge:"#E0A800"},
   {name:"melynas",body:"#2F6BFF",dark:"#1B4AC9",band:"#FFFFFF",bandEdge:"#D9DEEA"},
+  {name:"geltonas",body:"#FFC61A",dark:"#D9A200",band:"#FF3B3B",bandEdge:"#C9202B"}, // Šuolis į tolį (src/longjump)
+  {name:"zalias",body:"#16B67A",dark:"#0E8A5B",band:"#FFC61A",bandEdge:"#E0A800"},
 ];
 const INK="#14183A", OL=.024;      // outline width in units
 const HIP_H=.3, THIGH=.15, SHIN=.14, LW=.1, UARM=.13, FARM=.1, GLOVE=.075, BODY_W=.27, BODY_H=.24, HEAD_R=.25;
@@ -38,6 +40,22 @@ export function standPose(o:Pose,t:number){ // idle breathing, gloves up in guar
 }
 export function winPose(o:Pose,t:number){ // gloves up, little hops
   standPose(o,t);o.sh[0]=165;o.sh[1]=150;o.el[0]=-14;o.el[1]=-20;o.bob=.035*Math.abs(Math.sin(t*5));
+}
+
+// Šuolis į tolį (src/longjump). k = flight progress 0..1: take-off drive (one knee up, arms swing up) -> sail (both
+// knees up, gloves high) -> landing reach (legs straight out in front, gloves forward)
+export function jumpPose(o:Pose,k:number){
+  const e=(a:number,b:number,f:number)=>a+(b-a)*Math.min(1,Math.max(0,f));
+  const s=k<.3?k/.3:1, l=k<.62?0:(k-.62)/.38;
+  o.th[0]=e(e(70,95,s),88,l);o.kn[0]=e(e(95,70,s),8,l);o.ft[0]=e(-10,10,l);
+  o.th[1]=e(e(-28,80,s),84,l);o.kn[1]=e(e(30,85,s),12,l);o.ft[1]=e(-25,8,l);
+  o.sh[0]=e(e(40,165,s),70,l);o.el[0]=e(e(60,-10,s),20,l);
+  o.sh[1]=e(e(-40,150,s),60,l);o.el[1]=e(e(50,-20,s),25,l);
+  o.lean=e(e(14,4,s),26,l);o.bob=0;o.p=k;
+}
+export function landPose(o:Pose,t:number){ // sitting in the sand after the landing, gloves forward
+  o.th[0]=86;o.kn[0]=100;o.ft[0]=-6;o.th[1]=80;o.kn[1]=96;o.ft[1]=-10;
+  o.sh[0]=78;o.el[0]=22;o.sh[1]=64;o.el[1]=28;o.lean=30;o.bob=-.006*Math.abs(Math.sin(t*3));o.p=t;
 }
 
 // lowest sole point below the hip (units, +down): forward kinematics hip -> knee -> ankle -> heel / toe

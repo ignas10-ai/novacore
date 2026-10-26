@@ -39,6 +39,11 @@ export const sfx={
   bomb:()=>{noise(.35,.55);tone(70,.3,.32,"sawtooth");buzz(160)},
   miss:()=>tone(196,.12,.06,"sine"),
   bell:()=>{tone(1318,.9,.18,"sine");tone(1976,.6,.08,"sine");tone(1318,.6,.12,"sine",.22)},
+  // Šuolis į tolį (src/longjump)
+  whistle:()=>{tone(2093,.16,.14,"sine");tone(2349,.16,.1,"sine");tone(2093,.32,.14,"sine",.2);tone(2349,.32,.1,"sine",.2);buzz(60)},
+  leap:()=>{noise(.18,.18);tone(330,.22,.14,"triangle");tone(660,.18,.1,"triangle",.06);buzz(35)},
+  land:()=>{noise(.28,.42);tone(110,.2,.26,"sine");buzz(90)},
+  horn:()=>{tone(185,.5,.2,"sawtooth");tone(139,.5,.16,"sawtooth",.04);buzz(220)},
 };
 const save=(k:string,on:boolean)=>{try{localStorage.setItem(k,on?"1":"0")}catch(e){}};
 document.addEventListener("click",e=>{
