@@ -341,7 +341,11 @@ export function screenPhase(p:ScreenPhase){
 
 // ---------- DOM wiring ----------
 $("#castOpen").onclick=openCast;
-document.querySelectorAll<HTMLElement>("[data-tv]").forEach(b=>b.onclick=openCast); // Profilis → "Rodyti per TV"
+// any header cast button, including ones built later by the minigame modules (src/sprint, src/boxing, src/longjump)
+document.addEventListener("click",e=>{
+  const b=(e.target as Element|null)?.closest?.("[data-tv]");
+  if(b){e.preventDefault();openCast()}
+});
 homeCast.onclick=openCast;
 setupCast.onclick=openCast;
 $("#screenClose").onclick=castSheet.close;

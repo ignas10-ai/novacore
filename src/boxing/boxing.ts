@@ -53,7 +53,7 @@ const app=document.getElementById("app")??document.body;
 app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="boxing" aria-labelledby="bxTitle">
   <div class="wrap">
-    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="bxTitle" tabindex="-1">${tr("bx.title")}</h1><span class="nav-spacer"></span></div></header>
+    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="bxTitle" tabindex="-1">${tr("bx.title")}</h1><button class="icon-btn tap" data-tv type="button" aria-label="${tr("home.cast")}" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
     <div class="bx-hero" aria-hidden="true">
       <span class="bx-hero-big">${tr("bx.title").toUpperCase()}</span><span class="bx-hero-sub">${tr("bx.hero")}</span>
       <span class="bx-hero-pad a">${padSvg("hit")}</span><span class="bx-hero-pad b">${padSvg("hit",TONE[1])}</span><span class="bx-hero-pad c">${padSvg("gold")}</span><span class="bx-hero-pad d">${padSvg("bomb")}</span>
