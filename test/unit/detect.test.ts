@@ -59,10 +59,9 @@ describe("NaN landmarks (detector glitch frame)",()=>{
     const nan=body().map(p=>({...p,x:NaN,y:NaN}));
     for(const e of EX)expect(step(fresh(),nan,e.id,0),e.id).toBe(false);
   });
-  // BUG (found by this suite): one NaN frame turns the squat EMA (s.k / s.k3) into NaN for the rest of the round,
-  // so that player's squats never count again until the exercise changes. Remove `.fails` once step() ignores
-  // non-finite angles.
-  it.fails("one NaN frame does not break squat counting for the rest of the round",()=>{
+  // was a bug (tests branch): one NaN frame turned the squat EMA (s.k / s.k3) into NaN for the rest of the round.
+  // step() now skips non-finite frames before any state is touched.
+  it("one NaN frame does not break squat counting for the rest of the round",()=>{
     const s=fresh(),nan=body().map(p=>({...p,x:NaN,y:NaN}));
     step(s,nan,"squat",0);
     expect(count(s,squatFrames,"squat",100)).toBe(1);

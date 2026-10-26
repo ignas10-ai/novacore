@@ -77,18 +77,28 @@ export async function getChallenge(gameId:string){
 // Games are queued in localStorage first, so a game played offline reaches the leaderboard on the next online open.
 // The id is generated client-side, so a retry after a lost response is a harmless duplicate (23505).
 function pending():GameRow[]{try{const p=JSON.parse(ls.get(PENDING_KEY)||"[]");return Array.isArray(p)?p:[]}catch(e){return []}}
+// true = on the server (or already there: 23505), false = dropped data error (22xxx/23xxx); throws on network/server errors
+async function send(row:GameRow){
+  const {error}=await client().from("games").insert(row);
+  if(!error||error.code==="23505")return true;
+  if(/^2[23]/.test(error.code||""))return false;
+  throw error;
+}
+// resolves the ids that reached the server; a dropped row leaves the queue so it cannot block it
 export async function flushGames(){
-  if(!sb||!(await userId()))return;
+  const saved=new Set<string>();
+  if(!sb||!(await userId()))return saved;
   for(const row of pending()){
-    const {error}=await sb.from("games").insert(row);
-    // keep the row on network / server-not-ready errors; drop it on a data error (22xxx/23xxx) so it cannot block the queue
-    if(error&&error.code!=="23505"&&!/^2[23]/.test(error.code||""))throw error;
+    if(await send(row))saved.add(row.id);
     ls.set(PENDING_KEY,JSON.stringify(pending().filter(r=>r.id!==row.id)));
   }
+  return saved;
 }
-// resolves true when the row is on the server (challenge link is valid), false when it stays queued
+export const queued=(id:string)=>pending().some(r=>r.id===id);
+// resolves true ONLY when this row is confirmed on the server (the challenge link /?c=<id> is valid).
+// Blocked localStorage = the queue cannot hold it, so it is sent directly (no retry later).
 export async function saveGame(row:GameRow){
   ls.set(PENDING_KEY,JSON.stringify([...pending(),row].slice(-PENDING_MAX)));
-  await flushGames();
-  return !pending().some(r=>r.id===row.id);
+  if(queued(row.id))return (await flushGames()).has(row.id);
+  return !!sb&&!!(await userId())&&send(row);
 }

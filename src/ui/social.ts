@@ -283,16 +283,19 @@ $("#chalGo").onclick=()=>go("#/zaisti");
 $("#chalX").onclick=()=>{challenge=null;$("#chal").hidden=true;strip("c")};
 
 // ---------- after a game (called from renderResults) ----------
+// queued = sent on the next start; not queued (localStorage blocked) = it is lost unless the player retries now
+const notSaved=()=>row&&api.queued(row.id)?"Rezultatas liko telefone – bus nusiųstas, kai bus ryšys."
+  :"Rezultato nusiųsti nepavyko. Bandyk dar kartą, kai bus ryšys.";
 async function saveRow(){
   if(!row||rowSaved)return rowSaved;
   onNote.textContent="Siunčiamas rezultatas…";
   try{
     await syncProfile();
     rowSaved=await api.saveGame(row);
-    onNote.textContent=!rowSaved?"Rezultatas liko telefone – bus nusiųstas, kai bus ryšys."
+    onNote.textContent=!rowSaved?notSaved()
       :!(row.players===1&&row.duration===180)?"Išsaugota. Lentelėje skaičiuojami 3 min solo žaidimai."
       :groups.length?"Rezultatas įrašytas į kompanijos lentelę.":"Rezultatas išsaugotas.";
-  }catch(e){onNote.textContent="Rezultatas liko telefone – bus nusiųstas, kai bus ryšys."}
+  }catch(e){onNote.textContent=notSaved()}
   if(rowSaved)loadGroups(); // fresh rank on Pradžia / Kompanijos
   return rowSaved;
 }
@@ -319,7 +322,8 @@ export function afterGame(){
 }
 chalBtn.onclick=async()=>{
   if(needNick("Iššūkiui reikia slapyvardžio – jį pamatys draugas.",()=>chalBtn.click()))return;
-  if(!(await saveRow())||!row)return;
+  // the link is shared only once the row is confirmed on the server: a /?c=<id> to a missing game opens nothing
+  if(!(await saveRow())||!row){onNote.textContent=`${onNote.textContent} Iššūkio nuoroda bus, kai rezultatas pasieks serverį.`;return}
   share(`${WEB}/?c=${row.id}`,`Surinkau ${row.score} tšk. per ${mins(row.duration)} NovaCore. Įveik!`,onNote);
 };
 

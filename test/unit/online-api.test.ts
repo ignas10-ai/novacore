@@ -70,6 +70,10 @@ describe("games queue (novacore.pending)",()=>{
     localStorage.setItem("novacore.pending",JSON.stringify([row("bad")]));
     expect(await api.saveGame(row("good"))).toBe(true);expect(queue()).toEqual([]);
   });
+  it("own row dropped by a data error is NOT reported as saved (no challenge link to a missing game)",async()=>{
+    const api=await load(true);insert.mockResolvedValue({error:{code:"23514"}});
+    expect(await api.saveGame(row("a"))).toBe(false);expect(queue()).toEqual([]);
+  });
   it("network error keeps the row for the next start",async()=>{
     const api=await load(true);insert.mockResolvedValue({error:{code:"",message:"Failed to fetch"}});
     await expect(api.saveGame(row("a"))).rejects.toBeTruthy();
@@ -90,10 +94,9 @@ describe("games queue (novacore.pending)",()=>{
     const api=await load(false);
     expect(await api.saveGame(row("a"))).toBe(false);expect(queue()).toEqual(["a"]);expect(insert).not.toHaveBeenCalled();
   });
-  // BUG (found by this suite): with localStorage blocked (setItem throws) the row is never queued, so flushGames()
-  // sends nothing, yet saveGame() resolves true ("row is on the server") and "Mesti iššūkį" then shares a
-  // /?c=<id> link to a game that does not exist. Remove `.fails` once saveGame inserts directly when storage fails.
-  it.fails("blocked localStorage: saveGame does not claim a row it never sent",async()=>{
+  // was a bug (tests branch): with localStorage blocked the row was never queued nor sent, yet saveGame() resolved
+  // true and "Mesti iššūkį" shared a /?c=<id> link to a game that did not exist. Now it is sent directly.
+  it("blocked localStorage: saveGame does not claim a row it never sent",async()=>{
     const api=await load(true);insert.mockResolvedValue({error:null});
     vi.spyOn(Storage.prototype,"setItem").mockImplementation(()=>{throw new DOMException("blocked","SecurityError")});
     const saved=await api.saveGame(row("a"));

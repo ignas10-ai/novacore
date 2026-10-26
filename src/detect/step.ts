@@ -30,6 +30,9 @@ const LG_STAG=0.25;
 // (torso lengths; negative = above) = hand held at the head
 const CC_WRIST=-0.05, CC_TAU=150;
 
+// A glitch frame (MediaPipe occasionally returns NaN/Infinity coordinates) must not reach any EMA or phase:
+// one NaN in s.k/s.k3/conf/floor would stay NaN forever (NaN*0.6+x = NaN) and stop counting until the round ends.
+const finite=(lm:Lm[])=>lm.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&(p.z==null||Number.isFinite(p.z)));
 export function visible(lm:Lm[],ex:string){return NEED[ex].every(j=>(lm[j].visibility??1)>VIS)}
 // ready gate: both wrists above the nose, all key points visible
 export function armsUp(lm:Lm[]){return [0,11,12,15,16].every(j=>(lm[j].visibility??1)>VIS)&&lm[15].y<lm[0].y&&lm[16].y<lm[0].y}
@@ -49,6 +52,7 @@ export function sideCue(lm:Lm[]):""|"left"|"right"{
 // pure: mutates s, returns true when one rep completes
 export function step(s:StepState,lm:Lm[],ex:string,now:number):boolean{
   if(s.ex!==ex){s.ex=ex;s.down=false;s.open=false;s.leg=[false,false];s.k=null;s.k3=null;s.last=0;s.base=null;s.baseOk=false;s.air=false;s.downAt=0;s.phase=null;s.cx0=0;s.closedW=null;s.floor=null;s.conf=null;s.in=null;s.clsAt=null;s.stg=null;s.stgMax=0;s.wr=null}
+  if(!finite(lm))return false; // skip the frame, state untouched (all exercises / both counters route through here)
   if(!visible(lm,ex)){s.lost=true;return false}
   s.lost=false;
   let rep=false;

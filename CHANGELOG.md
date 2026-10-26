@@ -1,5 +1,11 @@
 # Pakeitimų žurnalas
 
+## 2026-10-26 — pataisytos 2 testų rastos klaidos (šaka `en`)
+
+- **NaN kadras:** kartais MediaPipe grąžina sugadintą kadrą (NaN koordinatės). Vienas toks kadras pritūpimų vidurkį (EMA) paversdavo NaN iki raundo pabaigos – to žaidėjo pritūpimai nebeskaičiuoti. Dabar `step()` (per jį eina visi pratimai ir abu skaičiuokliai – rankinis ir k-NN) tokį kadrą praleidžia, būsena neliečiama. `replay-check` ir `accuracy.cjs` skaičiai identiški kaip prieš pataisą.
+- **„Mesti iššūkį“ be localStorage:** kai saugykla užblokuota, žaidimas nepatekdavo į eilę ir nebuvo siunčiamas, bet `saveGame()` sakė „išsaugota“, todėl draugas gaudavo nuorodą į neegzistuojantį žaidimą. Dabar tada siunčiama tiesiai; `saveGame()` grąžina „taip“ tik kai serveris patvirtino būtent šią eilutę (ir ne tada, kai ji atmesta dėl duomenų klaidos). Nuoroda dalinama tik po patvirtinimo, kitaip aiški žinutė: „Iššūkio nuoroda bus, kai rezultatas pasieks serverį.“
+- Abu `it.fails` testai dabar įprasti ir praeina; pridėtas testas „atmesta eilutė ≠ išsaugota“.
+
 ## 2026-10-26 — automatiniai testai (šaka `tests`)
 
 - **Kam:** kad trys žmonės ir agentai galėtų keisti kodą nesugadindami to, kas veikia. Prieš kiekvieną push – `npm test` (~10–25 s); keičiant ekranus, žaidimo eigą, sprintą, dvikovas ar TV lentą – ir `npm run test:e2e`.
@@ -7,7 +13,7 @@
 - **Pilni prabėgimai (Playwright, Chromium):** įvadas → Pradžia → nustatymai → rankų vartai → žaidimas → rezultatai → klipas → Pradžia; Pratimai, Profilis, Kompanijos; sprintas iki rezultatų; dvikova dviem naršyklėmis; „Rodyti per TV“ lenta. Kamera netikra (ffmpeg iš personažų paveikslėlių), Supabase visada netikras – tikra duomenų bazė neliečiama. Prieinamumo (axe) patikra pagrindiniuose ekranuose: kritinių klaidų nėra, yra kontrasto pastabų.
 - **GitHub Actions:** `.github/workflows/test.yml` paleidžia abu rinkinius kiekvienam push ir PR (Playwright naršyklė talpinama). `android.yml` nekeistas.
 - **Gyvi patikrinimai atskirai:** `npm run check:live` (tikras Supabase). `duel-check` nebe „kartais krenta“: prieš kvietimą laukia serverio pranešimo, kad prenumerata paruošta.
-- **Rastos klaidos (dar nepataisytos, pažymėtos testuose `it.fails`):** vienas NaN kadras visam raundui „užnuodija“ pritūpimų skaičiavimą; kai localStorage užblokuotas, „Mesti iššūkį“ gali pasidalinti nuoroda į žaidimą, kurio serveryje nėra.
+- **Rastos klaidos (pataisytos šakoje `en`, žr. aukščiau):** vienas NaN kadras visam raundui „užnuodija“ pritūpimų skaičiavimą; kai localStorage užblokuotas, „Mesti iššūkį“ gali pasidalinti nuoroda į žaidimą, kurio serveryje nėra.
 
 ## 2026-10-26 — Sujungta: Martyno „Didelis ekranas“ (master) į `next`
 
