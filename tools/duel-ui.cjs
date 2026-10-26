@@ -45,7 +45,7 @@ const base="http://localhost:8794/";
 
 let n=0;const errs=[];
 async function phone(who,nick,camFile){
-  const b=await puppeteer.launch({executablePath:CHROME,headless:"new",args:["--no-sandbox","--use-fake-ui-for-media-stream","--use-fake-device-for-media-stream",`--use-file-for-fake-video-capture=${camFile}`,"--autoplay-policy=no-user-gesture-required","--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"]});
+  const b=await puppeteer.launch({executablePath:CHROME,headless:"new",args:["--no-sandbox","--lang=lt-LT","--accept-lang=lt-LT","--use-fake-ui-for-media-stream","--use-fake-device-for-media-stream",`--use-file-for-fake-video-capture=${camFile}`,"--autoplay-policy=no-user-gesture-required","--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"]});
   const p=await b.newPage();
   await p.setViewport({width:390,height:844,deviceScaleFactor:2,isMobile:true,hasTouch:true});
   p.on("pageerror",e=>errs.push(`${who} PAGEERROR ${e.message}`));

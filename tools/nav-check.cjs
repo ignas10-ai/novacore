@@ -15,7 +15,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let pass=0,fail=0;
 const ok=(name,cond)=>{cond?pass++:fail++;console.log(cond?"ok  ":"FAIL",name)};
 (async()=>{
-  const b=await puppeteer().launch({executablePath:CHROME,headless:"new",args:["--no-sandbox","--use-fake-ui-for-media-stream","--use-fake-device-for-media-stream",...(y4m?[`--use-file-for-fake-video-capture=${y4m}`]:[]),"--autoplay-policy=no-user-gesture-required","--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"]});
+  const b=await puppeteer().launch({executablePath:CHROME,headless:"new",args:["--no-sandbox","--lang=lt-LT","--accept-lang=lt-LT","--use-fake-ui-for-media-stream","--use-fake-device-for-media-stream",...(y4m?[`--use-file-for-fake-video-capture=${y4m}`]:[]),"--autoplay-policy=no-user-gesture-required","--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"]});
   const p=await b.newPage();
   await p.setViewport({width:390,height:844,deviceScaleFactor:1,isMobile:true,hasTouch:true});
   const errs=[];p.on("pageerror",e=>errs.push(e.message));p.on("console",m=>{if(m.type()==="error"&&!/favicon|Failed to load resource/.test(m.text()))errs.push(m.text().slice(0,200))});

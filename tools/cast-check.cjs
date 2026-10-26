@@ -17,7 +17,7 @@ let pass=0,fail=0;
 function ok(cond,msg){if(cond){pass++;console.log("  ✓",msg)}else{fail++;console.error("  ✗",msg)}}
 
 (async()=>{
-  const b=await puppeteer.launch({executablePath:CHROME,headless:"new",args:["--no-sandbox","--autoplay-policy=no-user-gesture-required"]});
+  const b=await puppeteer.launch({executablePath:CHROME,headless:"new",args:["--no-sandbox","--lang=lt-LT","--accept-lang=lt-LT","--autoplay-policy=no-user-gesture-required"]});
   const errs=[];
   const watch=p=>{p.on("pageerror",e=>errs.push("PAGEERROR "+e.message));p.on("console",m=>{if(m.type()==="error"&&!/favicon|Failed to load resource|WebSocket|realtime/i.test(m.text()))errs.push(m.text().slice(0,200))})};
   const base=`http://localhost:${port}/`;

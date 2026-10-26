@@ -24,7 +24,7 @@ const types={".html":"text/html",".js":"text/javascript",".css":"text/css",".jso
 const srv=http.createServer((q,r)=>{const u=q.url.split("?")[0];const f=path.join(root,u==="/"?"index.html":u);if(!fs.existsSync(f)){r.writeHead(404);return r.end()}r.writeHead(200,{"content-type":types[path.extname(f)]||"application/octet-stream"});fs.createReadStream(f).pipe(r)}).listen(port);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 (async()=>{
-  const b=await puppeteer.launch({executablePath:CHROME,headless:"new",args:["--no-sandbox","--use-fake-device-for-media-stream","--use-fake-ui-for-media-stream",`--use-file-for-fake-video-capture=${y4m}`,"--autoplay-policy=no-user-gesture-required","--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"]});
+  const b=await puppeteer.launch({executablePath:CHROME,headless:"new",args:["--no-sandbox","--lang=lt-LT","--accept-lang=lt-LT","--use-fake-device-for-media-stream","--use-fake-ui-for-media-stream",`--use-file-for-fake-video-capture=${y4m}`,"--autoplay-policy=no-user-gesture-required","--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"]});
   const p=await b.newPage();
   const [vw,vh]=(arg("--size","")||(landscape?"844x390":"390x844")).split("x").map(Number); // e.g. --size 360x740
   await p.setViewport({width:vw,height:vh,deviceScaleFactor:2,isMobile:true});

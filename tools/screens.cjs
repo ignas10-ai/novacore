@@ -1,6 +1,6 @@
 // Kiekvieno programėlės ekrano kadras (+ pabaigoje pratimo lapas) (portretas ir landscape), su netikru Supabase (kompanijos ir lentelės užpildytos)
 // ir netikra žaidimų istorija (statistika, serija, ženkliukai). Testuoja SURINKTĄ dist/ – pirma `npm run build`.
-// Naudojimas: node tools/screens.cjs [cam.y4m] [--out dir] [--landscape|--both] [--size 390x844] [--no-game] [--players 1|2]
+// Naudojimas: node tools/screens.cjs [cam.y4m] [--out dir] [--landscape|--both] [--size 390x844] [--no-game] [--players 1|2] [--lang lt|en]
 //   cam.y4m – „suvaidinta" kamera žaidimo ekranams (kaip playthrough.cjs: reikia ~4 s abiem riešais virš nosies);
 //   be jo arba su --no-game kadrai baigiasi ties nustatymais. Rezultatas: <out>/01-onboarding-1.png … (+ "-landscape").
 const path=require("path"),fs=require("fs"),http=require("http");
@@ -12,6 +12,7 @@ const rest=process.argv.slice(2), arg=(k,d)=>{const i=rest.indexOf(k);return i>=
 const y4m=rest.find(a=>a.endsWith(".y4m")&&fs.existsSync(a)), noGame=rest.includes("--no-game")||!y4m;
 const out=arg("--out",path.join(__dirname,"..","_playthrough","screens"));
 const modes=rest.includes("--both")?[false,true]:[rest.includes("--landscape")];
+const LANG=arg("--lang","lt")==="en"?"en-GB":"lt-LT"; // navigator.language -> src/i18n (default LT, whatever this PC's Chrome says)
 const root=path.join(__dirname,"..","dist");
 if(!fs.existsSync(path.join(root,"index.html"))){console.error("nėra dist/ – pirma: npm run build");process.exit(1)}
 fs.mkdirSync(out,{recursive:true});
@@ -40,9 +41,10 @@ function seed(now){
   for(const landscape of modes){
     const suf=landscape?"-landscape":"";
     const [vw,vh]=(arg("--size","")||(landscape?"844x390":"390x844")).split("x").map(Number);
-    const b=await puppeteer.launch({executablePath:CHROME,headless:"new",args:["--no-sandbox","--use-fake-ui-for-media-stream","--use-fake-device-for-media-stream",...(y4m?[`--use-file-for-fake-video-capture=${y4m}`]:[]),"--autoplay-policy=no-user-gesture-required","--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"]});
+    const b=await puppeteer.launch({executablePath:CHROME,headless:"new",args:["--no-sandbox",`--lang=${LANG}`,`--accept-lang=${LANG}`,"--use-fake-ui-for-media-stream","--use-fake-device-for-media-stream",...(y4m?[`--use-file-for-fake-video-capture=${y4m}`]:[]),"--autoplay-policy=no-user-gesture-required","--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"]});
     const p=await b.newPage();
     await p.setViewport({width:vw,height:vh,deviceScaleFactor:2,isMobile:true,hasTouch:true});
+    await p.evaluateOnNewDocument(l=>Object.defineProperty(navigator,"language",{get:()=>l}),LANG);
     await p.emulateMediaFeatures([{name:"prefers-reduced-motion",value:"no-preference"}]);
     const errs=[];p.on("pageerror",e=>errs.push("PAGEERROR "+e.message));p.on("console",m=>{if(m.type()==="error"&&!/favicon|Failed to load resource|WebSocket|realtime/i.test(m.text()))errs.push(m.text().slice(0,200))});
     let n=0;
@@ -118,10 +120,11 @@ function seed(now){
     if(/^[A-Z0-9]{6}$/.test(castCode)){
       await tv.goto(base+"#/ekranas/"+castCode,{waitUntil:"load"});await tvShot("tv-wait",900);
       const post=s=>tv.evaluate(({code,state})=>{const c=new BroadcastChannel("novacore-screen");c.postMessage({code,state});c.close()},{code:castCode,state:s});
-      const sent=Date.now(),baseState={v:1,code:castCode,players:2,duration:180,round:0,mult:1,sent};
+      const sent=Date.now(),baseState={v:1,code:castCode,players:2,duration:180,round:0,mult:1,sent,lang:LANG.slice(0,2)};
+      const EXN=LANG==="en-GB"?{squat:"Squats",jack:"Jumping jacks"}:{squat:"Pritūpimai",jack:"Pašokimai"}; // the phone sends the name in its language
       await post({...baseState,phase:"ready",left:180,ex:null,score:[0,0],reps:0,winner:0});await tvShot("tv-ready",500);
-      await post({...baseState,phase:"play",left:92,round:2,mult:3,ex:{id:"squat",name:"Pritūpimai"},score:[148,131],reps:98,winner:0});await tvShot("tv-live",700);
-      await post({...baseState,players:1,phase:"play",left:41,round:4,mult:5,ex:{id:"jack",name:"Pašokimai"},score:[212,0],reps:120,winner:0});await tvShot("tv-live-solo",700);
+      await post({...baseState,phase:"play",left:92,round:2,mult:3,ex:{id:"squat",name:EXN.squat},score:[148,131],reps:98,winner:0});await tvShot("tv-live",700);
+      await post({...baseState,players:1,phase:"play",left:41,round:4,mult:5,ex:{id:"jack",name:EXN.jack},score:[212,0],reps:120,winner:0});await tvShot("tv-live-solo",700);
       await post({...baseState,phase:"done",left:0,ex:null,score:[148,131],reps:98,winner:1});await tvShot("tv-done",900);
     }
     if(tvErr.length)console.log("TV KLAIDOS:\n  "+tvErr.join("\n  "));
