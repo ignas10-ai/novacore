@@ -86,6 +86,13 @@ PWA ikonos: `node tools/icons.cjs` (reikia interneto Inter šriftui). Lucide iko
 | `sidestep3` | lėti šoniniai žingsniai su pritūpimu | 11 | YT g78CxAtjkCE, tik dešinysis žmogus (2 žmonės kadre); held-out |
 | `squatjump5` | šuoliukai, kitas žmogus, šiek tiek kampu | 6 + 3 | Leap Fitness txLE-jOCEsc 13,5–21,4 ir 23,5–27,1 s; held-out (v3 – 0) |
 | `sidestep-squat` | išžengimas + pritūpimas + atgal (KITAS pratimas) | 0 | YT Ap5Xjp9lRd8 8,5–24,5 s; neigiamas atvejis šoniniams žingsniams |
+| `squatjump6` | maži greiti šuoliukai, 1 min iššūkis namuose | 31 | YT 6DGFq_L_-x8 2,5–36,1 s; pėdos pakyla ~0,15 liemens; pagal jį derinta v5 (`SJ_AIR`, grindys) |
+| `squatjump7` | nedideli šuoliukai, baltas fonas | 24 | WatchFit YD-rDXKs2sY 6–46 s; derinta v5 |
+| `squatjump8` | aukšti šuoliukai, garažas | 9 (iki 14 s) | YT vIl3VxsgqAY; held-out |
+| `squatjump9` | šuoliukai rankomis aukštyn, salė | 15 | steadyhealth qZ_jHp3MBzk 17–51 s; held-out |
+| `squatjump10` | šuoliukai ~45° kampu | 4 | Paradiso CrossFit 87ynaOgFplw; held-out, `step()` 3 (pirmo skrydis ~130 ms) |
+
+Pastaba: `squatjump` = YGGq0AE5Uyc, `squatjump3` = 5xv0DKqe5XQ (tie patys landmark'ai) – ieškant naujų klipų jų nebeimti.
 
 ## Lite vs full modelis (2026-10-25)
 
@@ -98,6 +105,8 @@ Visi klipai perekstraktuoti su `pose_landmarker_full` (`--cpu`). Rezultatas nevi
 - Įtūpste iš priekio kulkšnys būna 1,5–3,5 klubų pločio – siauros stovėsenos reikalauti negalima; skiria kelių aukščių skirtumas.
 - Įstrižame atsilenkime alkūnė iš priekio lieka ~0,8 pečių pločio nuo kelio, bet nusileidžia iki kelio aukščio – tikrinti dy, ne dx.
 - Ranka rašytas pritūpimų `step()` skaičiuoja BET KOKĮ kelių sulenkimą: atsilenkimuose 5–9, įtūpstuose 3–12 „pritūpimų". k-NN su kojų+liemens embedding'u ir `no` pavyzdžiais – 0, o tikrus pritūpimus skaičiuoja taip pat tiksliai.
+- Šuoliukas su mažu pašokimu (~0,15 liemens) atsispiria per kelis kadrus – jei pėdos „grindys" (EMA) seka kylančią pėdą, slenkstis niekada nepasiekiamas. Grindys atnaujinamos tik kai pėda arti/žemiau jų (v5).
+- k-NN įtūpsto klasė „down" panaši į plačią šoninio žingsnio stovėseną; skiria kelių išsiskyrimas aukštyje (v5 `LG_STAG`). Atsilenkimą nuo bėgimo skiria riešas, laikomas virš peties (bėgant pro peties aukštį praeina ~100 ms).
 - k-NN embedding'as nepriklauso nuo padėties kadre, todėl šuolio (`squatjump`) ir pasislinkimo į šoną (`sidestep`) jis nemato – ten lieka `step()`.
 
 ## Internetinė dalis prieš tikrą Supabase (`social-check.mjs`)
