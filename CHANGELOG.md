@@ -7,6 +7,11 @@
 ## 2026-10-26 — Google Play grafika (#6)
 
 - **`npm run store`** (`tools/store-assets.mjs`): pats paleidžia Vite, nufotografuoja tikrus programėlės ekranus ir sudeda Play parduotuvės grafiką į `_playthrough/store/`: 512×512 ikona (Raudono galva, be pavadinimo), 1024×500 viršelis (LT + EN, maskotai VS), po 5 kadrus 1080×1920 su antrašte (LT + EN): pradžia, šuolis į tolį ore, 4 žaidėjų rezultatai, žaidimų sąrašas, pratimai. Kamera – e2e klipas su mūsų maskotu, jokio tikro žmogaus. Pavadinimas imamas iš `manifest.webmanifest`, tad pervadinus (#8) užtenka paleisti iš naujo.
+## 2026-10-26 — TV lenta sporto mini žaidimuose (issue #11, šaka `martynas/11-tv-minigames`)
+
+- **Kas buvo blogai:** sprintas 100 m visai neskelbė būsenos TV lentai, todėl televizorius likdavo „Laukiama“ arba sename ekrane. Ilgio šuolio TV lenta siuntė `duration:1,left:0` – laikrodis rodė 0:00, o „Rodyti per TV“ mygtukas buvo tik Pradžioje ir pratimų nustatymuose.
+- **Dabar:** sprintas skelbia `ready → play → done` ir TV rodo gyvus metrus (P1/P2), 60 s laikrodį, žingsnius bei nugalėtoją; ilgio šuolio TV laikrodis rodo bandymo laiką (16 s), ne 0:00. Visų trijų mini žaidimų nustatymų antraštėse yra „Rodyti per TV“ mygtukas (`[data-tv]`, deleguotas `cast.ts`), o sprintui TV demonstracija naudoja bėgančio personažo poziciją.
+- **Patikrinta:** `npm test` (292), `npm run build`, headless Chrome per BroadcastChannel: sprintas TV `ready → play` (1:00), ilgio šuolis `play` (0:16), boksas `Boksas`, kast mygtukas atidaro lapą. **Reikia tikro telefono + TV:** WebRTC kamera tame pačiame tinkle (headless testas jos nepatvirtina).
 ## 2026-10-26 — TV kamera: ryškus vaizdas dideliame ekrane (issue #9, šaka `martynas/9-tv-camera-quality`)
 
 - **Kas buvo blogai:** telefonas kamerą (portrete 1080×1920) įspausdavo į fiksuotą 1280×720 drobę su juodomis juostomis – realiai teliko ~400×720 taškų, o TV dar ištempdavo iki viso ekrano. Srautas ėjo tik 20 fps ir be bitrate nustatymų (WebRTC numatytasis ~1–2 Mbps), todėl vaizdas atrodė neryškus ir „blokinis“.

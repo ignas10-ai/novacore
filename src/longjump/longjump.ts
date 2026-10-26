@@ -27,7 +27,7 @@ import type {ScreenState} from "../cast/room.ts";
 import {V_MAX} from "../sprint/speed.ts";
 import {LOOKS,newPose,runPose,setPose,standPose,winPose,jumpPose,landPose,drawRunner} from "../sprint/runner.ts";
 import {layout,build,type Layout} from "../sprint/scene.ts";
-import {LINE_M,ZONE_M,APPROACH_M,ATTEMPTS,bestJump,newAttempt,stepAt,tick,jump,total,turnOf,rank,bestOf,flightS,apexM,type Attempt} from "./logic.ts";
+import {LINE_M,ZONE_M,APPROACH_M,ATTEMPTS,LIMIT_S,bestJump,newAttempt,stepAt,tick,jump,total,turnOf,rank,bestOf,flightS,apexM,type Attempt} from "./logic.ts";
 import {geom,drawField,drawFront,worldX,mLabel,type View,type FieldInfo} from "./field.ts";
 
 const WHO:Who[]=["r","b","y","g"];
@@ -48,7 +48,7 @@ const app=document.getElementById("app")??document.body;
 app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="longjump" aria-labelledby="ljTitle">
   <div class="wrap">
-    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="ljTitle" tabindex="-1">${tr("lj.title")}</h1><span class="nav-spacer"></span></div></header>
+    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="ljTitle" tabindex="-1">${tr("lj.title")}</h1><button class="icon-btn tap" data-tv type="button" aria-label="${tr("home.cast")}" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
     <div class="lj-hero" aria-hidden="true">
       <span class="lj-hero-big">${tr("lj.heroBig")}</span><span class="lj-hero-sub">${tr("lj.hero")}</span>
       <span class="lj-hero-pit"><i>4</i><i>5</i><i>6</i><i>7</i></span><span class="lj-hero-board"></span>
@@ -386,10 +386,12 @@ function hud(){
 // 3-4 players = the current jumper's best (the protocol has two score slots)
 function tvState():Partial<ScreenState>{
   const {round,player:p}=cur(), done=phase==="off"&&!endRoot.classList.contains("hide");
+  const running=phase==="run"||phase==="air"||phase==="land"||phase==="foul";
+  const left=done?0:running?Math.max(0,LIMIT_S-(performance.now()-phaseAt)/1000):LIMIT_S;
   const cm=(i:number)=>Math.round((bestOf(jumps[i]||[])??0)*100);
   const live=phase==="land"&&A.take?` · ${mLabel(A.take.dist)}`:phase==="foul"?" · X":"";
   const r=rank(jumps);
-  return {players:n===2?2:1,duration:1,left:0,round,mult:1,ex:{id:"longjump",name:done?tr("lj.title"):`${names0[p]} · ${round+1}/${ATTEMPTS}${live}`.slice(0,40)},
+  return {players:n===2?2:1,duration:LIMIT_S,left,round,mult:1,ex:{id:"longjump",name:done?tr("lj.title"):`${names0[p]} · ${round+1}/${ATTEMPTS}${live}`.slice(0,40)},
     score:n===2?[cm(0),cm(1)]:[cm(n===1?0:p),0],reps:jumps.flat().filter(d=>d!=null).length,
     winner:done&&n===2&&r[0].place===1&&r[1].place!==1?(r[0].i+1) as 1|2:0};
 }

@@ -4,7 +4,7 @@
 import type {RealtimeChannel} from "@supabase/supabase-js";
 import {sb} from "../online/api.ts";
 import {$,replay} from "../ui/dom.ts";
-import {t,tn,lang,setLang} from "../i18n/i18n.ts";
+import {t,tn,dec,lang,setLang} from "../i18n/i18n.ts";
 import {translateDom} from "../i18n/dom.ts";
 import {icon} from "../ui/icons.ts";
 import {coachSvg} from "../ui/coach.ts";
@@ -222,7 +222,7 @@ function render(s:ScreenState){
     setDemo("",s.phase);
     verdictTag.textContent=t("tv.end");
     verdictTxt.textContent=s.players===1?t("res.yours"):s.winner===0?t("res.tie"):t("tv.pWins",{n:s.winner});
-    repsEl.textContent=`${tn("u.moves",s.reps)} · ${t("u.min",{n:s.duration/60})}`;
+    repsEl.textContent=`${tn("u.moves",s.reps)} · ${t("u.min",{n:dec(s.duration/60,s.duration>=60?0:1)})}`;
     timerEl.textContent="0:00";
     barEl.style.transform="scaleX(0)";
     root.dataset.low="0";

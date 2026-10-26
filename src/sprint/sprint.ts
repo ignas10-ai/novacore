@@ -19,6 +19,8 @@ import {t as tr,tn,dec} from "../i18n/i18n.ts";
 import {RACE_M,V_MAX,runner,onStep,advance,simulate,ghostX,type Runner} from "./speed.ts";
 import {LOOKS,newPose,runPose,setPose,standPose,winPose,drawRunner,type Pose} from "./runner.ts";
 import {mascot,avatar} from "../ui/mascots.ts";
+import {screenPhase,setScreenMode} from "../cast/cast.ts";
+import type {ScreenState} from "../cast/room.ts";
 import {layout,build,drawBack,drawFinishBack,drawFinishFront,drawFront,sx,SKEW,type Layout} from "./scene.ts";
 
 const NAMES=[tr("p.red"),tr("p.blue")];
@@ -39,7 +41,7 @@ const app=document.getElementById("app")??document.body;
 app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="sprint" aria-labelledby="spTitle">
   <div class="wrap">
-    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="spTitle" tabindex="-1">${tr("sp.title")}</h1><span class="nav-spacer"></span></div></header>
+    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="spTitle" tabindex="-1">${tr("sp.title")}</h1><button class="icon-btn tap" data-tv type="button" aria-label="${tr("home.cast")}" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
     <div class="sp-hero"><canvas id="spHeroCv" aria-hidden="true"></canvas><span class="sp-hero-big">100 M</span><span class="sp-hero-sub">${tr("sp.hero")}</span></div>
     <section class="pick" aria-label="${tr("setup.players")}">
       <div class="seg sp-seg" role="group" aria-label="${tr("sp.runners")}">
@@ -203,6 +205,8 @@ function begin(){
   document.fonts?.load("400 40px \"Titan One\"",`${tr("sp.finishLine")} 0123456789`).then(()=>{if(phase!=="off")build(ctx,L)}).catch(()=>{});
   S.running=true; // game.ts swallows Android back while running
   last=performance.now();fn=0;
+  setScreenMode(tvState);
+  screenPhase("play"); // the TV board follows the race (and starts the camera-per-TV stream)
   enter("pos",last);
   cancelAnimationFrame(raf);raf=requestAnimationFrame(frame);
 }
@@ -362,6 +366,16 @@ function hud(){
 }
 
 // ---------- results ----------
+// what the TV board shows: live metres as the score, the 60 s race clock, the winner at the end
+function tvState():Partial<ScreenState>{
+  const done=phase==="off"&&!endRoot.classList.contains("hide");
+  const on=phase==="race"||phase==="done"||done;
+  const metres=(i:number)=>Math.min(RACE_M,Math.max(0,Math.round(R[i].x)));
+  const w:0|1|2=done&&!solo&&order.length?(order[0]+1) as 1|2:0;
+  return {players:S.players===1?1:2,duration:LIMIT_S,left:on?Math.max(0,LIMIT_S-raceT):LIMIT_S,round:0,mult:1,
+    ex:{id:"sprint",name:tr("sp.title")},score:[metres(0),S.players>1?metres(1):0],
+    reps:R.slice(0,S.players).reduce((n,r)=>n+r.steps,0),winner:w};
+}
 function finishRace(){
   cancelAnimationFrame(raf);
   phase="off";S.running=false;
@@ -408,13 +422,16 @@ function finishRace(){
   }));
   runRoot.classList.add("hide");document.body.classList.remove("sprinting");
   endRoot.classList.remove("hide");endRoot.scrollTop=0;
+  screenPhase("done");
 }
 $("#spAgain").onclick=()=>{resetGame();startFlow(SPRINT)};
 $("#spHome").onclick=()=>{resetGame();document.body.classList.remove("ingame");home()};
 
 export const SPRINT:GameMode={
   start:begin,
+  tv:true,
   reset(){cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call";
+    setScreenMode(null);screenPhase("idle");
     runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("sprinting")},
   shown:()=>!endRoot.classList.contains("hide"),
 };
