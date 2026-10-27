@@ -15,6 +15,7 @@ export interface Game{
   bwRolls?:number[][]; // bowling: flat rolls (pins per ball) per player
   bwFrameRolls?:number[][][]; // bowling: per player, per frame, pins per ball (for the scorecard table)
   bwTotals?:number[]; // bowling: final ten-pin totals per player
+  skiRaw?:(number|null)[];skiPen?:number[];skiGates?:number[];skiMiss?:number[];skiHit?:number[]; // skiing (src/ski, times = final incl. penalties)
 }
 export const WEEK_GOAL=5;
 
