@@ -56,6 +56,7 @@ test("badminton solo to 11: hand pick, serve, points, results, history, back",as
   await expect(page.locator("#bdRows>li"),"the human row + the bot row").toHaveCount(2);
   await expect(page.locator("#bdRows .sp-row.p2")).toContainText(/Botas/);
   await expect(page.locator("#bdResArt .mascot")).toHaveCount(1);
+  await page.waitForTimeout(900); // the rows + header fade/scale in (modal-in / sp-row-in): scan after they settle
   await a11y(page,"badminton-results",info);
 
   const [g]=await savedGames(page);
