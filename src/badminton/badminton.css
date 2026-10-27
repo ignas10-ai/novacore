@@ -1,0 +1,149 @@
+/* Badmintonas (src/badminton), Claude Design sticker style. Reuses the shared classes from sprint.css (.sp-tile, .sp-seg,
+   .sp-pb, .sp-how, .sp-call, .sp-res-head, .sp-row, .sp-place, .sp-row-face) and the camera corner preview pattern.
+   Only the court screen, the pick bubbles, the HUD cards and the final score live here. Tokens from main.css :root. */
+
+/* ---------- Pradžia tile (blue, after the navy Siena tile) ---------- */
+.bd-tile{background:linear-gradient(100deg,var(--blue) 0 64%,color-mix(in srgb,var(--blue) 62%,#fff) 64% 100%);color:#fff;margin-top:-4px}
+.bd-tile .sp-tile-txt .eyebrow{color:var(--yellow)}
+.bd-tile .sp-tile-txt b{color:#fff;text-shadow:0 3px 0 var(--ink)}
+.bd-tile .sp-tile-txt small{color:#fff}
+.bd-tile .sp-tile-art{position:relative}
+.bd-tile-net{position:absolute;right:10px;top:4px;bottom:-6px;width:5px;border-radius:3px;background:repeating-linear-gradient(180deg,#fff 0 4px,transparent 4px 8px);border-left:2px solid var(--ink)}
+.bd-tile-shuttle{position:absolute;right:40px;top:12px;width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid var(--ink);box-shadow:0 2px 0 var(--ink);z-index:2}
+.bd-tile-shuttle::after{content:"";position:absolute;left:9px;top:0;width:17px;height:11px;background:repeating-linear-gradient(60deg,#fff 0 2px,transparent 2px 4px);clip-path:polygon(0 35%,100% 0,100% 100%,0 65%)}
+.bd-tile .sp-tile-art .mascot{position:relative;z-index:1}
+
+/* ---------- setup ---------- */
+#badminton .wrap{gap:18px}
+#badminton .pick{display:flex;flex-direction:column;gap:10px}
+.bd-hero{position:relative;height:clamp(200px,52vw,260px);border:var(--bw-lg) solid var(--ol);border-radius:var(--r-lg);overflow:hidden;isolation:isolate;box-shadow:var(--sh-lg);
+  background:radial-gradient(ellipse 70% 45% at 50% 0,#4A50A8 0,transparent 72%),radial-gradient(ellipse 55% 35% at 20% 25%,#2F6BFF55 0,transparent 70%),var(--ink)}
+.bd-hero::after{content:"";position:absolute;inset:auto 0 0;height:30%;z-index:-1;background:linear-gradient(180deg,#1C7C5E,#176B52);border-top:var(--bw) solid var(--ink)}
+.bd-hero::before{content:"";position:absolute;inset:auto 0 26%;height:2px;z-index:-1;background:rgba(255,255,255,.75)}
+.bd-hero-big{position:absolute;left:16px;top:8px;z-index:2;font:400 clamp(38px,11.5vw,64px)/1.12 var(--disp);color:#fff;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:0 5px 0 var(--blue)}
+.bd-hero-sub{position:absolute;left:20px;top:calc(14px + clamp(38px,11.5vw,64px)*1.08);z-index:2;padding:3px 10px;border-radius:8px;background:var(--yellow);color:var(--ink);font:900 12px/1.2 var(--body);letter-spacing:.12em;text-transform:uppercase}
+.bd-hero-net{position:absolute;left:5%;right:5%;top:57%;height:12%;z-index:1;border-top:4px solid #fff;background:repeating-linear-gradient(90deg,rgba(255,255,255,.5) 0 2px,transparent 2px 9px),repeating-linear-gradient(0deg,rgba(255,255,255,.4) 0 1px,transparent 1px 6px);border-bottom:3px solid var(--ink)}
+.bd-hero-net::before,.bd-hero-net::after{content:"";position:absolute;top:-4px;bottom:-3px;width:7px;background:#fff;border:2px solid var(--ink);border-radius:3px}
+.bd-hero-net::before{left:-4px}.bd-hero-net::after{right:-4px}
+.bd-hero-shuttle{position:absolute;left:48%;top:18%;width:16px;height:16px;border-radius:50%;background:#fff;border:2.5px solid var(--ink);box-shadow:0 2px 0 var(--ink);z-index:3;animation:bd-fly 3.2s var(--ease-ui) infinite alternate}
+.bd-hero-shuttle::after{content:"";position:absolute;right:11px;top:1px;width:22px;height:13px;background:repeating-linear-gradient(60deg,#fff 0 2px,transparent 2px 4px);clip-path:polygon(0 32%,100% 0,100% 100%,0 68%)}
+@keyframes bd-fly{from{translate:-8px 0;rotate:-12deg}to{translate:8px -6px;rotate:10deg}}
+.bd-hero-m{position:absolute;bottom:5%;width:24%;max-width:110px;z-index:2}
+.bd-hero-m.r{left:7%}.bd-hero-m.b{right:7%}
+
+/* ---------- run: the court is the main canvas, the camera becomes a small corner preview ---------- */
+body.badminton #stage{inset:auto;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));z-index:9;
+  height:clamp(82px,16vh,140px);aspect-ratio:var(--bd-cam-ar,1.78);border-radius:16px;overflow:hidden;background:var(--cam-bg);
+  border:var(--bw) solid var(--ink);box-shadow:0 4px 0 var(--ink)}
+body.badminton #stage canvas{object-fit:cover}
+body.badminton .fs,body:has(#bdEnd:not(.hide)) .fs{display:none}
+#stage.bd-shake{animation:bd-shake 340ms ease-out}
+@keyframes bd-shake{18%{transform:translateX(-5px)}38%{transform:translateX(5px)}58%{transform:translateX(-3px)}78%{transform:translateX(2px)}}
+.bd-run{position:fixed;inset:0;z-index:8;overflow:hidden;background:#0B0F2A;touch-action:none}
+.bd-run.hide{display:none}
+#bdCv{position:absolute;inset:0;width:100%;height:100%;display:block}
+.bd-hud{position:absolute;inset:0 0 auto;z-index:3;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));pointer-events:none}
+.bd-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(72px,auto) minmax(0,1fr);align-items:center;gap:6px;max-width:760px;margin:0 auto}
+.bd-card{position:relative;display:flex;align-items:center;gap:7px;min-width:0;max-width:100%;overflow:hidden;padding:5px 9px 5px 5px;border:var(--bw) solid var(--ink);border-radius:var(--r-pill);background:#fff;box-shadow:0 3px 0 var(--ink);--tone:var(--red)}
+.bd-card.p2{--tone:var(--blue);flex-direction:row-reverse;padding:5px 5px 5px 10px;text-align:right}
+.bd-card.lead{box-shadow:0 3px 0 var(--ink),0 0 0 3px var(--yellow)}
+.bd-card.bot .bd-face{filter:grayscale(.15)}
+.bd-face{flex:none;display:grid;width:40px;height:40px;border-radius:50%;background:#fff;border:2.5px solid var(--tone);overflow:hidden}
+.bd-face .m-avatar{width:100%;height:100%}
+.bd-card-in{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
+.bd-score{font-size:clamp(26px,7vw,34px);line-height:1.05;color:var(--ink);white-space:nowrap}
+.bd-card.p2 .bd-score{text-align:right}
+.bd-name{font:900 10px/1.2 var(--body);letter-spacing:.10em;text-transform:uppercase;color:var(--fg-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:74px}
+.bd-srv{flex:none;width:11px;height:11px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);opacity:0;scale:.5;transition:opacity var(--duration-quick),scale var(--duration-quick)}
+.bd-card[data-serve="1"] .bd-srv{opacity:1;scale:1;animation:bd-srv-pulse 1.2s ease-in-out infinite alternate}
+@keyframes bd-srv-pulse{from{box-shadow:0 0 0 0 color-mix(in srgb,var(--yellow) 70%,transparent)}to{box-shadow:0 0 0 5px transparent}}
+.bd-mid{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:72px}
+.bd-target{padding:2px 8px 1px;border:2.5px solid var(--ink);border-radius:var(--r-pill);background:var(--yellow);color:var(--ink);font:900 10px/1.2 var(--body);letter-spacing:.02em;white-space:nowrap;box-shadow:0 2px 0 var(--ink)}
+.bd-rally{font:800 11px/1.3 var(--body);color:#fff;text-shadow:0 1px 2px #000}
+.bd-foot{position:absolute;left:0;right:auto;max-width:calc(100% - 190px);bottom:max(16px,env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:flex-start;gap:10px;padding:0 max(14px,env(safe-area-inset-right)) 0 max(14px,env(safe-area-inset-left));pointer-events:none;flex-wrap:wrap}
+.bd-stroke{display:inline-block;padding:3px 16px 1px;border:2.5px solid var(--ink);border-radius:var(--r-pill);background:var(--yellow);color:var(--ink);font:400 18px/1.3 var(--disp);box-shadow:0 3px 0 var(--ink);opacity:0;scale:.8;transition:opacity var(--duration-quick),scale var(--duration-quick)}
+.bd-stroke:empty{display:none}
+.bd-stroke:not(:empty){opacity:1;scale:1}
+.bd-stroke[data-kind="smash"]{background:var(--red);color:#fff}
+.bd-stroke[data-kind="drop"]{background:var(--blue);color:#fff}
+.bd-stroke[data-kind="serve"]{background:#fff}
+.bd-long{font:800 11px/1.3 var(--body);color:#fff;background:color-mix(in srgb,var(--ink) 66%,transparent);padding:4px 10px;border-radius:var(--r-pill)}
+
+/* ---------- hand pick overlay ---------- */
+.bd-pick{position:absolute;inset:0;z-index:4;display:flex;justify-content:center;align-items:flex-start;padding:calc(max(10px,env(safe-area-inset-top)) + 78px) 14px 0;
+  background:color-mix(in srgb,#070A20 58%,transparent)}
+.bd-pick.hide{display:none}
+.bd-pick-card{width:min(440px,100%);display:flex;flex-direction:column;gap:7px;padding:14px 16px 12px;border:var(--bw-lg) solid var(--ol);border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--sh-lg);animation:modal-in var(--duration-slow) var(--ease-smooth-out) both}
+.bd-pick-help{font:700 13px/1.4 var(--body);color:var(--fg-mute)}
+.bd-prow{display:flex;align-items:center;gap:10px;padding:7px 9px;border:2.5px solid var(--line-2);border-radius:14px;background:var(--surface-2);--tone:var(--red);transition:background var(--duration-fast),border-color var(--duration-fast)}
+.bd-prow[data-p="1"]{--tone:var(--blue)}
+.bd-prow.ok{border-color:var(--tone);background:color-mix(in srgb,var(--tone) 12%,var(--surface))}
+.bd-pface{flex:none;display:grid;width:42px;height:42px;border-radius:50%;border:2.5px solid var(--tone);background:#fff;overflow:hidden}
+.bd-pface .m-avatar{width:100%;height:100%}
+.bd-pinfo{flex:1;min-width:0}
+.bd-pinfo>b{display:block;font:900 15px/1.25 var(--body);overflow-wrap:anywhere}
+.bd-pinfo>small{display:block;font:700 11px/1.3 var(--body);color:var(--fg-mute)}
+.bd-bubs{display:flex;gap:8px;margin-top:5px;flex-wrap:wrap}
+.bd-bub{display:flex;align-items:center;gap:5px;padding:2px 9px 2px 2px;border:2px solid transparent;border-radius:var(--r-pill);font:800 11px/1.2 var(--body);color:var(--fg-mute)}
+.bd-bub.on{background:color-mix(in srgb,var(--tone) 18%,#fff);border-color:var(--tone);color:var(--ink)}
+.bd-bub svg{width:28px;height:28px;rotate:-90deg;flex:none}
+.bd-bub circle{fill:none;stroke:var(--line-2);stroke-width:3.4}
+.bd-bub .bd-arc{stroke:var(--tone);stroke-dasharray:100;stroke-dashoffset:100;stroke-linecap:round;transition:stroke-dashoffset 60ms linear}
+.bd-pdone{font:900 11px/1.3 var(--body);color:var(--green-ink)}
+.bd-pick-auto{font:700 10px/1.3 var(--body);color:var(--fg-faint)}
+
+/* ---------- calls (base = .sp-call in sprint.css) ---------- */
+.bd-call{top:26%;z-index:5}
+.bd-call.is-hint b{font-size:clamp(24px,7vmin,42px);color:var(--yellow)}
+.bd-call.is-serve b{font-size:clamp(25px,7.4vmin,46px);color:#fff}
+.bd-call.is-serve small{background:var(--yellow)}
+.bd-call.is-go b{font-size:clamp(38px,10vmin,64px);color:var(--yellow)}
+.bd-call.is-smash b{font-size:clamp(48px,14vmin,96px);color:var(--yellow)}
+.bd-call.is-p1 small{background:var(--red);color:#fff}
+.bd-call.is-p2 small{background:var(--blue);color:#fff}
+.bd-call.is-bad b{color:var(--red)}
+
+/* ---------- results (base = .sp-res-head / .sp-row from sprint.css) ---------- */
+#bdEnd{background:var(--bg)}
+#bdEnd .wrap{gap:16px}
+#bdEnd:not(.hide)>.wrap{animation:modal-in var(--duration-slow) var(--ease-smooth-out) both}
+.bd-res-head{padding-right:130px}
+/* the sunburst alternates red and a lighter red: navy (not white) keeps 4.5:1 on both segments */
+#bdWin,#bdSub{color:var(--ink)}
+#bdAgain{background:var(--red-deep)} /* white on --red is 3.5:1; --red-deep is the 4.5:1 surface token */
+.bd-final{display:flex;align-items:baseline;justify-content:center;gap:14px;font:400 clamp(42px,12vw,66px)/1 var(--disp);color:var(--ink)}
+.bd-final .p1{color:var(--red)}
+.bd-final .p2{color:var(--blue)}
+.bd-final span{font-size:.55em;color:var(--fg-faint);transform:translateY(-.35em)}
+.bd-final.solo{justify-content:flex-start;padding-left:6px}
+.bd-stats{text-align:center;font:800 13px/1.4 var(--body);color:var(--fg-mute)}
+#bdEnd .cta{display:flex;flex-direction:column;gap:12px;padding-top:4px}
+#bdRec{white-space:nowrap;align-self:flex-start}
+#bdRows .sp-row-txt small{font:800 12px/1.3 var(--body);color:var(--fg-mute)}
+#bdRows .sp-row.p1 .sp-row-t{color:var(--red-ink)}
+#bdRows .sp-row.p2 .sp-row-t{color:var(--blue-ink)}
+
+@media (orientation:landscape) and (max-height:500px){
+  body.badminton #stage{left:auto;right:max(10px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));top:auto;height:clamp(74px,24vh,120px)}
+  .bd-top{grid-template-columns:minmax(0,240px) auto minmax(0,240px);max-width:none}
+  .bd-card{padding:3px 8px 3px 4px}.bd-face{width:32px;height:32px}.bd-score{font-size:24px}.bd-name{font-size:9px;max-width:74px}
+  .bd-pick{padding:calc(max(8px,env(safe-area-inset-top)) + 66px) 14px 0}
+  .bd-pick-card{width:min(380px,52vw);align-self:flex-start;margin-left:auto;margin-right:auto}
+  .bd-call{top:22%}
+  .bd-call.is-hint b{font-size:clamp(22px,5.5vh,34px)}
+  .bd-call.is-serve b{font-size:clamp(24px,6vh,38px)}
+  .bd-foot{bottom:8px}
+  #bdEnd .wrap{max-width:840px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:20px;align-content:center}
+  #bdEnd .sp-res-head{margin-top:0;grid-row:1 / span 3;min-height:0;align-self:stretch;justify-content:center;padding-right:104px}
+  #bdEnd .sp-res-head h2{font-size:clamp(24px,4.4vw,38px)}
+  #bdEnd .sp-res-art{width:100px}
+  .bd-final{font-size:clamp(34px,7vh,52px)}
+  #bdEnd .cta{grid-column:2;flex-direction:row}
+  #bdEnd .cta .go{flex:1;min-width:0;white-space:nowrap;font-size:18px}
+  #bdEnd .cta #bdHome{flex:none;width:58px;padding:0;font-size:0;gap:0}
+}
+@media (prefers-reduced-motion:reduce){
+  .bd-hero-shuttle,.bd-card[data-serve="1"] .bd-srv{animation:none}
+  #stage.bd-shake{animation:none}
+  .bd-stroke,.bd-bub .bd-arc{transition:none}
+}
