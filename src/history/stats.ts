@@ -12,6 +12,7 @@ export interface Game{
   clr?:number[]; // hurdles (src/hurdles, times like the sprint): hurdles cleared per player (of 8)
   secs?:number[]; // Siena (src/wall): time survived per player in s (reps = walls survived, score stays [0,0])
   jumps?:(number|null)[][]; // long jump (src/longjump): 3 results in m per player (1-4 players), null = foul (score stays [0,0])
+  throws?:(number|null)[][]; // javelin (src/javelin): 3 results in m per player (1-4 players), null = foul (score stays [0,0])
   bwFrames?:number; // bowling (src/bowling): frames in the series (3/5)
   bwRolls?:number[][]; // bowling: flat rolls (pins per ball) per player
   bwFrameRolls?:number[][][]; // bowling: per player, per frame, pins per ball (for the scorecard table)

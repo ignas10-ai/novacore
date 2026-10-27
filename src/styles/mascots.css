@@ -115,3 +115,7 @@
 .anim.mp-ski .m-glove.l .m-gl{animation-delay:-.2s}
 @keyframes m-ski-sway{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}
 @keyframes m-ski-pole{0%,18%,100%{transform:translateY(0)}45%{transform:translateY(28px)}62%{transform:translateY(0)}}
+
+/* Iečio metimas (src/javelin): the throwing glove pulls back, the body leans, then the arm comes through */
+.anim.mp-javelin .m-ui{animation:m-jav-lean 1.8s var(--ease-smooth-out,ease) infinite alternate}
+@keyframes m-jav-lean{from{transform:rotate(-3deg)}to{transform:rotate(4deg)}}
