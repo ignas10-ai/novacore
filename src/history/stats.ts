@@ -10,6 +10,7 @@ export interface Game{
   mode?:string; times?:(number|null)[]; splits?:number[][]; // sprint (src/sprint): 100 m time per player in s, 10 m splits
   pts?:number[]; acc?:number[]; combo?:number[]; // boxing (src/boxing): points, accuracy % and best combo per player (score stays [0,0])
   clr?:number[]; // hurdles (src/hurdles, times like the sprint): hurdles cleared per player (of 8)
+  secs?:number[]; // Siena (src/wall): time survived per player in s (reps = walls survived, score stays [0,0])
   jumps?:(number|null)[][]; // long jump (src/longjump): 3 results in m per player (1-4 players), null = foul (score stays [0,0])
   bwFrames?:number; // bowling (src/bowling): frames in the series (3/5)
   bwRolls?:number[][]; // bowling: flat rolls (pins per ball) per player

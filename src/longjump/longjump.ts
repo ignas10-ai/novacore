@@ -30,11 +30,12 @@ import {layout,build,type Layout} from "../sprint/scene.ts";
 import {LINE_M,ZONE_M,APPROACH_M,ATTEMPTS,LIMIT_S,bestJump,newAttempt,stepAt,tick,jump,total,turnOf,rank,bestOf,flightS,apexM,type Attempt} from "./logic.ts";
 import {geom,drawField,drawFront,worldX,mLabel,type View,type FieldInfo} from "./field.ts";
 
-const WHO:Who[]=["r","b","y","g"];
-const TONE=["#FF3B3B","#2F6BFF","#FFC61A","#16B67A"], TONE_INK=["var(--red-ink)","var(--blue-ink)","var(--yellow-ink)","var(--green-ink)"];
-const DEF=[tr("p.red"),tr("p.blue"),tr("p.yellow"),tr("p.green")];
-const NAME_MAX=14;
-const face=(i:number,cls="",mood?:"happy"|"sad")=>`<span class="${cls}" style="--tone:${TONE[i]}">${avatar(WHO[i],mood)}</span>`;
+// party mode look, shared with src/wall (Siena)
+export const WHO:Who[]=["r","b","y","g"];
+export const TONE=["#FF3B3B","#2F6BFF","#FFC61A","#16B67A"], TONE_INK=["var(--red-ink)","var(--blue-ink)","var(--yellow-ink)","var(--green-ink)"];
+export const DEF=[tr("p.red"),tr("p.blue"),tr("p.yellow"),tr("p.green")];
+export const NAME_MAX=14;
+export const face=(i:number,cls="",mood?:"happy"|"sad")=>`<span class="${cls}" style="--tone:${TONE[i]}">${avatar(WHO[i],mood)}</span>`;
 const store={get(k:string){try{return localStorage.getItem(k)}catch(e){return null}},set(k:string,v:string){try{localStorage.setItem(k,v)}catch(e){}}};
 
 // ---------- markup (built here, the shared index.html stays untouched) ----------
@@ -138,7 +139,7 @@ const nameOf=(i:number)=>names[i].trim()||DEF[i];
 const segBtns=[...document.querySelectorAll<HTMLElement>("[data-lj]")], inputs=[0,1,2,3].map(i=>$<HTMLInputElement>(`#ljN${i+1}`));
 function syncSetup(){
   segBtns.forEach(b=>{const on=Number(b.dataset.lj)===n;b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on))});
-  document.querySelectorAll<HTMLElement>(".lj-nrow").forEach(r=>r.hidden=Number(r.dataset.i)>=n);
+  document.querySelectorAll<HTMLElement>("#ljNames .lj-nrow").forEach(r=>r.hidden=Number(r.dataset.i)>=n);
   if(!names[0]&&cachedNick())inputs[0].placeholder=cachedNick()!; // P1 = the profile nickname until edited
   inputs.forEach((el,i)=>{el.placeholder=i===0&&cachedNick()?cachedNick()!:DEF[i];if(document.activeElement!==el)el.value=names[i]});
 }
