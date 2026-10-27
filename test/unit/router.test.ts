@@ -4,7 +4,7 @@
 // Minimal markup with the screen ids the router owns; layout/CSS is irrelevant here.
 import {describe,it,expect,beforeAll} from "vitest";
 
-const SCREENS=["home","groups","group","library","profile","start","sprint","boxing","longjump","hurdles","screen","onb"];
+const SCREENS=["home","groups","group","library","profile","start","sprint","boxing","longjump","hurdles","bowling","screen","onb"];
 document.body.innerHTML=SCREENS.map(id=>`<section id="${id}" class="screen app hide"><h1 tabindex="-1">${id}</h1></section>`).join("")+
   `<nav id="tabbar">${[["home","#/"],["groups","#/kompanijos"],["library","#/pratimai"],["profile","#/profilis"]].map(([t,h])=>`<a data-tab="${t}" href="${h}">${t}</a>`).join("")}</nav>`+
   `<a id="sub" href="#/zaisti">play</a><a id="back" data-back href="#/">back</a>`;
@@ -24,7 +24,7 @@ describe("parse",()=>{
     ["#/kompanijos",{v:"groups",arg:""}],["#/kompanijos/",{v:"groups",arg:""}],
     ["#/kompanijos/abc-123",{v:"group",arg:"abc-123"}],["#/kompanijos/10%20B%20kl.",{v:"group",arg:"10 B kl."}],
     ["#/pratimai",{v:"library",arg:""}],["#/profilis",{v:"profile",arg:""}],["#/zaisti",{v:"setup",arg:""}],
-    ["#/sprintas",{v:"sprint",arg:""}],["#/boksas",{v:"boxing",arg:""}],["#/tolis",{v:"longjump",arg:""}],["#/barjerai",{v:"hurdles",arg:""}],["#/ekranas",{v:"screen",arg:""}],["#/ekranas/ABC234",{v:"screen",arg:"ABC234"}],["#kompanijos",{v:"groups",arg:""}],
+    ["#/sprintas",{v:"sprint",arg:""}],["#/boksas",{v:"boxing",arg:""}],["#/tolis",{v:"longjump",arg:""}],["#/barjerai",{v:"hurdles",arg:""}],["#/boulingas",{v:"bowling",arg:""}],["#/ekranas",{v:"screen",arg:""}],["#/ekranas/ABC234",{v:"screen",arg:"ABC234"}],["#kompanijos",{v:"groups",arg:""}],
     ["#/zaidimas",{v:"home",arg:""}],["#/nezinomas",{v:"home",arg:""}],["#/pratimai/extra",{v:"library",arg:""}],
   ])("%s",(h,want)=>expect(R.parse(h)).toEqual(want));
   it("a malformed %-escape in a group id throws (URIError) - callers get it from location.hash",()=>{
