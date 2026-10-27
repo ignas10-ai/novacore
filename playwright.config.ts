@@ -3,7 +3,7 @@
 // (e2e-mock.supabase.co) and every request / websocket to *.supabase.co is answered in the browser by the shared
 // mocks in tools/ (test/e2e/fixtures.ts), so no test can ever touch the live database.
 import {defineConfig} from "@playwright/test";
-import {CAM} from "./test/e2e/paths.ts";
+import {CAM,camArgs} from "./test/e2e/paths.ts";
 
 const PORT=4180, CI=!!process.env.CI;
 
@@ -24,13 +24,7 @@ export default defineConfig({
     permissions:["camera"],
     serviceWorkers:"block", // sw.js would cache the shell between tests and could hide requests from page.route
     trace:"retain-on-failure",screenshot:"only-on-failure",
-    launchOptions:{args:[
-      "--use-fake-device-for-media-stream","--use-fake-ui-for-media-stream",`--use-file-for-fake-video-capture=${CAM}`,
-      "--autoplay-policy=no-user-gesture-required","--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader",
-      // 2D canvases (race scene, camera preview, recorder) on the CPU: otherwise they queue on the same software GPU as
-      // MediaPipe and its ReadPixels stalls the main thread for seconds (seen in sprint: "frame" stuck in detectForVideo)
-      "--disable-accelerated-2d-canvas",
-    ]},
+    launchOptions:{args:camArgs(CAM)},
   },
   webServer:{
     command:`npx vite build --outDir dist-e2e --emptyOutDir --logLevel warn && npx vite preview --outDir dist-e2e --port ${PORT} --strictPort`,

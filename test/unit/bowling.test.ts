@@ -43,12 +43,30 @@ describe("lane + throw geometry",()=>{
 });
 
 describe("pin physics",()=>{
-  it("a ball down the middle knocks most pins; a gutter ball knocks none",()=>{
-    const centre=simulateThrow(full,0,0,11), left=simulateThrow(full,-1,0,11), right=simulateThrow(full,1,0,11);
-    expect(centre.down.length).toBeGreaterThanOrEqual(8);
+  it("a ball down the middle leaves pins (no automatic strike); a gutter ball knocks none",()=>{
+    const centre=simulateThrow(full,0,0,11), pocket=simulateThrow(full,0.22,0,11), left=simulateThrow(full,-1,0,11), right=simulateThrow(full,1,0,11);
+    expect(centre.down.length).toBeGreaterThanOrEqual(7);
+    expect(centre.down.length).toBeLessThan(10); // dead centre is not a strike any more
     expect(centre.down).toContain(0);
+    expect(pocket.down.length).toBe(10); // the pocket is still the strike ball
     expect(left.down).toEqual([]);
     expect(right.down).toEqual([]);
+    expect(left.gutter).toBe(true);
+    expect(right.gutter).toBe(true);
+    expect(centre.gutter).toBe(false);
+  });
+  it("the ball is deflected by the pins it hits (not a canned straight path)",()=>{
+    const t=simulateThrow(full,0,0,11);
+    const atPin=t.frames.find(f=>f.bz>=PIN_Z)!;
+    expect(Math.abs(atPin.bx-ballX(PIN_Z,0,0))).toBeGreaterThan(.003);
+  });
+  it("the per-throw pin scatter is seeded (0 = exact) and the standing set is kept",()=>{
+    const standing=[true,false,true,false,true,false,true,false,true,false];
+    const a=simulateThrow(standing,0,0,11,123), b=simulateThrow(standing,0,0,11,456), exact=simulateThrow(full,0,0,11);
+    expect(a.standing).toEqual(standing);
+    expect(a.down.every(i=>standing[i])).toBe(true);
+    expect(a.frames[0].p[0].x).not.toBe(b.frames[0].p[0].x);
+    expect(exact.frames[0].p[0].x).toBe(PINS[0][0]); // seed 0 keeps the unit tests exact
   });
   it("off-centre hits leave pins; a second ball only hits what is still standing",()=>{
     const first=simulateThrow(full,0.7,0,11);
@@ -237,24 +255,42 @@ describe("full back-to-front swing (not just a lowered hand)",()=>{
     const {out}=run([{t:0,y:.7,z:0},{t:100,y:.72,z:.02},{t:200,y:.75,z:.04},{t:300,y:.78,z:.06}]);
     expect(out).toEqual(["","","",""]);
   });
-  it("back then slowly lowering the hand does not throw",()=>{
-    const {out}=run([{t:0,y:.2,z:.4},{t:100,y:.35,z:.35},{t:400,y:.45,z:.3},{t:800,y:.55,z:.25},{t:1200,y:.65,z:.2},{t:1600,y:.75,z:.15}]);
+  it("aiming with the arm up then slowly lowering the hand does not throw",()=>{
+    const slow=[];for(let i=0;i<=16;i++)slow.push({t:i*100,y:.2+i*.02,z:.4-i*.005}); // 0.2 u/s, a deliberate slow lower
+    const {out}=run(slow);
+    expect(out[0]).toBe("back");
     expect(out).not.toContain("release");
   });
   it("back then forward but the hand stays high does not throw",()=>{
     const {out}=run([{t:0,y:.2,z:.4},{t:200,y:.35,z:.05},{t:300,y:.42,z:-.2}]);
     expect(out).not.toContain("release");
   });
-  it("the wind-up times out if the player just stands with the hand back",()=>{
-    const {out}=run([{t:0,y:.2,z:.4},{t:3000,y:.2,z:.4},{t:3100,y:.75,z:-.3}]);
+  it("the aim pose may be held long; the swing releases when the hand comes down",()=>{
+    const {out}=run([{t:0,y:.2,z:.4},{t:3000,y:.2,z:.4},{t:3100,y:.8,z:.3}]);
+    expect(out[0]).toBe("back");
     expect(out[1]).toBe("");
-    expect(out[2]).not.toBe("release");
+    expect(out[2]).toBe("release");
+  });
+  it("the raised aim pose is enough: hand up, then a fast downswing releases (no z needed)",()=>{
+    const {out}=run([{t:0,y:.2,z:NaN},{t:100,y:.2,z:NaN},{t:200,y:.55,z:NaN}]);
+    expect(out[0]).toBe("back");
+    expect(out[1]).toBe("");
+    expect(out[2]).toBe("release");
+  });
+  it("arms even with the throwing hand at shoulder height (the aim pose may be level)",()=>{
+    const {out}=run([{t:0,y:.33,z:NaN},{t:100,y:.33,z:NaN},{t:200,y:.6,z:NaN}]);
+    expect(out[0]).toBe("back");
+    expect(out[2]).toBe("release");
+  });
+  it("a fast downswing that jumps from up to low in one camera frame still releases",()=>{
+    const {out}=run([{t:0,y:.2,z:NaN},{t:100,y:.2,z:NaN},{t:200,y:.8,z:NaN}]);
+    expect(out[0]).toBe("back");
+    expect(out[2]).toBe("release");
   });
   it("without MediaPipe z, a raised arm then a fast low swing is the fallback",()=>{
-    const {out}=run([{t:0,y:.2,z:NaN},{t:100,y:.4,z:NaN},{t:200,y:.55,z:NaN},{t:300,y:.8,z:NaN}]);
+    const {out}=run([{t:0,y:.2,z:NaN},{t:100,y:.4,z:NaN},{t:200,y:.55,z:NaN}]);
     expect(out[0]).toBe("back");
-    expect(out[2]).toBe("forward");
-    expect(out[3]).toBe("release");
+    expect(out[2]).toBe("release");
   });
   it("losing the hand resets the wind-up",()=>{
     const st=swingState();
