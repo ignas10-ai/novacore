@@ -1,5 +1,13 @@
 # Pakeitimų žurnalas
 
+## 2026-10-27 — Boulingo tikslinimas: rankos ratai, pilnas mostas, perspektyvus taikymas (#26, šaka `claude/26-boulingas-tuning`)
+
+- **Rankos pasirinkimas:** abiem kryptimis rodomi du ratai (Kairė / Dešinė). Laikant ranką ištiestą į tą pusę, ratas pildosi **2 s**; per tą laiką galima persigalvoti – pildosi kitas ratas, o pirmas išsikrauna. Ranka pasirenkama tik ratui prisipildžius iki galo.
+- **Pilnas mostas:** metimas nebeįvyksta vien nuleidus ranką. Reikia mosto **atgal → pirmyn**: riešas nueina už pečių (MediaPipe z, su atsarginiu „ranka aukščiau pečių“ variantu), tada greitai pirmyn ir žemyn; tik tada paleidžiamas kamuolys. Ranka, laikoma žemai, nebetriggerina metimo. Aim užrakinamas prasidėjus užsimojimui, o mosto greitis nustato kamuolio greitį.
+- **Taikymas ir sukimas:** nebėra brūkšniuotos linijos ir kryželio. Kryptį rodo perspektyvus kelių permatomų kamuolių takas ir didesnis „vaiduoklio“ kamuolys ties kūgiais, o didžiausias – rankoje. Krumplių / riešo pasukimas į kairę ar dešinę (riešo ir alkūnės kampas + šoninis judėjimas) sukuria kablį; tiesus mostas – tiesus metimas. MediaPipe Pose neturi pirštų taškų, todėl naudojamas riešo/alkūnės kampas.
+- **Kūgių reset:** patikrinta ir aiškiai parodoma, kad rėmas = 2 metimai: pirmo metimo likę kūgiai lieka antram, o resetinami tik pasibaigus rėmui (paskutiniame po strike / spare – trečias metimas). HUD rodo „Metimas n/2“ (paskutiniame – n/3), o testai tikrina ir realią fizikos kelią, ir 2 žaidėjų eiliškumą.
+- **Patikrinta:** `npm test` (40 boulingo testų: 2 s ratų pildymas / perjungimas, pilnas mostas su z ir be jo, lėtas nuleidimas, laiko riba, krumplių sukimas, kūgių likimas tarp metimų, paskutinio rėmo 3 metimai), `npx tsc --noEmit`, `npm run build`, `npx playwright test test/e2e/bowling.spec.ts` (2 žaidėjai × 3 rėmai, ratų matomumas, 10→7 kūgių antras metimas, rezultatai, istorija, „atgal“). **Dar reikia tikro telefono:** 2 s ratų jausmas ir perjungimas, `BACK_Z` z slenkstis, krumplių sukimas, tako skaitomumas portrete.
+
 ## 2026-10-27 — naujas sporto mini žaidimas „Boulingas“ (#20, idėja #4, šaka `claude/20-boulingas`)
 
 - **Kaip žaidžiama:** Pradžioje po „Barjerinis bėgimas“ – tamsiai mėlyna plytelė „Boulingas“ (`#/boulingas`). Nustatymuose 1–4 žaidėjai ir vardai (pirmas – profilio slapyvardis), 3 arba 5 raundai, rekordas, taisyklės. Kaip ir šuolyje į tolį, prieš kamerą stovi tik tas, kuris meta; žaidėjai meta paeiliui po visą raundą (P1 du metimai, tada P2, ...), o paskutiniame raunde po strike ar spare dar metama papildomai.
