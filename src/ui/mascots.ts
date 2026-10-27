@@ -119,4 +119,4 @@ const ICON:Record<ExId,string>={
 export const exIcon=(id:string)=>`<svg class="ex-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${(ICON as Record<string,string>)[id]||ICON.squat}</svg>`.replace(/<circle /g,'<circle fill="currentColor" stroke="none" ');
 // exercise illustration: alternate red/blue like the picker order (squat red, jack blue, ...)
 export const exWho=(id:string):Who=>EX_IDS.indexOf(id as ExId)%2?"b":"r";
-export const exArt=(id:string,anim=true)=>mascot(exWho(id),(EX_IDS.includes(id as ExId)?id:id==="boxing"?"punch":id==="ski"?"ski":id==="sprint"||id==="hurdles"?"knees":"idle") as Pose,{anim});
+export const exArt=(id:string,anim=true)=>mascot(exWho(id),(EX_IDS.includes(id as ExId)?id:id==="boxing"?"punch":id==="bowling"?"guard":id==="ski"?"ski":id==="sprint"||id==="hurdles"?"knees":"idle") as Pose,{anim});

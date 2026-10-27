@@ -39,7 +39,7 @@ const tile=document.createElement("a");
 tile.className="sp-tile sk-tile tap";tile.href="#/slidinejimas";
 tile.innerHTML=`<span class="sp-tile-txt"><span class="eyebrow">${tr("setup.title")}</span><b class="d">${tr("sk.title")}</b><small>${tr("sk.tileSub")}</small></span>
 <span class="sp-tile-art" aria-hidden="true">${mascot("r","ski",{anim:true})}${mascot("b","ski",{anim:true})}</span><span class="sp-tile-go" data-icon="arrow-right"></span>`;
-(document.querySelector(".hd-tile")??document.querySelector(".lj-tile")??document.querySelector(".sp-tile")??document.getElementById("rankCard"))?.after(tile);
+(document.querySelector(".bw-tile")??document.querySelector(".hd-tile")??document.querySelector(".lj-tile")??document.querySelector(".sp-tile")??document.getElementById("rankCard"))?.after(tile);
 
 const app=document.getElementById("app")??document.body;
 app.insertAdjacentHTML("beforeend",`
