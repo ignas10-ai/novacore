@@ -1,7 +1,8 @@
-// Boulingas – rules and the pin simulation (issue #20, idea #4). PURE: no DOM, no storage (test/unit/bowling.test.ts).
-// The phone camera controls the throw: raise one arm out to the side to pick the bowling hand, keep it up to aim
-// (the hand's x position = the board / target on the lane), lean the torso to hook the ball, then swing the arm down
-// to release. The ball is a circle rolling down the lane (x-z plane, metres); the pins are 10 circles in the real
+// Boulingas – rules and the pin simulation (issue #20, idea #4; tuning #26). PURE: no DOM, no storage
+// (test/unit/bowling.test.ts). The phone camera controls the throw: hold one arm out to the side for 2 s to pick the
+// bowling hand (both sides show a filling ring, switching is allowed), keep it up to aim (the hand's x position =
+// the board / target on the lane), turn the knuckle / wrist to add spin, then make a full back-to-front swing to
+// release. The ball is a circle rolling down the lane (x-z plane, metres); the pins are 10 circles in the real
 // ten-pin triangle. Ball -> pin and pin -> pin collisions are simulated at 120 Hz, so strikes / spares / splits come
 // out of the geometry, not out of a random roll. Scoring is real ten-pin scoring (strike = 10 + next two, spare =
 // 10 + next, the last frame gets bonus balls). A series is 3 or 5 frames; players take turns (one player in front of
@@ -35,15 +36,25 @@ export const SPEED_MIN=8.5, SPEED_MAX=15;
 // ---------- throw gesture (frame-height units; u = torso length) ----------
 export const HAND_OUT=0.32;       // a wrist this far outside its shoulder picks that hand
 export const HAND_UP=0.18;        // ... while above the shoulder (a hanging arm never picks)
-export const CHOOSE_HOLD=0.55;    // hold the arm out this long to confirm the hand
-export const AIM_HOLD=0.35;       // the ball cannot be released sooner after the hand was picked
-export const DROP_Y=0.64;         // wrist this far below the shoulder = the arm is coming down
-export const DROP_SPEED=1.15;     // torso/s downward: a slow lower does not throw, a swing does
-export const LEAN_MAX=0.45;       // torso lean (0.45 u) = a full hook
+export const CHOOSE_HOLD=2;       // hold the arm out this long to confirm the hand (switch any time before)
+export const DROP_Y=0.64;         // wrist this far below the shoulder at the end of a release
+export const LEAN_MAX=0.45;       // torso lean (0.45 u) = the old hook; kept for the body model / tests
 export const BODY_MIN=0.04;       // a degenerate / far-away torso
+// full swing: the hand goes BEHIND the shoulder (MediaPipe z grows away from the camera) and then forward/down.
+export const BACK_Z=0.2;          // depth behind the shoulder that arms a swing (u)
+export const BACK_Y=0.3;          // fallback (no z): the wrist must be this far above the shoulder
+export const SWING_Z=0.3;         // depth travel forward from the back peak to release (u)
+export const SWING_SPEED=1.4;     // u/s down or forward: a slow lower is not a throw
+export const SWING_S=1.6;         // s from the back peak to release
+export const BACK_HOLD=2.5;       // s: standing with the hand behind the body eventually cancels the wind-up
+export const FWD_START=0.08;      // wrist below the shoulder (u) when the forward half starts
+export const SPIN_K=1.15;         // knuckle angle -> hook
+export const SPIN_V=0.35;         // lateral wrist speed -> hook (per u/s)
 
 export interface Body{cx:number;cy:number;sx:number;sy:number;lx:number;rx:number;hx:number;hy:number;u:number;ar:number}
-export interface Wrist{ok:boolean;x:number;y:number;out:number;up:boolean}
+// z = wrist depth relative to the shoulder in torso units (+ = behind the body, NaN when MediaPipe z is missing)
+// knuckle = signed wrist x relative to the elbow (screen direction: + = to the right), the knuckle-turn proxy
+export interface Wrist{ok:boolean;x:number;y:number;z:number;knuckle:number;out:number;up:boolean}
 export interface Ctrl{body:Body;wrists:[Wrist,Wrist];lean:number}
 const ok=(p:Lm|undefined)=>!!p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&(p.visibility??1)>VIS;
 const clamp=(v:number,a:number,b:number)=>Math.min(b,Math.max(a,v));
@@ -62,11 +73,63 @@ export function control(lm:Lm[],ar:number):Ctrl|null{
   if(!(u>BODY_MIN))return null;
   const wrists:[Wrist,Wrist]=[0,1].map(k=>{
     const s=k?b:a,w=k?lm[16]:lm[15],e=k?lm[14]:lm[13];
-    if(!ok(s)||!ok(w)||!ok(e))return {ok:false,x:0,y:0,out:0,up:false};
-    const wx=(1-w.x)*ar,wy=w.y,sx2=(1-s.x)*ar,sy2=s.y;
-    return {ok:true,x:wx,y:wy,out:(wx-sx2)*(k?1:-1)/u,up:wy<sy2+HAND_UP*u};
+    if(!ok(s)||!ok(w)||!ok(e))return {ok:false,x:0,y:0,z:NaN,knuckle:0,out:0,up:false};
+    const wx=(1-w.x)*ar,wy=w.y,sx2=(1-s.x)*ar,sy2=s.y,ex=(1-e.x)*ar;
+    const wz=w.z,sz=s.z;
+    const z=typeof wz==="number"&&typeof sz==="number"&&Number.isFinite(wz)&&Number.isFinite(sz)?(wz-sz)/u:NaN; // + = behind the shoulder
+    return {ok:true,x:wx,y:wy,z,knuckle:(wx-ex)/u,out:(wx-sx2)*(k?1:-1)/u,up:wy<sy2+HAND_UP*u};
   }) as [Wrist,Wrist];
   return {body:{cx:sx,cy:sy,sx,sy,lx:ax,rx:bx,hx,hy,u,ar},wrists,lean:clamp((sx-hx)/u,-1,1)};
+}
+
+// ---------- hand pick (2 s, both directions, switchable) ----------
+// p[0] = left ring, p[1] = right ring, 0..1. The active side fills, the other drains (both drain with no side).
+export function pickStep(p:[number,number],side:0|1|null,dt:number,hold=CHOOSE_HOLD):[number,number]{
+  const k=clamp(dt,0,.1)/Math.max(.1,hold);
+  return [side===0?Math.min(1,p[0]+k):Math.max(0,p[0]-k),side===1?Math.min(1,p[1]+k):Math.max(0,p[1]-k)];
+}
+// knuckle/wrist turn + lateral wrist motion -> hook -1..1 (positive = to the player's right on screen)
+export const spinOf=(knuckle:number,lateral=0)=>clamp(knuckle*SPIN_K+lateral*SPIN_V,-1,1);
+
+// ---------- full back-to-front swing detector ----------
+export type SwingPhase="idle"|"back"|"forward";
+export interface SwingState{phase:SwingPhase;backAt:number;backY:number;backZ:number;lastY:number;lastZ:number;lastT:number;peak:number}
+export const swingState=():SwingState=>({phase:"idle",backAt:0,backY:0,backZ:0,lastY:0,lastZ:0,lastT:0,peak:0});
+export interface SwingPoint{ok:boolean;y:number;z:number}
+// Feed the chosen wrist every camera frame. Returns "back" when the wind-up is recognised (hand behind the body,
+// or up when z is unavailable), "forward" when the hand comes down through the front half, "release" only after a
+// real back -> front travel with speed. A hand simply held down has no back phase, so it cannot throw.
+export function swing(st:SwingState,w:SwingPoint,body:{sy:number;u:number},now:number):""|"back"|"forward"|"release"{
+  if(!w.ok||!Number.isFinite(w.y)){st.phase="idle";st.lastT=now;return ""}
+  const u=body.u,sy=body.sy,zOK=Number.isFinite(w.z);
+  const dt=st.lastT?clamp((now-st.lastT)/1000,0,.25):0;
+  const down=dt>0?(w.y-st.lastY)/dt/u:0;
+  const toward=dt>0&&zOK&&Number.isFinite(st.lastZ)?(st.lastZ-w.z)/dt/u:0;
+  st.lastY=w.y;st.lastZ=w.z;st.lastT=now;
+  if(st.phase==="idle"){
+    const back=zOK?w.z>BACK_Z:w.y<sy-BACK_Y*u;
+    if(!back)return "";
+    st.phase="back";st.backAt=now;st.backY=w.y;st.backZ=w.z;st.peak=0;
+    return "back";
+  }
+  if(st.phase==="back"){
+    if(now-st.backAt>BACK_HOLD*1000){st.phase="idle";return ""}
+    if(zOK?w.z>st.backZ:w.y<st.backY){st.backZ=zOK?w.z:st.backZ;st.backY=Math.min(st.backY,w.y)}
+    if(now-st.backAt>120&&w.y>sy+FWD_START*u&&(down>.2||toward>.2)){
+      st.phase="forward";st.peak=Math.max(down,toward);
+      return "forward";
+    }
+    return "";
+  }
+  if(now-st.backAt>SWING_S*1000){st.phase="idle";return ""}
+  st.peak=Math.max(st.peak,down,toward);
+  const travel=zOK?st.backZ-w.z:(w.y-st.backY)/u;
+  const low=w.y>sy+DROP_Y*u;
+  if(low&&travel>(zOK?SWING_Z:.35)&&Math.max(down,toward)>SWING_SPEED){
+    st.phase="idle";
+    return "release";
+  }
+  return "";
 }
 // the arm held out to the side; the further one wins, a tie (both out) is not a choice
 export function handChoice(c:Ctrl):0|1|null{
@@ -180,6 +243,8 @@ export const newSeries=(n:number,frames:number=DEFAULT_FRAMES):Series=>({
 export const turnOf=(s:Series)=>{const p=s.done?Math.max(0,s.n-1):s.p;return {p,f:s.done?s.frames-1:s.f,roll:s.done?0:s.frameRolls[p][s.f].length}};
 export const lastFrame=(s:Series)=>s.f===s.frames-1;
 export const rackCount=(s:Series)=>s.rack.filter(Boolean).length;
+// how many balls this frame can use: 2, or 3 in the last frame (a strike / spare earns the extra ball)
+export const maxRolls=(s:Series)=>lastFrame(s)?3:2;
 // after a throw: push the pins, update the rack and advance the turn. `down` = pin ids knocked by this throw.
 // Turn order: one player completes their frame (2 balls, or the last frame's bonus balls), then the next player.
 export function addRoll(s:Series,down:number[]):{over:boolean;reset:boolean;strike:boolean;spare:boolean}{
