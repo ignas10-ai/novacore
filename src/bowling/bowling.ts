@@ -289,13 +289,15 @@ function aimStep(now:number,lm:Lm[]|null){
   const dt=prevWrist?Math.min(.2,(now-prevWrist.t)/1000):0;
   const lateral=prevWrist&&dt>0?(w.x-prevWrist.x)/dt/c.body.u:0;
   spin=clamp(spin+(spinOf(w.knuckle,lateral)-spin)*0.28,-1,1);
-  // the hand position aims only until the wind-up starts; then the line is locked while the arm swings
-  if(!aimLocked){const a=aimOf(c,chosen);if(a!=null)aim=clamp(aim+(a-aim)*0.32,-1,1)}
   const r=swing(SW,{ok:true,y:w.y,z:w.z},c.body,now);
+  if(r==="release"){launch(now,aim,spin,throwSpeed(SW.peak));return} // aim is the last up-pose line
+  if(r==="forward")aimLocked=true; // lock at the up-pose line before this frame's hand position is read
+  // the hand position aims while the arm is up; once the downswing starts the line is locked (and on a one-frame
+  // release the aim stays the previous up-pose value, not the low hand position)
+  if(!aimLocked){const a=aimOf(c,chosen);if(a!=null)aim=clamp(aim+(a-aim)*0.32,-1,1)}
   prevWrist={x:w.x,y:w.y,t:now};
-  if(r==="back"){aimLocked=true;setHand(tr("bw.windup"),tr("bw.aimSub"),1,true)}
-  else if(r==="forward")setHand(tr("bw.forward"),tr("bw.aimSub"),1,true);
-  if(r==="release"){launch(now,aim,spin,throwSpeed(SW.peak));return}
+  if(r==="back")setHand(tr("bw.aim"),tr("bw.swingHint"),1,true); // the raised arm is the aim pose; keep aiming
+  else if(r==="forward")setHand(tr("bw.forward"),tr("bw.aimSub"),1,true); // the downswing starts
   if(SW.phase==="idle"){
     if(aimLocked)aimLocked=false;
     setHand(tr("bw.aim"),tr("bw.swingHint"),0,true);
@@ -305,7 +307,7 @@ function aimStep(now:number,lm:Lm[]|null){
 function launch(now:number,aimV:number,spinV:number,speed:number){
   if(phase!=="aim")return;
   aim=clamp(aimV,-1,1);spin=clamp(spinV,-1,1);throwSpeedUsed=clamp(speed,SPEED_MIN,SPEED_MAX);
-  sim=simulateThrow(series.rack,aim,spin,throwSpeedUsed);
+  sim=simulateThrow(series.rack,aim,spin,throwSpeedUsed,(Math.floor(Math.random()*1e9)||1)); // tiny per-throw pin scatter
   phase="roll";phaseAt=now;throwAt=now;resultShown=false;
   resultAt=now+(PIN_Z/throwSpeedUsed)*1000+220;
   nextAt=now+Math.max(3300,(PIN_Z/throwSpeedUsed)*1000+RESULT_EXTRA+900);
@@ -317,24 +319,25 @@ function launch(now:number,aimV:number,spinV:number,speed:number){
 function showThrowResult(now:number){
   if(!sim||resultShown)return;
   resultShown=true;
-  const t=cur(),down=sim.down.length;
+  const t=cur(),down=sim.down.length,beforeRack=rackCount(series);
   const r=addRoll(series,sim.down);
   lastThrow=sim.down.slice();
   const split=!r.strike&&!r.spare&&t.roll===0&&isSplit(series.rack);
   if(split)series.splits[t.p][t.f]=true;
-  const left=rackCount(series);
+  const leftAfter=Math.max(0,beforeRack-down); // the pins actually left on the lane after this ball
   lastPlayer=t.p;
   if(r.strike){
     call(tr("bw.strike"),tr("bw.strikeSub"),"is-big",2200);sfx.finish();burst();
   }else if(r.spare){
     call(tr("bw.spare"),tr("bw.spareSub"),"is-good",2000);sfx.round();
   }else if(down===0){
-    call(tr("bw.gutter"),tr("bw.gutterSub"),"is-bad",1900);sfx.miss();
+    const g=sim.gutter;
+    call(tr(g?"bw.gutter":"bw.miss"),tr(g?"bw.gutterSub":"bw.missSub"),"is-bad",1900);sfx.miss();
   }else{
-    const sub=split?tr("bw.splitSub"):tr("bw.pinsLeft",{n:left});
+    const sub=split?tr("bw.splitSub"):tr("bw.pinsLeft",{n:leftAfter});
     call(tn("bw.pinsDown",down),sub,split?"is-split":"is-count",2000);sfx.rep(0);
   }
-  updateHud();
+  updateHud(t,leftAfter);
   void now;
 }
 function nextTurn(now:number){
@@ -399,8 +402,10 @@ $("#bwHome").onclick=()=>{resetGame();screenPhase("idle");document.body.classLis
 
 // ---------- HUD + prompts ----------
 const totalCache=new Map<number,string>();
-function updateHud(){
-  const cardNow=scoreCard(series),t=cur();
+// turn/leftOverride: during the result call keep the THROWER's frame/ball and the pins left by that ball, while the
+// scorecard totals/frames already include the throw (the next player's card starts only on the next turn card)
+function updateHud(turn?:{p:number;f:number;roll:number},leftOverride?:number){
+  const cardNow=scoreCard(series),t=turn??cur();
   if(boardEl.dataset.n!==String(n))buildBoard();
   for(let i=0;i<n;i++){
     const v=String(cardNow.totals[i]);
@@ -408,9 +413,11 @@ function updateHud(){
     const cardEl=$(`#bwP${i}`);if(cardEl)cardEl.classList.toggle("now",i===t.p&&!series.done);
     const fr=$(`#bwF${i}`);if(fr){const m=series.frameRolls[i].map((x,f)=>x.length?rollMarks(x).join(""):"").filter(Boolean).join(" ");if(fr.textContent!==m)fr.textContent=m||"–"}
   }
-  const ft=`${tr("bw.frame",{n:Math.min(series.frames,t.f+1),total:series.frames})} · ${tr("bw.throwOf",{n:t.roll+1,total:maxRolls(series)})}`;
+  const total=t.f===series.frames-1?3:2;
+  const ft=`${tr("bw.frame",{n:Math.min(series.frames,t.f+1),total:series.frames})} · ${tr("bw.throwOf",{n:t.roll+1,total})}`;
   if(ft!==lastFrameText){lastFrameText=ft;frameEl.textContent=ft}
-  const left=series.done?"":tr("bw.left",{n:rackCount(series)});
+  const nLeft=leftOverride??rackCount(series);
+  const left=series.done||nLeft<=0?"":tr("bw.left",{n:nLeft});
   if(left!==lastLeftText){lastLeftText=left;leftEl.textContent=left;leftEl.hidden=!left}
 }
 function buildBoard(){
@@ -457,13 +464,13 @@ function tvState():Partial<ScreenState>{
 // ---------- test hooks (e2e / headless tools) ----------
 function fakeRoll(ids:number[]){
   if(phase!=="aim")return;
-  sim={down:ids.slice(),frames:[],endT:0,speed:0,aim,hook:spin};
+  sim={down:ids.slice(),frames:[],endT:0,speed:0,aim,hook:spin,standing:series.rack.slice(),gutter:false};
   phase="roll";phaseAt=performance.now();throwAt=phaseAt;resultAt=phaseAt+200;nextAt=phaseAt+2400;resultShown=false;
   setHand("","",0,false);aimEl.classList.remove("on");
 }
 (window as any).__bw={
   state:()=>({phase,p:series.p,f:series.f,roll:turnOf(series).roll,rack:rackCount(series),rackIds:series.rack.map((v,i)=>v?i:-1).filter(i=>i>=0),
-    totals:scoreCard(series).totals,rolls:series.frameRolls.map(fr=>fr.map(x=>x.slice())),done:series.done,aim,spin,last:lastThrow.slice(),sim:sim?{down:sim.down.slice(),endT:sim.endT}:null}),
+    totals:scoreCard(series).totals,rolls:series.frameRolls.map(fr=>fr.map(x=>x.slice())),done:series.done,aim,spin,last:lastThrow.slice(),sim:sim?{down:sim.down.slice(),endT:sim.endT,standing:sim.standing.slice()}:null}),
   script:()=>{scripted=true}, // ignore the camera (the e2e fake camera cannot make the gestures)
   ready:()=>{if(phase==="card")startHand(performance.now())}, // skip the gate / card delay
   hand:(side:0|1)=>{forceHand=side;if(phase==="hand")chooseHand(side,performance.now())},
@@ -573,9 +580,10 @@ function render(now:number,dt:number){
   };
   // pins: back rows first, then the front ones
   const ps:any[]=[];
+  const started=frames?sim!.standing:null; // pins already down before this throw stay swept: only the current rack is drawn
   for(let i=0;i<PINS.length;i++){
     const sp=simPin(i);
-    if(sp){ps.push({i,...sp})}
+    if(sp){if(!started||started[i])ps.push({i,...sp})}
     else if(series.rack[i])ps.push({i,x:PINS[i][0],z:PINS[i][1],down:false,fall:0,dx:1,dz:1});
   }
   ps.sort((a,b)=>b.z-a.z);
