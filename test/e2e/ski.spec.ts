@@ -2,6 +2,7 @@
 // finish -> results -> history -> back rules. The run itself is driven by the test hooks: the e2e camera is a
 // jumping-jack mascot, not a skier, so script mode ignores it and warp(z) puts the skier near the finish (the
 // gates before that point count as clean). Course, gates, physics and gestures are unit-tested on synthetic poses.
+// The 2-player race has its own spec (ski-race.spec.ts) with a two-person fake camera.
 import {test,expect,tap,screen,state,savedGames} from "./fixtures.ts";
 
 test.setTimeout(5*60_000);
@@ -32,7 +33,7 @@ test("solo skiing: tile -> setup -> gate -> run -> results -> history",async({pa
   expect(g,"skiing stored in local history").toMatchObject({mode:"ski",players:1,score:[0,0]});
   expect(g.times).toHaveLength(1);
   expect(g.times[0]).toBeGreaterThan(0);
-  expect(g.skiGates[0]).toBe(9);
+  expect(g.skiGates[0]).toBe(12);
   expect(g.skiPen[0]).toBe(0);
   await page.goBack();
   await screen(page,"ski").toBeVisible();

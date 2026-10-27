@@ -51,6 +51,21 @@ body.skiing #stage{height:clamp(80px,16vh,140px)} /* smaller corner preview than
 .sk-run{background:#E8F4FF}
 .sk-top{grid-template-columns:minmax(0,1.35fr) auto minmax(0,1fr)}
 .sk-top .sp-card{--tone:var(--red);gap:6px}
+/* two-player race (issue #30): P1 card | shared clock | P2 card, no record card */
+.sk-run.race .sk-top{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px}
+.sk-run.race .sk-top .sp-card{gap:5px;padding-left:6px;padding-right:8px}
+.sk-run.race .sk-top .sp-face{width:26px;height:26px}
+.sk-run.race .sk-me-top{gap:4px}
+.sk-run.race .sk-me-n{font-size:13.5px}
+.sk-run.race .sk-me-a{font-size:10.5px}
+.sk-run.race .sk-kmh b{font-size:19px}
+.sk-run.race .sk-kmh small{display:none} /* the unit steals the room the two names need */
+.sk-run.race .sk-clock{min-width:64px;padding:4px 6px 2px}
+.sk-run.race .sk-clock .d{font-size:23px}
+.sk-run.race .sk-pen{font-size:9.5px}
+.sk-run.race .sk-live{display:none}
+.sk-run.race .sk-best{display:none}
+.sk-run.race .sk-boost{right:6px;font-size:10px;padding:1px 6px}
 .sk-top .sp-face{width:32px;height:32px}
 .sk-me{position:relative}
 .sk-me-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0}
@@ -78,6 +93,7 @@ body.skiing #stage{height:clamp(80px,16vh,140px)} /* smaller corner preview than
 .sk-fin{background:conic-gradient(var(--ink) 25%,#fff 0 50%,var(--ink) 0 75%,#fff 0) 0 0/8px 8px}
 .sk-map .sp-dotw{z-index:1}
 .sk-map .sp-dot{background:var(--red)}
+.sk-run.race .sk-map .sp-dotw2 .sp-dot{width:16px;height:16px;margin-top:-8px;translate:0 4px;background:var(--blue)}
 .sk-live{position:absolute;left:50%;top:calc(max(10px,env(safe-area-inset-top)) + 104px);translate:-50% 0;display:flex;align-items:baseline;gap:6px;padding:2px 10px 1px;
   border:2.5px solid var(--ink);border-radius:var(--r-pill);background:var(--ink);color:#fff;box-shadow:0 2px 0 var(--ink);pointer-events:none}
 .sk-live b{font:400 16px/1.15 var(--disp);color:var(--yellow)}
@@ -91,6 +107,8 @@ body.skiing #stage{height:clamp(80px,16vh,140px)} /* smaller corner preview than
 .sk-call.is-go b{font-size:clamp(52px,15vmin,104px);color:var(--yellow);max-width:100%}
 .sk-call.is-gate b{font-size:clamp(38px,11vmin,70px);color:var(--green);-webkit-text-stroke-color:var(--ink)}
 .sk-call.is-gate small{background:var(--green);color:#fff}
+.sk-call.is-gate.p1 small{background:var(--red)}
+.sk-call.is-gate.p2 small{background:var(--blue)}
 .sk-call.is-bad b{font-size:clamp(36px,10vmin,66px);color:var(--red)}
 .sk-call.is-fin b{font-size:clamp(54px,16vmin,110px);color:var(--yellow)}
 .sk-call.is-fin small{background:var(--yellow);color:var(--ink)}
@@ -108,8 +126,23 @@ body.skiing #stage{height:clamp(80px,16vh,140px)} /* smaller corner preview than
   .sk-top{grid-template-columns:minmax(0,1fr) auto}
   .sk-best{display:none} /* portrait: the name and gate count need the room, the record lives on the setup screen */
 }
+@media (max-width:760px){
+  .sk-run.race .sk-top{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+}
+@media (max-width:380px){
+  .sk-run.race .sk-top{gap:4px}
+  .sk-run.race .sk-top .sp-card{gap:4px;padding:4px 5px}
+  .sk-run.race .sk-top .sp-face{width:22px;height:22px;border-width:2.5px}
+  .sk-run.race .sk-me-n{font-size:12px}
+  .sk-run.race .sk-kmh b{font-size:18px}
+  .sk-run.race .sk-kmh small{display:none}
+  .sk-run.race .sk-me-a{font-size:9.5px}
+  .sk-run.race .sk-clock{min-width:52px;padding:4px 4px 2px}
+  .sk-run.race .sk-clock .d{font-size:20px}
+}
 @media (orientation:portrait){
   .sk-legend{top:calc(max(10px,env(safe-area-inset-top)) + 136px);bottom:auto;flex-wrap:wrap;max-width:calc(100% - 24px);justify-content:center}
+  body.skiing.sk-race #stage{height:clamp(78px,14vh,118px)} /* split screen: leave both lower lanes visible */
 }
 
 /* turn card: "Dabar čiuožia" + arms-up gate + standings, over the dimmed slope */
