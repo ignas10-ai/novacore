@@ -3,8 +3,8 @@
 import {describe,it,expect} from "vitest";
 import {
   PINS, PIN_Z, PIN_GAP, MAX_Z, FRAME_W, LANE_W, BALL_R, SPEED_MIN, SPEED_MAX, HAND_OUT, LEAN_MAX,
-  newSeries, turnOf, addRoll, scoreCard, rank, rollMarks, isSplit, simulateThrow, control, handChoice, aimOf,
-  ballX, targetX, throwSpeed, bestTotal, type Series,
+  newSeries, turnOf, addRoll, rackCount, scoreCard, rank, rollMarks, isSplit, simulateThrow, control, handChoice, aimOf,
+  ballX, targetX, throwSpeed, bestTotal, maxRolls, pickStep, spinOf, swing, swingState, type Series,
 } from "../../src/bowling/logic.ts";
 import type {Lm} from "../../src/detect/classifier.ts";
 
@@ -193,6 +193,140 @@ describe("turns, marks and splits",()=>{
   });
 });
 
+describe("hand pick: 2 s, both directions, switchable",()=>{
+  it("fills the held side over 2 s and drains the other when the player switches",()=>{
+    let p:[number,number]=[0,0];
+    for(let i=0;i<10;i++)p=pickStep(p,1,.1); // 1 s right
+    expect(p[0]).toBeCloseTo(0,6);
+    expect(p[1]).toBeCloseTo(.5,6);
+    for(let i=0;i<10;i++)p=pickStep(p,0,.1); // switch: right drains, left fills
+    expect(p[0]).toBeCloseTo(.5,6);
+    expect(p[1]).toBeCloseTo(0,6);
+    for(let i=0;i<10;i++)p=pickStep(p,0,.1); // left reaches a choice
+    expect(p[0]).toBe(1);
+    for(let i=0;i<10;i++)p=pickStep(p,null,.1); // no arm out: both drain
+    expect(p[0]).toBeCloseTo(.5,6);
+    p=pickStep(p,null,10); // one huge frame is clamped to 100 ms
+    expect(p[0]).toBeCloseTo(.45,6);
+  });
+  it("a single side never overfills and a switch back is allowed",()=>{
+    let p:[number,number]=[0,0];
+    for(let i=0;i<30;i++)p=pickStep(p,0,.1);
+    expect(p[0]).toBe(1);
+    for(let i=0;i<5;i++)p=pickStep(p,1,.1); // switch before choosing
+    expect(p[0]).toBeCloseTo(.75,6);
+    expect(p[1]).toBeCloseTo(.25,6);
+  });
+});
+
+describe("full back-to-front swing (not just a lowered hand)",()=>{
+  const body={sy:.3,u:.3};
+  const run=(samples:{t:number;y:number;z:number}[])=>{
+    const st=swingState(),out:string[]=[];
+    for(const s of samples)out.push(swing(st,{ok:true,y:s.y,z:s.z},body,s.t));
+    return {st,out};
+  };
+  it("back behind the body, then forward/down fast -> release",()=>{
+    const {st,out}=run([{t:0,y:.2,z:.4},{t:100,y:.2,z:.42},{t:200,y:.4,z:.1},{t:300,y:.75,z:-.2}]);
+    expect(out[0]).toBe("back");
+    expect(out[2]).toBe("forward");
+    expect(out[3]).toBe("release");
+    expect(st.peak).toBeGreaterThan(1.4);
+  });
+  it("holding the hand down never throws, even when it moves a little",()=>{
+    const {out}=run([{t:0,y:.7,z:0},{t:100,y:.72,z:.02},{t:200,y:.75,z:.04},{t:300,y:.78,z:.06}]);
+    expect(out).toEqual(["","","",""]);
+  });
+  it("back then slowly lowering the hand does not throw",()=>{
+    const {out}=run([{t:0,y:.2,z:.4},{t:100,y:.35,z:.35},{t:400,y:.45,z:.3},{t:800,y:.55,z:.25},{t:1200,y:.65,z:.2},{t:1600,y:.75,z:.15}]);
+    expect(out).not.toContain("release");
+  });
+  it("back then forward but the hand stays high does not throw",()=>{
+    const {out}=run([{t:0,y:.2,z:.4},{t:200,y:.35,z:.05},{t:300,y:.42,z:-.2}]);
+    expect(out).not.toContain("release");
+  });
+  it("the wind-up times out if the player just stands with the hand back",()=>{
+    const {out}=run([{t:0,y:.2,z:.4},{t:3000,y:.2,z:.4},{t:3100,y:.75,z:-.3}]);
+    expect(out[1]).toBe("");
+    expect(out[2]).not.toBe("release");
+  });
+  it("without MediaPipe z, a raised arm then a fast low swing is the fallback",()=>{
+    const {out}=run([{t:0,y:.2,z:NaN},{t:100,y:.4,z:NaN},{t:200,y:.55,z:NaN},{t:300,y:.8,z:NaN}]);
+    expect(out[0]).toBe("back");
+    expect(out[2]).toBe("forward");
+    expect(out[3]).toBe("release");
+  });
+  it("losing the hand resets the wind-up",()=>{
+    const st=swingState();
+    swing(st,{ok:true,y:.2,z:.4},body,0);
+    expect(st.phase).toBe("back");
+    swing(st,{ok:false,y:0,z:NaN},body,100);
+    expect(st.phase).toBe("idle");
+  });
+});
+
+describe("knuckle spin",()=>{
+  it("turning the wrist/knuckle right spins right, left spins left, straight goes straight",()=>{
+    expect(spinOf(.3)).toBeCloseTo(.345,6);
+    expect(spinOf(-.3)).toBeLessThan(0);
+    expect(spinOf(0,.5)).toBeCloseTo(.175,6);
+    expect(spinOf(10,10)).toBe(1);
+    expect(spinOf(-10,-10)).toBe(-1);
+    expect(spinOf(0,0)).toBe(0);
+  });
+});
+
+describe("a frame is two balls; the leaves stay for the second",()=>{
+  it("three pins down -> seven remain for ball 2, then the next frame has a full rack",()=>{
+    const s=newSeries(1,3);
+    addRoll(s,[0,1,2]);
+    expect(rackCount(s)).toBe(7);
+    expect(turnOf(s)).toMatchObject({p:0,f:0,roll:1});
+    expect(maxRolls(s)).toBe(2);
+    addRoll(s,[3,4]);
+    expect(s.f).toBe(1);
+    expect(s.p).toBe(0);
+    expect(rackCount(s)).toBe(10);
+  });
+  it("in a 2-player game the same player gets ball 2 before the turn passes",()=>{
+    const s=newSeries(2,3);
+    addRoll(s,[0,1,2]);
+    expect(s.p).toBe(0);
+    expect(turnOf(s).roll).toBe(1);
+    addRoll(s,[3]);
+    expect(s.p).toBe(1);
+    expect(rackCount(s)).toBe(10);
+  });
+  it("the real physics path keeps the leaves too",()=>{
+    const first=simulateThrow(full,0.6,0,11);
+    expect(first.down.length).toBeGreaterThan(0);
+    expect(first.down.length).toBeLessThan(10);
+    const s=newSeries(1,3);
+    addRoll(s,first.down);
+    expect(rackCount(s)).toBe(10-first.down.length);
+    const second=simulateThrow(s.rack,0,0,11);
+    addRoll(s,second.down);
+    expect(s.f).toBe(1);
+    expect(rackCount(s)).toBe(10);
+  });
+  it("the last frame gets a third ball after a strike and resets only then",()=>{
+    const s=newSeries(1,3);
+    for(let f=0;f<2;f++){throwN(s,0);throwN(s,0)}
+    expect(s.f).toBe(2);
+    expect(maxRolls(s)).toBe(3);
+    throwN(s,10);
+    expect(rackCount(s)).toBe(10);
+    expect(turnOf(s)).toMatchObject({p:0,f:2,roll:1});
+    throwN(s,7);
+    expect(rackCount(s)).toBe(3);
+    expect(turnOf(s).roll).toBe(2);
+    throwN(s,3);
+    expect(s.done).toBe(true);
+    expect(s.frameRolls[0][2]).toEqual([10,7,3]);
+    expect(scoreCard(s).totals[0]).toBe(20);
+  });
+});
+
 describe("camera control geometry",()=>{
   // 33 landmarks, only the torso/arms filled. ar=1, mirrored x = 1-x (screen: left wrist on the left).
   function pose():Lm[]{
@@ -211,6 +345,7 @@ describe("camera control geometry",()=>{
     expect(c.wrists[0].up).toBe(true);
     expect(handChoice(c)).toBe(0);
     expect(aimOf(c,0)).toBeLessThan(-.5);
+    expect(c.wrists[0].knuckle).toBeLessThan(0); // left wrist is screen-left of its elbow
     expect(c.lean).toBeCloseTo(0,6);
   });
   it("a right arm out picks the right hand and aims right; both out is not a choice",()=>{
@@ -220,9 +355,19 @@ describe("camera control geometry",()=>{
     const c=control(lm,1)!;
     expect(handChoice(c)).toBe(1);
     expect(aimOf(c,1)).toBeGreaterThan(.5);
+    expect(c.wrists[1].knuckle).toBeGreaterThan(.2); // wrist outside the elbow = knuckle right
     lm[13]={x:.72,y:.24,visibility:1};lm[15]={x:.82,y:.16,visibility:1};
     const both=control(lm,1)!;
     expect(handChoice(both)).toBeNull();
+  });
+  it("reads the MediaPipe depth z relative to the shoulder for the full swing",()=>{
+    const lm=pose();
+    lm[11].z=0;lm[12].z=0;lm[15].z=.1;
+    const c=control(lm,1)!;
+    expect(c.wrists[0].z).toBeCloseTo(.1/.32,6);
+    lm[15]={x:.82,y:.16,z:NaN,visibility:1};
+    const noZ=control(lm,1)!;
+    expect(Number.isNaN(noZ.wrists[0].z)).toBe(true);
   });
   it("lean comes from the shoulders vs the hips; a low-visibility wrist is not tracked",()=>{
     const lm=pose();

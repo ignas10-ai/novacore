@@ -36,12 +36,17 @@ test("bowling, 2 players x 3 frames: hand -> aim -> ball, scorecard, history, ba
   for(let k=0;k<turns;k++){
     const before=await atTurn();
     order.push(`${before.p}:${before.f}`);
+    expect(before.rack,"the leaves stay for the second ball").toBe(k%2===0?10:7);
     await expect(page.locator("#bwTurnN"),"turn card names the current bowler").toHaveText(before.p?"Martynas":/./);
     if(k===0)await a11y(page,"bowling-turn",info);
     if(before.phase==="card")await page.evaluate(()=>(window as any).__bw.ready()); // no gate: skip the card delay
     await expect.poll(async()=>(await bw(page)).phase,{timeout:10_000}).toBe("hand");
+    await expect(page.locator("#bwPickL"),"left hand pick circle").toBeVisible();
+    await expect(page.locator("#bwPickR"),"right hand pick circle").toBeVisible();
     await page.evaluate(()=>window.__bw.hand(1));
     await expect.poll(async()=>(await bw(page)).phase,{timeout:10_000}).toBe("aim");
+    await expect(page.locator("#bwPickL"),"the pick circles hide after the choice").toBeHidden();
+    if(k%2===1)await expect(page.locator("#bwFrame"),"ball 2 of the frame").toContainText(/2\/[23]/); // the last frame may get a third
     await page.evaluate(()=>window.__bw.aim(0.1,0));
     await page.evaluate(()=>window.__bw.knock(3));
     await expect.poll(async()=>(await bw(page)).phase,{timeout:10_000}).toBe("roll");
