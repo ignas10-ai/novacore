@@ -3,7 +3,7 @@
 import {describe,it,expect} from "vitest";
 import type {Lm} from "../../src/detect/classifier.ts";
 import {COURSE_M,HALF_W,SOFT_W,GATE_FIRST,GATE_EVERY,GATE_HALF,MISS_PENALTY,LIMIT_S,GLIDE,BRAKE_V,V_MAX,PUSH_DOUBLE,
-  newCourse,newSkier,newPoleState,tick,readControl,penalty,rank,bestTime,total,turnOf,centerAt} from "../../src/ski/logic.ts";
+  newCourse,newSkier,newPoleState,tick,readControl,penalty,rank,bestTime,total,turnOf,centerAt,splitPoses} from "../../src/ski/logic.ts";
 
 function drive(course:ReturnType<typeof newCourse>,{pushEvery=.72,brake=0}={}){
   const s=newSkier(course);let t=0,nextPush=.5;const dt=1/60;
@@ -38,10 +38,18 @@ describe("course",()=>{
     expect(a.trees).toEqual(b.trees);
     expect(a.gates).not.toEqual(c.gates);
   });
+  it("the harder #30 course has 12 tighter, closer gates",()=>{
+    const c=newCourse(1);
+    expect(c.gates.length).toBe(12);
+    expect(GATE_FIRST).toBe(45);
+    expect(GATE_EVERY).toBe(30);
+    expect(GATE_HALF).toBeLessThan(2.5);
+    expect(HALF_W).toBeLessThan(7.5);
+  });
   it("gates are ordered, spaced, inside the ribbon and within the walls",()=>{
     for(const seed of [1,2,99,424242]){
       const c=newCourse(seed);
-      expect(c.gates.length).toBeGreaterThan(6);
+      expect(c.gates.length).toBe(12);
       c.gates.forEach((g,i)=>{
         expect(g.z).toBe(GATE_FIRST+i*GATE_EVERY);
         expect(g.z).toBeLessThan(COURSE_M);
@@ -155,6 +163,37 @@ describe("gates and penalties",()=>{
   });
 });
 
+describe("two-player race",()=>{
+  it("assigns two poses left/right and a lone pose by its screen half",()=>{
+    const left={x:.2},right={x:.8};
+    expect(splitPoses([left,right])).toEqual([left,right]);
+    expect(splitPoses([right,left])).toEqual([right,left]); // sorted upstream by mirrored x
+    expect(splitPoses([left])).toEqual([left,null]);
+    expect(splitPoses([right])).toEqual([null,right]);
+    expect(splitPoses([])).toEqual([null,null]);
+  });
+  it("two skiers on the same course keep separate gates, speeds and events",()=>{
+    const c=newCourse(42),a=newSkier(c),b=newSkier(c),g0=c.gates[0];
+    a.z=b.z=g0.z-.05;a.x=g0.x;b.x=g0.x+g0.half+1;a.heading=b.heading=0;a.v=12;b.v=8;
+    const ea=tick(a,c,1/60,{steer:0,brake:0,push:false});
+    const eb=tick(b,c,1/60,{steer:0,brake:0,push:false});
+    expect(ea.map(e=>e.type)).toContain("clean");
+    expect(eb.map(e=>e.type)).toContain("miss");
+    expect(a.clean).toBe(1);expect(a.miss).toBe(0);
+    expect(b.clean).toBe(0);expect(b.miss).toBe(1);
+    expect(a.v).not.toBe(b.v);
+    expect(a.res[0]).toBe("ok");expect(b.res[0]).toBe("miss");
+  });
+  it("each racer finishes independently and is ranked by final time",()=>{
+    const c=newCourse(42),a=newSkier(c),b=newSkier(c);
+    a.z=b.z=COURSE_M-.01;a.x=b.x=centerAt(c,COURSE_M);a.t=19;b.t=21;
+    expect(tick(a,c,1/60,{steer:0,brake:0,push:false}).map(e=>e.type)).toContain("finish");
+    expect(b.fin).toBeNull();
+    expect(tick(b,c,1/60,{steer:0,brake:0,push:false}).map(e=>e.type)).toContain("finish");
+    expect(a.fin).toBeLessThan(b.fin!);
+    expect(rank([a.fin,b.fin]).map(x=>[x.i,x.place])).toEqual([[0,1],[1,2]]);
+  });
+});
 describe("ranking and turns",()=>{
   it("fastest wins; ties share the place; DNF last without a place",()=>{
     const r=rank([23.4,20.1,23.4,null]);
