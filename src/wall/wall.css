@@ -93,7 +93,11 @@ body.walling .fs,body:has(#wlEnd:not(.hide)) .fs{display:none}
 .wl-row .sp-row-t{font-size:18px;white-space:nowrap}
 @media (orientation:landscape) and (max-height:500px){
   #wlEnd .wrap{max-width:820px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:20px;align-content:center}
-  #wlEnd .sp-res-head{margin-top:0;grid-row:1 / span 2;min-height:0;align-self:stretch;justify-content:center}
+  #wlEnd .sp-res-head{margin-top:0;grid-row:1 / span 2;min-height:0;align-self:stretch;justify-content:center;padding-right:100px}
+  #wlEnd .sp-res-head h2{font-size:clamp(24px,4.4vw,38px)}
+  #wlEnd .sp-res-art{width:100px}
+  .wl-row .sp-row-t{font-size:16px}
+  .wl-row .sp-row-txt small{font-size:12px}
   #wlEnd .cta{grid-column:2;flex-direction:row}
   #wlEnd .cta .go{flex:1;min-width:0;white-space:nowrap;font-size:18px}
   #wlEnd .cta #wlHome{flex:none;width:58px;padding:0;font-size:0;gap:0} /* icon only, the label stays for screen readers */
