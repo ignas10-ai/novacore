@@ -40,9 +40,10 @@ body.walling .fs,body:has(#wlEnd:not(.hide)) .fs{display:none}
 .wl-run .lj-turn{pointer-events:auto}
 .wl-top{align-items:center}
 .wl-top .bx-sc{color:var(--ink)}
-.wl-top .bx-face{border-color:var(--tone)}
+.wl-top .bx-face{border-color:var(--tone);width:36px;height:36px}
+.wl-top .bx-card{gap:6px;padding-right:12px}.wl-top .bx-card.p2{padding:4px 4px 4px 12px}
 .wl-best{--tone:var(--ink)}
-.wl-name{max-width:100%;overflow:hidden;text-overflow:ellipsis;color:var(--fg-mute)}
+.wl-name{display:block !important;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:var(--fg-mute)}
 .bx-card.p2 .wl-name{text-align:right}
 /* the countdown ring: big enough to read from 2-3 m */
 .wl-ring{position:relative;display:grid;place-items:center;width:clamp(84px,24vmin,150px);aspect-ratio:1;border-radius:50%;background:var(--ink);border:var(--bw) solid #070920;box-shadow:0 4px 0 #070920;
@@ -57,17 +58,19 @@ body.walling .fs,body:has(#wlEnd:not(.hide)) .fs{display:none}
 .wl-ring.paused{opacity:.55}
 .wl-ring.paused .wl-arc{stroke:#A3A7C8}
 /* status pill at the bottom: get out (red) / safe (green) / come back (navy) */
-.wl-st{position:absolute;left:50%;bottom:max(18px,env(safe-area-inset-bottom));translate:-50% 0;max-width:calc(100% - 32px);padding:8px 20px 6px;border:var(--bw) solid var(--ink);border-radius:var(--r-pill);
+.wl-st{position:absolute;left:16px;right:16px;bottom:max(18px,env(safe-area-inset-bottom));width:fit-content;max-width:calc(100% - 32px);margin-inline:auto;padding:8px 20px 6px;border:var(--bw) solid var(--ink);border-radius:var(--r-pill);
   background:var(--surface);color:var(--ink);font:400 clamp(20px,5.6vmin,30px)/1.15 var(--disp);text-align:center;box-shadow:0 4px 0 var(--ink);opacity:0;scale:.7;
   transition:opacity var(--duration-quick) var(--ease-ui),scale var(--duration-quick) var(--ease-ui),background var(--duration-fast) var(--ease-ui)}
 .wl-st.on{opacity:1;scale:1}
 .wl-st.out{background:var(--red);color:#fff;-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill}
 .wl-st.safe{background:var(--green);color:#fff;-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill}
 .wl-st.lost{background:var(--ink);color:#fff;border-color:#fff}
-/* calls: Pasiruošk / 3 2 1 / Į dešinę! / Saugu! / Pagautas! / Grįžk į kadrą (base = .sp-call in sprint.css) */
+/* calls: Pasiruošk / 3 2 1 / Į dešinę! / Saugu! / Pagautas! / Grįžk į kadrą (base = .sp-call in sprint.css); the wall hint
+   sits right under the HUD so it never covers the player */
 .wl-call{top:34%;z-index:2}
+.wl-call.is-hint{top:calc(max(10px,env(safe-area-inset-top)) + clamp(84px,24vmin,150px) + 14px)}
 .wl-call.is-num b{font-size:clamp(84px,26vmin,170px)}
-.wl-call.is-hint b{color:var(--yellow);font-size:clamp(38px,11vmin,76px)}
+.wl-call.is-hint b{color:var(--yellow);font-size:clamp(32px,9.5vmin,64px)}
 .wl-call.is-safe b{color:var(--green);font-size:clamp(56px,16vmin,110px)}
 .wl-call.is-caught b{font-size:clamp(52px,15vmin,104px)}
 .wl-call.is-caught small{background:var(--red);color:#fff}
@@ -77,6 +80,7 @@ body.walling .fs,body:has(#wlEnd:not(.hide)) .fs{display:none}
   .wl-top{grid-template-columns:minmax(0,240px) auto minmax(0,240px);justify-content:space-between}
   .wl-ring{width:clamp(70px,22vh,110px)}
   .wl-call{top:30%}
+  .wl-call.is-hint{top:calc(max(8px,env(safe-area-inset-top)) + clamp(70px,22vh,110px) + 6px)}
 }
 
 /* ---------- results (base = .sp-res-head / .sp-row from sprint.css, .lj-res-head / .lj-row from longjump.css) ---------- */

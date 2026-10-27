@@ -29,7 +29,7 @@ import {screenPhase,setScreenMode} from "../cast/cast.ts";
 import type {ScreenState} from "../cast/room.ts";
 import {rngFrom} from "../boxing/logic.ts";
 import {WHO,TONE,TONE_INK,DEF,NAME_MAX,face} from "../longjump/longjump.ts";
-import {PTS,bodyOf,wallFor,newRound,track,advance,newScore,addRound,rank,type Body,type Kind,type Round,type Score,type Verdict} from "./logic.ts";
+import {PTS,secsFor,bodyOf,wallFor,newRound,track,advance,newScore,addRound,rank,type Body,type Kind,type Round,type Score,type Verdict} from "./logic.ts";
 
 const RED="#FF3B3B", INK="#14183A", GREEN="#16B67A";
 const GAP_S=0.9, SLAM_S=0.35, OUT_S=2.6, IN_S=0.3; // pause between walls, wall hit, caught -> next turn, slide-in
@@ -204,6 +204,7 @@ function card(now:number){
     li.querySelector(".lj-mname")!.textContent=names0[r.i];
     li.querySelector("b")!.textContent=played[r.i]?String(scores[r.i].rounds):"–";return li}));
   turnRoot.hidden=false;turnRoot.classList.remove("out");void turnRoot.offsetWidth;turnRoot.classList.add("in");
+  tEl.textContent=shown.t=dec(secsFor(1),1);arc.style.strokeDashoffset="0";ringEl.classList.remove("hot","paused");
   hudMe();
   sfx.round();
 }
@@ -284,7 +285,7 @@ function frame(now:number){
     if(tp>=GAP_S&&!spawn(now)&&tp>GAP_S+.5)setSt("lost",tr("wl.lost"));
   }else if(phase==="wall"){
     const r=R!;
-    if(force){r.since=0;r.hits=force==="caught"?[0]:[]}
+    if(force){r.since=0;r.hits=force==="caught"?[0]:[];if(!r.hits.length&&r.safeAt<0)r.safeAt=r.t}
     else if(fr)track(r,lmKeep,arOf());
     let v=advance(r,dt);
     if(v&&force)v=r.res=force;
