@@ -33,6 +33,7 @@ import "./bowling/bowling.ts"; // Boulingas: its tile goes below the hurdles til
 import "./ski/ski.ts"; // Slidinėjimas: its tile goes below the bowling tile
 import "./wall/wall.ts"; // Siena: its tile goes below the skiing tile
 import "./javelin/javelin.ts"; // Iečio metimas: its tile goes below the Siena tile
+import "./badminton/badminton.ts"; // Badmintonas: inserted after Siena too, so it sits before Iečio metimas
 
 // the TV/laptop scoreboard never shows the first-run onboarding (a fresh browser there has no nickname/history)
 if(parse(location.hash).v==="screen")render();

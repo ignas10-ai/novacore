@@ -18,6 +18,8 @@ export interface Game{
   bwFrameRolls?:number[][][]; // bowling: per player, per frame, pins per ball (for the scorecard table)
   bwTotals?:number[]; // bowling: final ten-pin totals per player
   skiRaw?:(number|null)[];skiPen?:number[];skiGates?:number[];skiMiss?:number[];skiHit?:number[]; // skiing (src/ski, times = final incl. penalties)
+  bdScore?:number[];bdTarget?:number;bdRallies?:number;bdLongest?:number; // badminton (src/badminton, score stays [0,0])
+  bdStrokes?:{serve:number;clear:number;drop:number;smash:number}[]; // badminton: serve/clear/drop/smash counts per player
 }
 export const WEEK_GOAL=5;
 

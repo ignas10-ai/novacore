@@ -109,6 +109,11 @@
 @keyframes mx-cc-gr{0%,50%,100%{transform:translate(0,0)}25%{transform:translate(-50px,42px)}}
 @keyframes mx-cc-gl{0%,50%,100%{transform:translate(0,0)}75%{transform:translate(50px,42px)}}
 
+/* Badmintonas (src/badminton): the racket glove swings, the body bounces on the toes */
+.anim.mp-badminton .m-fi{animation:m-bounce 1.3s ease-in-out infinite alternate}
+.anim.mp-badminton .m-glove.r .m-gl{animation:m-bd-swing 2.1s var(--ease-bounce,ease) infinite}
+@keyframes m-bd-swing{0%,30%{transform:rotate(0)}62%{transform:rotate(-42deg)}100%{transform:rotate(0)}}
+
 /* Slidinėjimas (src/ski): the skier rocks side to side, both gloves pull down like poles */
 .anim.mp-ski .m-ui{animation:m-ski-sway 2.4s ease-in-out infinite alternate}
 .anim.mp-ski .m-glove .m-gl{animation:m-ski-pole 2.4s var(--ease-smooth-out,ease) infinite}

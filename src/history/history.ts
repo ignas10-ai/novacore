@@ -24,14 +24,15 @@ export function histItem(g:Game,i:number,best:number[]){
   const when=document.createElement("span");when.className="when";when.dataset.rec=t("prof.best"); // .best badge (CSS ::after)
   when.textContent=new Date(g.t).toLocaleString(locale(),{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
   const what=document.createElement("span");what.className="what";
-  const sprint=g.mode==="sprint", boxing=g.mode==="boxing", lj=g.mode==="longjump", hd=g.mode==="hurdles", bw=g.mode==="bowling", ski=g.mode==="ski", wl=g.mode==="wall", jv=g.mode==="javelin";
-  what.textContent=lj?tn("hist.longjump",g.players):wl?tn("hist.wall",g.players):jv?tn("hist.javelin",g.players):boxing?t("hist.boxing",{mode:t(g.players===1?"mode.solo":"mode.duel"),n:g.duration}):sprint?t("hist.sprint",{mode:t(g.players===1?"mode.solo":"mode.duel")}):hd?t("hist.hurdles",{mode:t(g.players===1?"mode.solo":"mode.duel")}):bw?tn("hist.bowling",g.bwFrames??3):ski?tn("hist.ski",g.players):t("hist.game",{mode:t(g.players===1?"mode.Solo":"mode.Duel"),min:Math.round(g.duration/60),ex:(g.ex||[]).map(exName).join(", ")});
+  const sprint=g.mode==="sprint", boxing=g.mode==="boxing", lj=g.mode==="longjump", hd=g.mode==="hurdles", bw=g.mode==="bowling", ski=g.mode==="ski", wl=g.mode==="wall", jv=g.mode==="javelin", bd=g.mode==="badminton";
+  what.textContent=lj?tn("hist.longjump",g.players):wl?tn("hist.wall",g.players):jv?tn("hist.javelin",g.players):bd?t("hist.badminton",{n:g.bdTarget??11}):boxing?t("hist.boxing",{mode:t(g.players===1?"mode.solo":"mode.duel"),n:g.duration}):sprint?t("hist.sprint",{mode:t(g.players===1?"mode.solo":"mode.duel")}):hd?t("hist.hurdles",{mode:t(g.players===1?"mode.solo":"mode.duel")}):bw?tn("hist.bowling",g.bwFrames??3):ski?tn("hist.ski",g.players):t("hist.game",{mode:t(g.players===1?"mode.Solo":"mode.Duel"),min:Math.round(g.duration/60),ex:(g.ex||[]).map(exName).join(", ")});
   const pts=document.createElement("span");pts.className="pts";
   // long jump: 1-4 players -> one number, the longest valid jump of the series
   if(lj){const b=document.createElement("b");b.className="d p1";const d=Math.max(0,...(g.jumps||[]).flat().map(x=>x??0));b.textContent=d?`${dec(d,2)} m`:"X";pts.append(b)}
   // javelin: the total of valid throws (the winner is ranked by the total)
   else if(jv){const b=document.createElement("b");b.className="d p1";const all=(g.throws||[]).flat().filter((x):x is number=>x!=null);b.textContent=all.length?`${dec(all.reduce((a,x)=>a+x,0),2)} m`:"X";pts.append(b)}
   else if(wl){const b=document.createElement("b");b.className="d p1";b.textContent=tn("wl.rnd",Math.max(0,...(g.reps||[]).slice(0,g.players)));pts.append(b)} // the most walls survived
+  else if(bd)for(let p=0;p<g.players;p++){const b=document.createElement("b");b.className=`d p${p+1}`;b.textContent=String(g.bdScore?.[p]??0);pts.append(b)} // badminton: one score per player
   // bowling: one total per player
   else if(bw)for(let p=0;p<g.players;p++){const b=document.createElement("b");b.className=`d p${p+1}`;b.textContent=String(g.bwTotals?.[p]??0);pts.append(b)}
   // skiing with 3-4 players: the row stays readable -> one number, the fastest final time

@@ -212,8 +212,10 @@ export function simulateThrow(standing:boolean[],aim:number,hook:number,speed:nu
     deflect=clamp(deflect+deflectStep,-.04,.04);
     // pin -> pin collisions (a falling pin sweeps its neighbours)
     for(let i=0;i<ps.length;i++){
-      const a=ps[i];if(a.down&&a.fall>=1&&a.vx*a.vx+a.vz*a.vz<1e-4)continue;
+      const a=ps[i];if(!standing[i])continue; // swept pins from the first ball are not on the deck any more
+      if(a.down&&a.fall>=1&&a.vx*a.vx+a.vz*a.vz<1e-4)continue;
       for(let j=i+1;j<ps.length;j++){
+        if(!standing[j])continue;
         const b=ps[j];
         const dx=b.x-a.x,dz=b.z-a.z,d=Math.hypot(dx,dz),rr=(a.down?PIN_REACH:PIN_R)+(b.down?PIN_REACH:PIN_R);
         if(d>=rr||d<1e-9)continue;

@@ -8,7 +8,7 @@
 export type Who="r"|"b"|"y"|"g"; // y / g = Geltonas, Žalias (Šuolis į tolį party mode, src/longjump)
 export type Mood="fierce"|"smirk"|"happy"|"sad";
 export type ExId="squat"|"jack"|"knees"|"squatjump"|"sidestep"|"lunge"|"crunch";
-export type Pose="idle"|"vs"|"win"|"lose"|"guard"|"punch"|"ski"|"javelin"|ExId; // guard / punch = Boksas (src/boxing), ski = Slidinėjimas (src/ski), javelin = Iečio metimas (src/javelin)
+export type Pose="idle"|"vs"|"win"|"lose"|"guard"|"punch"|"ski"|"badminton"|"javelin"|ExId; // guard / punch = Boksas, ski = Slidinėjimas, badminton = Badmintonas, javelin = Iečio metimas
 
 const INK="#14183A";
 const C={r:{body:"#FF3B3B",band:"#FFC61A"},b:{body:"#2F6BFF",band:"#FFFFFF"},y:{body:"#FFC61A",band:"#FF3B3B"},g:{body:"#16B67A",band:"#FFC61A"}};
@@ -52,9 +52,12 @@ function head(who:Who,mood:Mood,f:number){
     +`<g transform="translate(0 6)">`+face(who,mood,f*5)+`</g>`+`<circle cx="100" cy="84" r="60" fill="none" stroke="${INK}" stroke-width="${SW}"/>`
     +(mood==="sad"?sweat:"")+`</g>`;
 }
-const glove=(fill:string,cls:string,x:number,y:number,cuff=false)=>`<g class="m-glove ${cls}" transform="translate(${x} ${y})"><g class="m-gl">`
+const glove=(fill:string,cls:string,x:number,y:number,cuff=false,extra="")=>`<g class="m-glove ${cls}" transform="translate(${x} ${y})"><g class="m-gl">`
   +(cuff?`<rect x="-15" y="20" width="30" height="14" rx="6" fill="#fff" stroke="${INK}" stroke-width="5"/>`:"")
-  +`<circle r="27" fill="${fill}" stroke="${INK}" stroke-width="${SW}"/><path d="M-16 -9Q-12 -19 -2 -21" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".85"/></g></g>`;
+  +`<circle r="27" fill="${fill}" stroke="${INK}" stroke-width="${SW}"/><path d="M-16 -9Q-12 -19 -2 -21" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".85"/>`
+  +extra+`</g></g>`;
+// Badmintonas: a racket in the raised right glove (handle from the glove, oval head inside the viewBox)
+const RACKET=`<g class="m-racket"><path d="M4 2 22 -14" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><ellipse cx="30" cy="-21" rx="14" ry="10" transform="rotate(-35 30 -21)" fill="#fff" stroke="${INK}" stroke-width="4"/><path d="M20 -16 40 -26M19 -23 37 -14" stroke="rgba(20,24,58,.32)" stroke-width="2"/></g>`;
 const leg=(cls:string,x:number,t="")=>`<g class="m-leg ${cls}"${t?` transform="${t}"`:""}><g class="m-lg"><rect x="${x}" y="184" width="24" height="34" rx="12" fill="${INK}"/></g></g>`;
 
 // static layout per pose: glove centres, leg transforms, upper-body offset, mood
@@ -74,6 +77,7 @@ const POSES:Record<Pose,P>={
   guard:{gl:[52,136],gr:[148,136]},
   punch:{gl:[58,138],gr:[186,98]}, // front glove jabs toward the side the mascot faces (mirrored for Mėlynas)
   ski:{gl:[48,132],gr:[152,132]}, // gloves hold the poles at chest height (Slidinėjimas)
+  badminton:{gl:[46,152],gr:[148,62]}, // racket glove up, ready to serve (Badmintonas)
   javelin:{gl:[44,154],gr:[156,96]}, // throwing glove above the shoulder, the other hand at the chest
 };
 export const EX_IDS:ExId[]=["squat","jack","knees","squatjump","sidestep","lunge","crunch"];
@@ -99,7 +103,7 @@ export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mo
     +javelin
     +head(who,mood,f)
     +(pose==="win"?crown(100,-14,58):"")
-    +glove(c.body,"l",...p.gl,p.cuff)+glove(c.body,"r",...p.gr,p.cuff)
+    +glove(c.body,"l",...p.gl,p.cuff)+glove(c.body,"r",...p.gr,p.cuff,pose==="badminton"?RACKET:"")
     +`</g></g></g></g>`
     +(pose==="win"?`<g class="m-sparks">${spark(14,130,1)}${spark(186,112,.8)}${spark(178,176,.6)}</g>`:"")
     +`</svg>`;
@@ -125,4 +129,4 @@ const ICON:Record<ExId,string>={
 export const exIcon=(id:string)=>`<svg class="ex-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${(ICON as Record<string,string>)[id]||ICON.squat}</svg>`.replace(/<circle /g,'<circle fill="currentColor" stroke="none" ');
 // exercise illustration: alternate red/blue like the picker order (squat red, jack blue, ...)
 export const exWho=(id:string):Who=>EX_IDS.indexOf(id as ExId)%2?"b":"r";
-export const exArt=(id:string,anim=true)=>mascot(exWho(id),(EX_IDS.includes(id as ExId)?id:id==="boxing"?"punch":id==="bowling"?"guard":id==="ski"?"ski":id==="javelin"?"javelin":id==="wall"?"sidestep":id==="sprint"||id==="hurdles"?"knees":"idle") as Pose,{anim});
+export const exArt=(id:string,anim=true)=>mascot(exWho(id),(EX_IDS.includes(id as ExId)?id:id==="boxing"?"punch":id==="bowling"?"guard":id==="ski"?"ski":id==="badminton"?"badminton":id==="javelin"?"javelin":id==="wall"?"sidestep":id==="sprint"||id==="hurdles"?"knees":"idle") as Pose,{anim});
