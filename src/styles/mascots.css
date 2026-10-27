@@ -108,3 +108,10 @@
 @keyframes mx-cc-knee{0%,50%,100%{transform:translateY(0)}25%{transform:translateY(-36px) scale(1.1,.78)}}
 @keyframes mx-cc-gr{0%,50%,100%{transform:translate(0,0)}25%{transform:translate(-50px,42px)}}
 @keyframes mx-cc-gl{0%,50%,100%{transform:translate(0,0)}75%{transform:translate(50px,42px)}}
+
+/* Slidinėjimas (src/ski): the skier rocks side to side, both gloves pull down like poles */
+.anim.mp-ski .m-ui{animation:m-ski-sway 2.4s ease-in-out infinite alternate}
+.anim.mp-ski .m-glove .m-gl{animation:m-ski-pole 2.4s var(--ease-smooth-out,ease) infinite}
+.anim.mp-ski .m-glove.l .m-gl{animation-delay:-.2s}
+@keyframes m-ski-sway{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}
+@keyframes m-ski-pole{0%,18%,100%{transform:translateY(0)}45%{transform:translateY(28px)}62%{transform:translateY(0)}}
