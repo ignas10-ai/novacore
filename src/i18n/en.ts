@@ -174,6 +174,8 @@ export const en:Record<Key,string>={
   "home.vs":"Red vs Blue",
   "home.play":"Play",
   "home.meta":"1–2 players · 3 min",
+  "home.games":"All games",
+  "home.gamesNav":"Games",
   "home.quick":"Quick start",
   "home.fast":"Quick",
   "home.fastSolo":"1 min solo",

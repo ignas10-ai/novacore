@@ -174,6 +174,8 @@ export const lt={
   "home.vs":"Raudonas prieš mėlyną",
   "home.play":"Žaisti",
   "home.meta":"1–2 žaidėjai · 3 min",
+  "home.games":"Visos rungtys",
+  "home.gamesNav":"Rungtys",
   "home.quick":"Greitas startas",
   "home.fast":"Greitas",
   "home.fastSolo":"1 min solo",
