@@ -21,7 +21,7 @@ import {mascot,avatar,type Who} from "../ui/mascots.ts";
 import {cachedNick} from "../online/api.ts";
 import {screenPhase,setScreenMode} from "../cast/cast.ts";
 import type {ScreenState} from "../cast/room.ts";
-import {COURSE_M,LIMIT_S,MISS_PENALTY,newCourse,newSkier,newPoleState,readControl,tick,rank,penalty,centerAt,total,turnOf,
+import {COURSE_M,LIMIT_S,MISS_PENALTY,PUSH_V,newCourse,newSkier,newPoleState,readControl,tick,rank,penalty,centerAt,total,turnOf,
   type Course,type Skier,type GateRes,type SkiInput,type PoleState} from "./logic.ts";
 import {layout,buildSlope,drawSlope,type Layout,type Motion} from "./slope.ts";
 import {LOOKS} from "../sprint/runner.ts";
@@ -92,7 +92,7 @@ document.body.insertAdjacentHTML("beforeend",`
   <canvas id="skCv" role="img" aria-label="${tr("sk.course")}"></canvas>
   <div class="sp-hud">
     <div class="sp-top sk-top">
-      <div class="sp-card sk-me" id="skMe"><span class="sp-face" id="skMeFace"></span><div class="sp-card-in"><b class="sk-me-n" id="skMeN"></b><small class="sk-me-a" id="skMeA"></small><span class="sp-bar"><i id="skV"></i></span></div></div>
+      <div class="sp-card sk-me" id="skMe"><span class="sp-face" id="skMeFace"></span><div class="sp-card-in"><span class="sk-me-top"><b class="sk-me-n" id="skMeN"></b><span class="sk-kmh" aria-label="${tr("sk.speed")}"><b class="d" id="skKmh">0</b><small>km/h</small></span></span><small class="sk-me-a" id="skMeA"></small><span class="sp-bar"><i id="skV"></i></span></div><span class="sk-boost" id="skBoost" aria-hidden="true">${tr("sk.boost")}</span></div>
       <div class="sp-clock sk-clock"><span class="d" id="skT">0,00</span><small class="sk-pen" id="skPen"></small></div>
       <div class="sp-card p2 sk-best" id="skBestC"><span class="sp-face sk-tro" data-icon="trophy"></span><div class="sp-card-in"><b class="d" id="skPbL">–</b><small>${tr("sk.pbL")}</small></div></div>
     </div>
@@ -139,7 +139,7 @@ fillIcons(document);
 
 const runRoot=$("#skRun"), endRoot=$("#skEnd"), cvs=$<HTMLCanvasElement>("#skCv"), ctx=cvs.getContext("2d",{alpha:false})!;
 const callRoot=$("#skCall"), callT=$("#skCallT"), callS=$("#skCallS"), turnRoot=$("#skTurn"), gateRoot=$("#skGate"), ring=$("#skRing"), gateT=$("#skGateT");
-const clockEl=$("#skT"), penEl=$("#skPen"), vEl=$("#skV"), dotEl=$("#skDot"), gateN=$("#skGateN"), legend=$("#skLegend");
+const clockEl=$("#skT"), penEl=$("#skPen"), vEl=$("#skV"), dotEl=$("#skDot"), gateN=$("#skGateN"), legend=$("#skLegend"), kmhEl=$("#skKmh"), boostEl=$("#skBoost");
 
 // ---------- history: rows with mode "ski", times = final time per player (incl. penalties, null = DNF) ----------
 const bestEver=(h:Game[])=>h.reduce((m,g)=>g.mode==="ski"?Math.min(m,...(g.times||[]).map(t=>t??Infinity)):m,Infinity);
@@ -181,8 +181,8 @@ type Phase="off"|"card"|"count"|"run"|"over";
 let phase:Phase="off", phaseAt=0, beat=-1, k=0, holdAt=0, holdOk=0, raf=0, last=0, hudAt=0, callTimer=0, legendTimer=0;
 let n=2, names0:string[]=[], course:Course|null=null, skier:Skier|null=null, pb=Infinity, startedAt=0;
 let times:(number|null)[]=[], raws:(number|null)[]=[], pens:number[]=[], cleans:number[]=[], misses:number[]=[], hits:number[]=[], gateRes:(GateRes|null)[][]=[];
-let input:SkiInput={steer:0,brake:0,push:false}, pole:PoleState=newPoleState(), lastLm:any[]|null=null, lastCtrlAt=0;
-let camX=0, lean=0, brakeNow=0, pushAt=-1e9, pushShown=0;
+let input:SkiInput={steer:0,brake:0,push:false,power:1}, pole:PoleState=newPoleState(), lastLm:any[]|null=null, lastCtrlAt=0;
+let camX=0, lean=0, brakeNow=0, pushAt=-1e9, pushShown=0, pushHand:-1|0|1=-1, boostTimer=0;
 let scripted=false, scriptSteer=0, auto=false, autoAt=0;
 let lmKeep:any[]|null=null, L:Layout, stored=false;
 
@@ -191,6 +191,11 @@ function call(t:string,s="",cls="",ms=0){
   callT.textContent=t;callS.textContent=s;callRoot.className=`sp-call sk-call on ${cls}`;
   void callRoot.offsetWidth;callRoot.classList.add("pop");
   if(ms)callTimer=setTimeout(()=>callRoot.classList.remove("on"),ms);
+}
+function flashBoost(){
+  clearTimeout(boostTimer);
+  boostEl.classList.add("on");
+  boostTimer=window.setTimeout(()=>boostEl.classList.remove("on"),420);
 }
 function resize(){
   const W=innerWidth,H=innerHeight,dpr=Math.min(2,devicePixelRatio||1);
@@ -224,7 +229,7 @@ function begin(){
 // ---------- turn card + gate ----------
 function card(now:number){
   phase="card";phaseAt=now;holdAt=0;holdOk=0;stored=false;S.running=false; // back between turns = leave the series
-  skier=newSkier(course!);pole=newPoleState();input={steer:0,brake:0,push:false};lastLm=null;lastCtrlAt=0;lmKeep=null;camX=skier.x;lean=0;brakeNow=0;pushAt=-1e9;
+  skier=newSkier(course!);pole=newPoleState();input={steer:0,brake:0,push:false,power:1};lastLm=null;lastCtrlAt=0;lmKeep=null;camX=skier.x;lean=0;brakeNow=0;pushAt=-1e9;pushHand=-1;
   const {player:p}=turnOf(k,n);
   callRoot.className="sp-call sk-call";legend.classList.remove("on");
   $("#skTurnArt").innerHTML=mascot(WHO[p],"ski",{anim:true});
@@ -264,8 +269,9 @@ function count(now:number){
   call(tr("sk.ready"),tr("sk.readySub"));sfx.tick();
 }
 function startRun(now:number){
-  phase="run";phaseAt=now;skier=newSkier(course!);input={steer:0,brake:0,push:false};pole=newPoleState();
-  lastLm=null;lastCtrlAt=now;camX=skier.x;lean=0;brakeNow=0;pushAt=-1e9;autoAt=now+700;
+  phase="run";phaseAt=now;skier=newSkier(course!);input={steer:0,brake:0,push:false,power:1};pole=newPoleState();
+  lastLm=null;lastCtrlAt=now;camX=skier.x;lean=0;brakeNow=0;pushAt=-1e9;pushHand=-1;autoAt=now+700;
+  boostEl.classList.remove("on");clearTimeout(boostTimer);
   call(tr("sk.go"),"","is-go",900);sfx.whistle();
   legend.classList.add("on");clearTimeout(legendTimer);legendTimer=setTimeout(()=>legend.classList.remove("on"),9000);
 }
@@ -285,19 +291,19 @@ function frame(now:number){
         const target=g?g.x:centerAt(course!,COURSE_M);
         input.steer=Math.max(-1,Math.min(1,(target-skier.x)/3.5));
         lean=input.steer;
-        if(now>=autoAt){input.push=true;pushAt=now;autoAt=now+640}
+        if(now>=autoAt){input.push=true;input.power=1;pushAt=now;pushHand=-1;autoAt=now+640}
       }
     }else if(lm&&lm!==lastLm){
       lastLm=lm;
       const c=readControl(lm,detCv.width/detCv.height||1,pole,now);
       lastCtrlAt=now;
-      input.steer=c.steer;input.brake=c.brake;input.push=c.push;
+      input.steer=c.steer;input.brake=c.brake;input.push=c.push;input.power=c.power;
       lean=c.steer;brakeNow=c.brake;
-      if(c.push){pushAt=now;sfx.step(k)}
+      if(c.push){pushAt=now;pushHand=c.hand;sfx.push();flashBoost()}
     }
     if(!scripted&&now-lastCtrlAt>650){input.steer=0;input.brake=0;lean=0;brakeNow=0}
     const ev=tick(skier,course!,dt,input);
-    input.push=false;
+    input.push=false;input.power=1;
     camX+=(skier.x-camX)*(1-Math.exp(-dt/.22));
     for(const e of ev)onEvent(e,now);
   }else if(phase==="card")gate(now,lmKeep);
@@ -341,17 +347,17 @@ function render(now:number,dt:number){
   if(!course||!skier)return;
   const age=(now-pushAt)/1000;
   pushShown=age>=0&&age<.35?1-age/.35:0;
-  const motion:Motion={lean,brake:brakeNow,push:pushShown,crash:skier.crash>0};
+  const motion:Motion={lean,brake:brakeNow,push:pushShown,pushSide:pushHand,crash:skier.crash>0};
   if(phase==="card"||phase==="count"){
     // a calm preview at the start hut before the run
-    motion.lean=Math.sin(now/700)*.15;motion.push=0;motion.brake=0;motion.crash=false;
+    motion.lean=Math.sin(now/700)*.15;motion.push=0;motion.brake=0;motion.crash=false;motion.pushSide=-1;
   }
   drawSlope(ctx,L,course,skier,camX,now/1000,LOOKS[turnOf(k,n).player],motion);
   void dt;
 }
 
 // HUD: text only when it changes
-const shown={t:"",pen:"",a:"",d:""};
+const shown={t:"",pen:"",a:"",d:"",s:""};
 function hud(){
   const racing=phase==="run"||phase==="over";
   const t=racing&&skier?skier.t:0;
@@ -360,7 +366,9 @@ function hud(){
   const pen=racing&&skier?penalty(skier):0;
   const pt=pen>0?tr("sk.pen",{t:dec(pen,1)}):"";
   if(pt!==shown.pen){shown.pen=pt;penEl.textContent=pt;penEl.hidden=!pt}
-  const a=skier?`${tr("sk.gateOf",{n:skier.clean,total:course!.gates.length})} · ${kmh(racing?skier.v:0)} km/h`:"";
+  const speed=String(kmh(racing&&skier?skier.v:0));
+  if(speed!==shown.s){shown.s=speed;kmhEl.textContent=speed}
+  const a=skier?tr("sk.gateOf",{n:skier.clean,total:course!.gates.length}):"";
   if(a!==shown.a){shown.a=a;$("#skMeA").textContent=a}
   const d=course?`${skier?skier.clean:0}/${course.gates.length}`:"0/0";
   if(d!==shown.d){shown.d=d;gateN.textContent=d}
@@ -427,12 +435,12 @@ $("#skHome").onclick=()=>{resetGame();screenPhase("idle");document.body.classLis
 
 // test hooks (e2e / tools): state probe, skip the card/gate, drive without a camera, warp near the finish
 (window as any).__sk={
-  state:()=>({phase,k,n,player:turnOf(k,n).player,t:skier?.t??0,x:skier?.x??0,z:skier?.z??0,v:skier?.v??0,gate:skier?.gate??0,clean:skier?.clean??0,miss:skier?.miss??0,hit:skier?.hit??0,oob:skier?.oob??0,pen:skier?penalty(skier):0,fin:skier?.fin??null,times:times.slice()}),
+  state:()=>({phase,k,n,player:turnOf(k,n).player,t:skier?.t??0,x:skier?.x??0,z:skier?.z??0,v:skier?.v??0,kmh:kmh(skier?.v??0),gate:skier?.gate??0,clean:skier?.clean??0,miss:skier?.miss??0,hit:skier?.hit??0,oob:skier?.oob??0,pen:skier?penalty(skier):0,fin:skier?.fin??null,times:times.slice()}),
   ready:()=>{if(phase==="card")count(performance.now())},
   script:(on=true)=>{scripted=on;if(!on){input.steer=0;input.brake=0}},
   steer:(s:number)=>{scripted=true;scriptSteer=Math.max(-1,Math.min(1,s))},
   auto:(on=true)=>{scripted=true;auto=on},
-  push:()=>{if(phase==="run"&&skier){skier.v=Math.min(26,skier.v+2.2);pushAt=performance.now()}},
+  push:()=>{if(phase==="run"&&skier){skier.v=Math.min(26,skier.v+PUSH_V);pushAt=performance.now();pushHand=-1;flashBoost()}},
   warp:(z:number)=>{
     if(phase!=="run"||!skier||!course)return;
     const to=Math.max(0,Math.min(COURSE_M-.02,z));
@@ -446,8 +454,8 @@ export const SKI:GameMode={
   start:begin,
   tv:true,
   reset(){
-    cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);clearTimeout(legendTimer);
-    callRoot.className="sp-call sk-call";legend.classList.remove("on");
+    cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);clearTimeout(legendTimer);clearTimeout(boostTimer);
+    callRoot.className="sp-call sk-call";legend.classList.remove("on");boostEl.classList.remove("on");
     setScreenMode(null);scripted=false;auto=false;turnRoot.hidden=true;lmKeep=null;
     runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("sprinting","skiing");
     screenPhase("idle");

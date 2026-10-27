@@ -1,5 +1,13 @@
 # Pakeitimų žurnalas
 
+## 2026-10-27 — Slidinėjimo korekcijos pagal Martyno bandymą (#27, šaka `claude/27-ski-fixes`)
+
+- **Slidės ant žemės:** personažas dabar stovi ant trumpų, perspektyviai suplokštintų slidžių lentų su tvirtinimais ir batais; anksčiau jos buvo nupieštos beveik per visą ūgį ir kildavo į viršų, o lazdos baigdavosi ties klubais – atrodė kaip laikomi strypai. Dabar lazdos aiškiai eina nuo pirštinių iki sniego su basketėmis. Mascot’o `ski` poza taip pat turi slides po kojomis.
+- **Patikimas mostas:** `readControl` dabar turi atskirą mosto detektorių kiekvienai rankai. Užtenka, kad vienas riešas nusileistų 0,10 kūno vieneto nuo savo aukščiausio taško, o didžiausias greitis būtų ≥ 0,8 vieneto/s; ranka gali būti bet kur tarp pečių ir šlaunų, nebūtinai po klubu. Veikia abi rankos kartu, pakaitinis mosavimas ir trumpas krūtinė–juosmuo mostas. Po mosto ranka persikrauna, kai pakyla 0,08 vieneto (arba virš pečių), su 0,18 s apsauga nuo dvigubo skaičiavimo.
+- **Didesnis greitis ir pojūtis:** `GLIDE` 10 m/s, vienas mostas +1,9 m/s, abi rankos ×1,6, pasipriešinimas lėtesnis (`DRAG_TAU` 3,6 s), lubos 26 m/s (~94 km/h). HUD turi didelį km/h skaitliuką, o kiekvienas aptiktas mostas parodo „Greičiau!“ ženkliuką ir groja `sfx.push`. Šalia trasos kas 12 m pastatyti žymekliai pralekia pro šalį, greičio linijos / sniego purslas stiprėja su greičiu, o dideliu greičiu atsiranda subtili tamsėjanti vinjetė.
+- **Patikrinta:** `npm test` (361 testas, įskaitant 27 `test/unit/ski.test.ts`: abi rankos, viena ranka, pakaitinis ir dalinis mostas, persikrovimas, per lėtas / per platus / nejudantis riešas atmetami, kameros→fizikos pagreičio testas), `npm run build`, `npx playwright test test/e2e/ski.spec.ts test/e2e/bowling.spec.ts`, headless kadrai 390×844 ir 844×390 (slidės ant žemės, 34 → 75 km/h, „Greičiau!“ ženkliukas, žymekliai, vėjo linijos, rezultatai).
+- **Dar reikia tikro telefono:** ar realus rankų mostas 2–3 m atstumu patenka į naują slenkstį, ar greitis ir žymekliai patogūs prie ~90 km/h, ar 400 m trasa ir vartai vis dar įveikiami dideliu greičiu, 2–4 žaidėjų kaita ir TV lenta per Realtime.
+
 ## 2026-10-27 — naujas sporto mini žaidimas „Slidinėjimas“ (#23, idėja iš #4, šaka `claude/23-slidinejimas`)
 
 - **Kaip žaidžiama (Martyno idėja):** Pradžioje po „Boulingas“ – ledo mėlyna plytelė „Slidinėjimas“ (`#/slidinejimas`). 1–4 žaidėjai čiuožia paeiliui: prieš kamerą stovi tik tas, kuris čiuožia. Atsistoji, pakeli rankas – prasideda tavo važiavimas. Sugeneruota ta pati trasa visiems: 400 m nuo kalno, 9 vartai su vėliavomis, sniego sienos ir trasos linijos. Laimi greičiausias finišo laikas.

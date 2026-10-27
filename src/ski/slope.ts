@@ -75,7 +75,7 @@ function proj(L:Layout,x:number,z:number,camX:number,camZ:number):P{
   return {x:L.W/2+(x-camX)*L.ppm*s,y:L.bottom-(L.bottom-L.horizon)*Math.pow(f,.92),s};
 }
 
-export interface Motion{lean:number;brake:number;push:number;crash:boolean}
+export interface Motion{lean:number;brake:number;push:number;pushSide?:-1|0|1;crash:boolean}
 // `push` = 0..1, 1 right after a pole push (gloves dive down), 0 at rest.
 export function drawSlope(ctx:CanvasRenderingContext2D,L:Layout,course:Course,skier:Skier,camX:number,t:number,look:Look,motion:Motion){
   build(L);
@@ -138,6 +138,20 @@ export function drawSlope(ctx:CanvasRenderingContext2D,L:Layout,course:Course,sk
       ctx.fillStyle="rgba(255,255,255,.85)";ctx.beginPath();ctx.moveTo(p.x-w*.35,y+h*.04);ctx.lineTo(p.x,y-h*.2);ctx.lineTo(p.x+w*.3,y+h*.02);ctx.closePath();ctx.fill();
     }
   }
+  // ---- side marker poles every 12 m: short, fast depth cues along the walls ----
+  const MARK=12;
+  for(let z=Math.max(MARK,Math.ceil((camZ-2)/MARK)*MARK); z<camZ+L.view&&z<COURSE_M-4; z+=MARK){
+    for(const side of [-1,1]){
+      const p=proj(L,centerAt(course,z)+side*(HALF_W+1.25),z,camX,camZ);
+      if(p.x<-24||p.x>L.W+24)continue;
+      const ph=L.ppm*p.s*1.0;
+      ctx.fillStyle="rgba(20,24,58,.14)";ctx.beginPath();ctx.ellipse(p.x,p.y,ph*.16,ph*.04,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#fff";ctx.lineWidth=Math.max(1.5,ph*.07);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y-ph);ctx.stroke();
+      ctx.strokeStyle=side<0?C.gateRed:C.gateBlue;ctx.lineWidth=Math.max(1.5,ph*.07);
+      ctx.beginPath();ctx.moveTo(p.x,p.y-ph*.9);ctx.lineTo(p.x,p.y-ph*.56);ctx.stroke();
+      ctx.fillStyle=side<0?C.gateRed:C.gateBlue;ctx.beginPath();ctx.moveTo(p.x,p.y-ph);ctx.lineTo(p.x-side*ph*.4,p.y-ph*1.04);ctx.lineTo(p.x,p.y-ph*.76);ctx.closePath();ctx.fill();
+    }
+  }
   // ---- start + finish ----
   drawLine(ctx,L,course,0,camX,camZ,"#2F6BFF");
   drawFinish(ctx,L,course,camX,camZ,t);
@@ -176,14 +190,33 @@ export function drawSlope(ctx:CanvasRenderingContext2D,L:Layout,course:Course,sk
     }
   }
   drawSkier(ctx,L,course,skier,camX,camZ,look,motion,t);
-  // speed streaks at the screen edges
-  if(skier.v>14&&!motion.crash){
-    const a=Math.min(.45,(skier.v-14)/12*.45);
-    ctx.strokeStyle=`rgba(255,255,255,${a})`;ctx.lineWidth=2;
-    for(let k=0;k<7;k++){
-      const y=((t*900+k*137)%L.H),x=k%2?L.W*(.04+.02*Math.sin(k+t)):L.W*(.94+.02*Math.cos(k+t));
-      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(k%2?18:-18),y+28);ctx.stroke();
+  // speed streaks: edge wind + a few over the snow; they grow with speed and pushes
+  if(skier.v>10&&!motion.crash){
+    const f=Math.min(1,(skier.v-10)/16),a=.12+.5*f;
+    ctx.strokeStyle=`rgba(255,255,255,${a})`;ctx.lineCap="round";
+    for(let k=0;k<18;k++){
+      const y=((t*(500+f*700)+k*97)%(L.H*.78))+L.H*.08;
+      const left=k%2===0;
+      const x=left?L.W*(.02+.03*Math.sin(k*2.1+t)):L.W*(.98+.03*Math.cos(k*1.7+t));
+      const len=(20+f*70)*(.7+.6*((k*37)%10)/10);
+      ctx.lineWidth=1+f*2.2;
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(left?len:-len),y+len*.75);ctx.stroke();
     }
+    ctx.globalAlpha=a*.55;
+    ctx.strokeStyle="#fff";
+    for(let k=0;k<6;k++){
+      const y=L.H*(.55+k*.055),w=(20+f*60),x=L.W/2+Math.sin(k*2.3+t*2)*L.W*.32;
+      ctx.lineWidth=1+f;
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(k%2?w:-w),y+8);ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+  }
+  // a subtle speed vignette: the edges darken as the skier goes faster
+  if(skier.v>15&&!motion.crash){
+    const f=Math.min(1,(skier.v-15)/11);
+    const g=ctx.createRadialGradient(L.W/2,L.H*.55,L.H*.22,L.W/2,L.H*.55,L.H*.78);
+    g.addColorStop(0,"rgba(20,24,58,0)");g.addColorStop(1,`rgba(20,24,58,${(.12*f).toFixed(3)})`);
+    ctx.fillStyle=g;ctx.fillRect(0,0,L.W,L.H);
   }
 }
 function drawLine(ctx:CanvasRenderingContext2D,L:Layout,course:Course,z:number,camX:number,camZ:number,color:string){
@@ -222,55 +255,81 @@ function drawSkier(ctx:CanvasRenderingContext2D,L:Layout,course:Course,s:Skier,c
   ctx.save();ctx.translate(p.x,p.y);
   // shadow on the snow
   ctx.fillStyle="rgba(20,24,58,.16)";ctx.beginPath();ctx.ellipse(0,2,h*.34,h*.055,0,0,Math.PI*2);ctx.fill();
-  // snow spray behind the skis
-  const spray=m.crash?1:Math.min(1,Math.max(0,(s.v-10)/14)+m.brake*.5);
+  // snow spray behind the skis; a push throws a fresh burst
+  const spray=m.crash?1:Math.min(1,Math.max(0,(s.v-10)/16)+m.brake*.5+m.push*.55);
   if(spray>.08){
-    ctx.fillStyle="rgba(255,255,255,.72)";
-    for(let k=0;k<10;k++){
-      const ph=(t*3.1+k*.37)%1,side=k%2?1:-1;
-      ctx.globalAlpha=spray*.55*(1-ph);
-      ctx.beginPath();ctx.ellipse(side*h*(.2+ph*.34),-h*.03-ph*h*.1,h*(.03+ph*.05),h*(.018+ph*.03),0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.78)";
+    for(let k=0;k<14;k++){
+      const ph=(t*3.6+k*.31)%1,side=k%2?1:-1;
+      ctx.globalAlpha=spray*.6*(1-ph);
+      ctx.beginPath();ctx.ellipse(side*h*(.18+ph*.4),-h*.03-ph*h*.12,h*(.03+ph*.06),h*(.018+ph*.035),0,0,Math.PI*2);ctx.fill();
     }
     ctx.globalAlpha=1;
+  }
+  if(m.push>.05){
+    // a yellow shock-ring under the skis on a detected push
+    ctx.strokeStyle=`rgba(255,198,26,${.5*m.push})`;ctx.lineWidth=Math.max(2,h*.03);
+    ctx.beginPath();ctx.ellipse(0,-h*.015,h*(.28+.22*(1-m.push)),h*.07,0,0,Math.PI*2);ctx.stroke();
   }
   if(m.crash){
     // tumbling: the whole body tips over to one side
     ctx.rotate(.95);ctx.translate(0,-h*.06);
   }
-  // skis (tail at the snow, tips up the slope), splayed when braking
-  const splay=m.brake*.28;
+  // skis: short perspective boards lying on the snow (tails at the boots, tips up the slope), splayed when braking
+  const splay=m.brake*.3;
   for(const side of [-1,1]){
-    ctx.save();ctx.translate(side*h*.15,0);ctx.rotate(side*splay+m.lean*.06);
-    const L0=h*1.03,w0=h*.075;
-    ctx.beginPath();ctx.moveTo(-w0*.5,0);ctx.lineTo(-w0*.42,-L0*.92);
-    ctx.quadraticCurveTo(0,-L0-h*.07,w0*.42,-L0*.92);ctx.lineTo(w0*.5,0);ctx.closePath();
-    ctx.fillStyle=look.dark;ctx.fill();ctx.strokeStyle=C.ink;ctx.lineWidth=Math.max(1.5,h*.02);ctx.stroke();
-    ctx.strokeStyle="rgba(255,255,255,.6)";ctx.lineWidth=Math.max(1,h*.014);ctx.beginPath();ctx.moveTo(0,-h*.08);ctx.lineTo(0,-L0*.9);ctx.stroke();
+    ctx.save();ctx.translate(side*h*.135,0);ctx.rotate(side*splay+m.lean*.05);
+    const sk=h*.5,w0=h*.07;
+    // the ski sits on the snow: a soft groove under the board
+    ctx.fillStyle="rgba(20,24,58,.1)";ctx.beginPath();ctx.ellipse(0,-sk*.45,w0*.95,sk*.5,0,0,Math.PI*2);ctx.fill();
+    // board outline
+    ctx.beginPath();
+    ctx.moveTo(-w0*.55,0);
+    ctx.quadraticCurveTo(-w0*.72,-sk*.55,-w0*.5,-sk*.92);
+    ctx.quadraticCurveTo(0,-sk*1.1,w0*.5,-sk*.92);
+    ctx.quadraticCurveTo(w0*.72,-sk*.55,w0*.55,0);
+    ctx.closePath();
+    ctx.fillStyle=look.dark;ctx.fill();ctx.strokeStyle=C.ink;ctx.lineWidth=Math.max(1.4,h*.018);ctx.stroke();
+    // top sheet in the player's colour
+    ctx.beginPath();
+    ctx.moveTo(-w0*.2,-h*.02);
+    ctx.quadraticCurveTo(-w0*.36,-sk*.55,-w0*.18,-sk*.9);
+    ctx.quadraticCurveTo(0,-sk*.99,w0*.18,-sk*.9);
+    ctx.quadraticCurveTo(w0*.36,-sk*.55,w0*.2,-h*.02);
+    ctx.closePath();ctx.globalAlpha=.9;ctx.fillStyle=look.body;ctx.fill();ctx.globalAlpha=1;
+    // binding + boot on the board
+    ctx.fillStyle=C.ink;ctx.beginPath();ctx.roundRect(-w0*.48,-h*.17,w0*.96,h*.055,h*.02);ctx.fill();
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.roundRect(-w0*.38,-h*.15,w0*.76,h*.032,h*.012);ctx.fill();
     ctx.restore();
   }
   const hip=-h*.4;
-  // legs (navy, from hip to the boots)
-  leg(ctx,-h*.075,hip,-h*.095,-h*.14,h*.085,C.ink);
-  leg(ctx,h*.075,hip,h*.095,-h*.14,h*.085,C.ink);
-  ctx.fillStyle="#fff";ctx.beginPath();ctx.roundRect(-h*.13,-h*.15,h*.1,h*.06,h*.02);ctx.fill();
-  ctx.beginPath();ctx.roundRect(h*.03,-h*.15,h*.1,h*.06,h*.02);ctx.fill();
-  ctx.strokeStyle=C.ink;ctx.lineWidth=Math.max(1.2,h*.014);ctx.strokeRect(-h*.13,-h*.15,h*.1,h*.06);ctx.strokeRect(h*.03,-h*.15,h*.1,h*.06);
+  // legs (navy, hip -> knee -> boot) standing on the skis
+  leg(ctx,-h*.075,hip,-h*.1,-h*.255,h*.085,C.ink);leg(ctx,-h*.1,-h*.255,-h*.095,-h*.145,h*.078,C.ink);
+  leg(ctx,h*.075,hip,h*.1,-h*.255,h*.085,C.ink);leg(ctx,h*.1,-h*.255,h*.095,-h*.145,h*.078,C.ink);
+  ctx.fillStyle="#fff";ctx.beginPath();ctx.roundRect(-h*.13,-h*.155,h*.1,h*.06,h*.02);ctx.fill();
+  ctx.beginPath();ctx.roundRect(h*.03,-h*.155,h*.1,h*.06,h*.02);ctx.fill();
+  ctx.strokeStyle=C.ink;ctx.lineWidth=Math.max(1.2,h*.014);ctx.strokeRect(-h*.13,-h*.155,h*.1,h*.06);ctx.strokeRect(h*.03,-h*.155,h*.1,h*.06);
   // upper body: rotate around the hip with the lean
   ctx.save();ctx.translate(0,hip);ctx.rotate(m.lean*.17+(m.brake>.3?-.09:0));
   // torso
   ctx.fillStyle=look.body;ctx.strokeStyle=C.ink;ctx.lineWidth=Math.max(1.5,h*.022);
   ctx.beginPath();ctx.roundRect(-h*.135,-h*.235,h*.27,h*.3,h*.09);ctx.fill();ctx.stroke();
-  // shoulder/arm joints + gloves + poles
-  const pull=m.push;
+  // shoulders/arms/gloves/poles: the glove of the pushing hand dives, the pole plants on the snow
+  const pullL=m.pushSide===-1||m.pushSide===0?m.push:0;
+  const pullR=m.pushSide===-1||m.pushSide===1?m.push:0;
   for(const side of [-1,1]){
-    const gx=side*h*(.21+.055*pull),gy=-h*(.16-.1*pull);
-    leg(ctx,side*h*.11,-h*.2,gx,gy,h*.06,look.dark); // arm
-    // glove
-    ctx.beginPath();ctx.arc(gx,gy,h*.055,0,Math.PI*2);ctx.fillStyle=look.body;ctx.fill();ctx.strokeStyle=C.ink;ctx.lineWidth=Math.max(1,h*.014);ctx.stroke();
-    // pole: from the glove to the snow out to the side
-    const tx=side*h*(.46+.16*pull),ty=h*.03;
-    ctx.strokeStyle="#FFC61A";ctx.lineWidth=Math.max(1,h*.013);ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(tx,ty);ctx.stroke();
+    const pull=side<0?pullL:pullR;
+    const gx=side*h*(.21+.06*pull),gy=-h*(.16-.1*pull);
+    // pole: from the grip in the glove down to the snow out to the side
+    const tx=side*h*(.48+.14*pull),ty=h*.405;
+    ctx.strokeStyle="#FFC61A";ctx.lineWidth=Math.max(1.2,h*.017);ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(tx,ty);ctx.stroke();
     ctx.strokeStyle=C.ink;ctx.lineWidth=Math.max(.8,h*.006);ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(tx,ty);ctx.stroke();
+    ctx.fillStyle="rgba(255,198,26,.9)";ctx.beginPath();ctx.ellipse(tx,ty,h*.038,h*.014,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=C.ink;ctx.lineWidth=Math.max(1,h*.011);ctx.stroke();
+    leg(ctx,side*h*.11,-h*.2,gx,gy,h*.06,look.dark); // arm
+    // glove + grip
+    ctx.beginPath();ctx.arc(gx,gy,h*.055,0,Math.PI*2);ctx.fillStyle=look.body;ctx.fill();ctx.strokeStyle=C.ink;ctx.lineWidth=Math.max(1,h*.014);ctx.stroke();
+    ctx.beginPath();ctx.arc(gx,gy,h*.022,0,Math.PI*2);ctx.fillStyle=C.ink;ctx.fill();
   }
   // head + headband (back view)
   const hy=-h*.31;
