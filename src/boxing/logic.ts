@@ -43,14 +43,23 @@ export const multOf=(comboBefore:number)=>Math.min(MULT_MAX,1+Math.floor(comboBe
 
 // slots around the body: [dx from the shoulder on that side (u), dy from shoulder height (u), side -1 left / 0 centre / 1 right]
 export const SLOTS:[number,number,number][]=[
-  [-0.45,-0.75,-1], // 0 high left
-  [0.45,-0.75,1],   // 1 high right
-  [0,-1.05,0],      // 2 above the head
-  [-0.9,-0.1,-1],   // 3 left, shoulder height
-  [0.9,-0.1,1],     // 4 right, shoulder height
-  [-0.6,0.45,-1],   // 5 chest height, outside the body, left
-  [0.6,0.45,1],     // 6 chest height, outside the body, right
+// Out of the guard: gloves in a boxing guard sit in front of the face and the elbows by the ribs, so pads there spawned
+// "on the hands / body" (Martynas, #17). Every slot is a straight-arm reach (<= ~1.3 u from the shoulder) but clear
+// of the head + torso box; spawn() also drops a slot that clamping pushed back onto the body.
+  [-0.8,-0.9,-1],   // 0 high left
+  [0.8,-0.9,1],     // 1 high right
+  [0,-1.1,0],       // 2 above the head
+  [-1.15,-0.15,-1], // 3 left, shoulder height
+  [1.15,-0.15,1],   // 4 right, shoulder height
+  [-0.95,0.45,-1],  // 5 chest height, outside the body, left
+  [0.95,0.45,1],    // 6 chest height, outside the body, right
 ];
+// head + torso box in body units around the shoulders: a pad must stay this far out
+export const BODY_TOP=-0.75, BODY_BOT=1.0;
+export function onBody(b:Body,q:{x:number;y:number;r:number}){
+  const dx=Math.max(b.lx-q.x,0,q.x-b.rx), dy=Math.max(b.sy+BODY_TOP*b.u-q.y,0,q.y-(b.sy+BODY_BOT*b.u));
+  return Math.hypot(dx,dy)<q.r*0.8;
+}
 
 function clamp01(v:number){return Math.min(1,Math.max(0,v))}
 const ok=(p:Lm|undefined)=>!!p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&(p.visibility??1)>VIS;
@@ -133,7 +142,8 @@ function spawn(g:Game,i:number,t:number,evs:Ev[]){
     if(s===P.lastSlot)continue;
     const q=slotPos(b,s,reg,g.top);
     if(P.targets.some(o=>Math.hypot(o.x-q.x,o.y-q.y)<o.r+q.r*1.2))continue;
-    if(P.hands.some(h=>h.ok&&Math.hypot(h.x-q.x,h.y-q.y)<q.r*1.6))continue; // never on top of a hand
+    if(P.hands.some(h=>h.ok&&Math.hypot(h.x-q.x,h.y-q.y)<q.r*2.2))continue; // never on top of a hand
+    if(onBody(b,q))continue; // the 2-player half / frame edge clamped it back onto the player
     cand.push({slot:s,...q});
   }
   if(!cand.length)return;
