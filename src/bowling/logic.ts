@@ -37,17 +37,20 @@ export const SPEED_MIN=8.5, SPEED_MAX=15;
 export const HAND_OUT=0.32;       // a wrist this far outside its shoulder picks that hand
 export const HAND_UP=0.18;        // ... while above the shoulder (a hanging arm never picks)
 export const CHOOSE_HOLD=2;       // hold the arm out this long to confirm the hand (switch any time before)
-export const DROP_Y=0.64;         // wrist this far below the shoulder at the end of a release
+export const DROP_Y=0.4;          // wrist this far below the shoulder at the end of a release (waist/mid-torso)
 export const LEAN_MAX=0.45;       // torso lean (0.45 u) = the old hook; kept for the body model / tests
 export const BODY_MIN=0.04;       // a degenerate / far-away torso
-// full swing: the hand goes BEHIND the shoulder (MediaPipe z grows away from the camera) and then forward/down.
-export const BACK_Z=0.2;          // depth behind the shoulder that arms a swing (u)
-export const BACK_Y=0.3;          // fallback (no z): the wrist must be this far above the shoulder
-export const SWING_Z=0.3;         // depth travel forward from the back peak to release (u)
-export const SWING_SPEED=1.4;     // u/s down or forward: a slow lower is not a throw
-export const SWING_S=1.6;         // s from the back peak to release
-export const BACK_HOLD=2.5;       // s: standing with the hand behind the body eventually cancels the wind-up
-export const FWD_START=0.08;      // wrist below the shoulder (u) when the forward half starts
+// Full swing: the arm is up/aiming (at or above the shoulder), then swings DOWN and FORWARD in one motion. The old
+// z-only wind-up was too strict on phones (MediaPipe z is small/noisy): the raised aim pose now arms the swing, and a
+// real backward z (when present) is accepted as an extra. A hand that is merely held down never arms.
+export const BACK_Y=0.18;         // the wrist may be this far below the shoulder and still arm (matches the hand pick)
+export const BACK_Z=0.08;         // ... or this far behind the shoulder in MediaPipe z
+export const SWING_Y=0.35;        // down travel from the raised pose before a release (u)
+export const SWING_Z=0.15;        // forward depth travel that also releases (u)
+export const SWING_SPEED=0.9;     // u/s down or forward: a slow lower is not a throw
+export const SWING_S=2;           // s from the start of the downswing to release
+export const BACK_HOLD=30;        // s: the aim may be held this long before the swing (practically no timeout)
+export const FWD_START=0.02;      // wrist below the shoulder (u) when the forward half starts
 export const SPIN_K=1.15;         // knuckle angle -> hook
 export const SPIN_V=0.35;         // lateral wrist speed -> hook (per u/s)
 
@@ -93,12 +96,13 @@ export const spinOf=(knuckle:number,lateral=0)=>clamp(knuckle*SPIN_K+lateral*SPI
 
 // ---------- full back-to-front swing detector ----------
 export type SwingPhase="idle"|"back"|"forward";
-export interface SwingState{phase:SwingPhase;backAt:number;backY:number;backZ:number;lastY:number;lastZ:number;lastT:number;peak:number}
-export const swingState=():SwingState=>({phase:"idle",backAt:0,backY:0,backZ:0,lastY:0,lastZ:0,lastT:0,peak:0});
+export interface SwingState{phase:SwingPhase;backAt:number;fwdAt:number;backY:number;backZ:number;lastY:number;lastZ:number;lastT:number;peak:number}
+export const swingState=():SwingState=>({phase:"idle",backAt:0,fwdAt:0,backY:0,backZ:0,lastY:0,lastZ:0,lastT:0,peak:0});
 export interface SwingPoint{ok:boolean;y:number;z:number}
-// Feed the chosen wrist every camera frame. Returns "back" when the wind-up is recognised (hand behind the body,
-// or up when z is unavailable), "forward" when the hand comes down through the front half, "release" only after a
-// real back -> front travel with speed. A hand simply held down has no back phase, so it cannot throw.
+// Feed the chosen wrist every camera frame. "back" = the arm is up/aiming (or behind in z), "forward" = the downswing
+// has started (lock the aim, the throw is coming), "release" = enough down/forward travel with speed. The old detector
+// required a z-only backswing, which real phones rarely produced; the raised aim pose is the backswing now, and the
+// z travel is still accepted when MediaPipe gives it.
 export function swing(st:SwingState,w:SwingPoint,body:{sy:number;u:number},now:number):""|"back"|"forward"|"release"{
   if(!w.ok||!Number.isFinite(w.y)){st.phase="idle";st.lastT=now;return ""}
   const u=body.u,sy=body.sy,zOK=Number.isFinite(w.z);
@@ -107,25 +111,34 @@ export function swing(st:SwingState,w:SwingPoint,body:{sy:number;u:number},now:n
   const toward=dt>0&&zOK&&Number.isFinite(st.lastZ)?(st.lastZ-w.z)/dt/u:0;
   st.lastY=w.y;st.lastZ=w.z;st.lastT=now;
   if(st.phase==="idle"){
-    const back=zOK?w.z>BACK_Z:w.y<sy-BACK_Y*u;
+    const back=w.y<sy+BACK_Y*u||(zOK&&w.z>BACK_Z);
     if(!back)return "";
-    st.phase="back";st.backAt=now;st.backY=w.y;st.backZ=w.z;st.peak=0;
+    st.phase="back";st.backAt=now;st.fwdAt=0;st.backY=w.y;st.backZ=w.z;st.peak=0;
     return "back";
   }
   if(st.phase==="back"){
     if(now-st.backAt>BACK_HOLD*1000){st.phase="idle";return ""}
-    if(zOK?w.z>st.backZ:w.y<st.backY){st.backZ=zOK?w.z:st.backZ;st.backY=Math.min(st.backY,w.y)}
-    if(now-st.backAt>120&&w.y>sy+FWD_START*u&&(down>.2||toward>.2)){
-      st.phase="forward";st.peak=Math.max(down,toward);
+    if(w.y<st.backY)st.backY=w.y;
+    if(zOK&&w.z>st.backZ)st.backZ=w.z;
+    // the downswing starts when the wrist leaves the raised pose and moves down; the aim is locked from here.
+    // A low-frame-rate camera can jump from the up pose to the release in one sample: check the release immediately.
+    if(now-st.backAt>120&&w.y>sy+FWD_START*u&&(down>.25||toward>.25)){
+      st.phase="forward";st.fwdAt=now;st.peak=Math.max(down,toward);
+      const downTravel=(w.y-st.backY)/u, zTravel=zOK?st.backZ-w.z:0;
+      if(w.y>sy+DROP_Y*u&&(downTravel>SWING_Y||zTravel>SWING_Z)&&st.peak>SWING_SPEED){
+        st.phase="idle";
+        return "release";
+      }
       return "forward";
     }
     return "";
   }
-  if(now-st.backAt>SWING_S*1000){st.phase="idle";return ""}
+  if(now-st.fwdAt>SWING_S*1000){st.phase="idle";return ""}
   st.peak=Math.max(st.peak,down,toward);
-  const travel=zOK?st.backZ-w.z:(w.y-st.backY)/u;
+  const downTravel=(w.y-st.backY)/u;
+  const zTravel=zOK?st.backZ-w.z:0;
   const low=w.y>sy+DROP_Y*u;
-  if(low&&travel>(zOK?SWING_Z:.35)&&Math.max(down,toward)>SWING_SPEED){
+  if(low&&(downTravel>SWING_Y||zTravel>SWING_Z)&&Math.max(down,toward)>SWING_SPEED){
     st.phase="idle";
     return "release";
   }
@@ -155,35 +168,48 @@ export const throwSpeed=(downTorsoPerS:number)=>clamp(SPEED_MIN+(downTorsoPerS-1
 // ---------- pin physics ----------
 export interface SimPin{x:number;z:number;down:boolean;fall:number;dx:number;dz:number}
 export interface SimFrame{t:number;bx:number;bz:number;p:SimPin[]}
-export interface Throw{down:number[];frames:SimFrame[];endT:number;speed:number;aim:number;hook:number}
-const PIN_KICK=3.0, PIN_FWD=2.2; // m/s a standing pin gets from the ball (a full hit)
-const PIN_DAMP=0.7;               // s: sliding friction time constant (a pin slides ~0.6 m, like on a real deck)
-const PIN_REST=0.9;               // pin -> pin restitution
-const PIN_REACH=0.15;             // a fallen pin lying on the deck is a longer body than a standing one (pin-pin radius)
+export interface Throw{down:number[];frames:SimFrame[];endT:number;speed:number;aim:number;hook:number;standing:boolean[];gutter:boolean}
+const PIN_KICK=2.5, PIN_FWD=1.9; // m/s a standing pin gets from the ball (a full hit) - lower = less explosive pin action
+const PIN_DAMP=0.55;              // s: sliding friction time constant (pins stop sooner)
+const PIN_REST=0.8;               // pin -> pin restitution
+const PIN_REACH=0.11;             // a fallen pin lying on the deck is a little longer than a standing one (pin-pin radius)
+const PIN_JITTER=0.004;           // m: a tiny per-throw pin scatter (lane / oil variation); seed 0 = exact
+const BALL_DEFLECT=0.01;          // m: the heavy ball is nudged sideways by every pin it hits
 const SIM_DT=1/120, SIM_MAX=3.4;
 
+// seeded RNG for the per-throw pin jitter (mulberry32); 0 = no jitter, so the unit tests stay exact.
+function jitterRng(seed:number){
+  let a=seed>>>0;
+  return ()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296};
+}
+
 // standing = pins still up before this throw (ids); returns the pins knocked down and a playback timeline.
-export function simulateThrow(standing:boolean[],aim:number,hook:number,speed:number):Throw{
-  const ps:PIN_POS[]=PINS.map(([x,z],i)=>({x,z,vx:0,vz:0,down:!standing[i],fall:!standing[i]?1:0,dx:0,dz:0}));
+export function simulateThrow(standing:boolean[],aim:number,hook:number,speed:number,seed=0):Throw{
+  const rng=seed?jitterRng(seed):null;
+  const ps:PIN_POS[]=PINS.map(([x,z],i)=>({x:x+(rng?(rng()-.5)*PIN_JITTER:0),z:z+(rng?(rng()-.5)*PIN_JITTER*.6:0),
+    vx:0,vz:0,down:!standing[i],fall:!standing[i]?1:0,dx:0,dz:0}));
   const down:number[]=[];
-  const frames:SimFrame[]=[];let t=0,sample=0,bz=0,gutter=false;
+  const frames:SimFrame[]=[];let t=0,sample=0,bz=0,gutter=false,deflect=0;
   const hk=clamp(hook,-1,1);
   while(t<SIM_MAX){
     t+=SIM_DT;
     const prevZ=bz;bz=Math.min(MAX_Z,speed*t);
-    const bx=ballX(bz,aim,hk), px=ballX(prevZ,aim,hk);
+    const px=ballX(prevZ,aim,hk)+deflect, bx=ballX(bz,aim,hk)+deflect;
     if(Math.abs(bx)>LANE_W/2+BALL_R*0.05)gutter=true; // the ball dropped into the channel: it cannot come back
     // the ball hits a pin when their circles overlap (a swept segment, so 15 m/s cannot tunnel)
+    let deflectStep=0;
     for(let i=0;i<ps.length;i++){
       const p=ps[i];if(p.down||!standing[i]||gutter)continue;
       const hit=segCircle(px,bx,prevZ,bz,p.x,p.z,BALL_R+PIN_R);
       if(!hit)continue;
       p.down=true;if(!down.includes(i))down.push(i);
       const off=p.x-hit.x,dir=Math.sign(off)||(hk>=0?1:-1);
+      deflectStep-=dir*BALL_DEFLECT; // the ball is pushed away from the pin it hit
       p.vx=dir*PIN_KICK*Math.min(1,.35+Math.abs(off)/(BALL_R+PIN_R))+(hk*.35);
       p.vz=PIN_FWD*(.55+.45*Math.min(1,Math.abs(off)/(BALL_R+PIN_R)))+.25;
       p.dx=dir;p.dz=1;
     }
+    deflect=clamp(deflect+deflectStep,-.04,.04);
     // pin -> pin collisions (a falling pin sweeps its neighbours)
     for(let i=0;i<ps.length;i++){
       const a=ps[i];if(a.down&&a.fall>=1&&a.vx*a.vx+a.vz*a.vz<1e-4)continue;
@@ -213,11 +239,11 @@ export function simulateThrow(standing:boolean[],aim:number,hook:number,speed:nu
     }
     // 60 Hz playback snapshots
     if(++sample%2===0){
-      frames.push({t,bx,bz,p:ps.map(p=>({x:p.x,z:p.z,down:p.down,fall:p.fall,dx:p.dx,dz:p.dz}))});
+      frames.push({t,bx:ballX(bz,aim,hk)+deflect,bz,p:ps.map(p=>({x:p.x,z:p.z,down:p.down,fall:p.fall,dx:p.dx,dz:p.dz}))});
     }
     if(bz>=MAX_Z&&ps.every(p=>!p.down||(p.vx*p.vx+p.vz*p.vz<1e-3)))break;
   }
-  return {down:down.filter(i=>standing[i]).sort((a,b)=>a-b),frames,endT:t,speed,aim,hook:hk};
+  return {down:down.filter(i=>standing[i]).sort((a,b)=>a-b),frames,endT:t,speed,aim,hook:hk,standing:standing.slice(),gutter};
 }
 interface PIN_POS{x:number;z:number;vx:number;vz:number;down:boolean;fall:number;dx:number;dz:number}
 // segment (x0,z0)-(x1,z1) vs circle (cx,cz,r): returns the closest point on the segment if it intersects
