@@ -1,5 +1,9 @@
 # Pakeitimų žurnalas
 
+## 2026-10-27 — Martyno pastabos: šuolio reakcija (#16) ir bokso taikiniai ne ant kūno (#17)
+
+- **Šuolis į tolį:** skrydis prasideda nuo tikro atsispyrimo momento, ne nuo patvirtinimo (~0,15–0,3 s vėliau telefone), tad veikėjas pakyla kartu su žaidėju. Atpažinimas nepakeistas: matavimai ant tikrų įrašų parodė, kad bėgant su pašokimais pėdos kyla iki 0,61 torso, o šuolio pradžioje tik 0,13–0,25, todėl „greitesnis“ slenkstis duotų netikrus šuolius.
+- **Boksas:** visos 7 taikinių vietos atitrauktos nuo kūno (ištiesta ranka vis dar pasiekia), taikinys nebeatsiranda ant galvos/liemens (`onBody`, ir kai 2 žaidėjų pusė jį nustumia atgal), nuo rankų – didesnis atstumas. Naujas testas.
 ## 2026-10-27 — ketvirtas sporto mini žaidimas „Barjerinis bėgimas“ (#14, šaka `claude/14-hurdles`)
 
 - **Kaip žaidžiama:** Pradžioje po „Šuolis į tolį“ – žalia plytelė „Barjerinis bėgimas“ (`#/barjerai`). 1 žaidėjas (prieš savo rekordą) arba 2 žaidėjų dvikova dviem takais kaip sprinte. 100 m, 8 barjerai (16, 26 … 86 m). Bėgi vietoje – greitis pagal tą patį sprinto kojų keitimo tempą. Prieš kiekvieną barjerą takas nusidažo kaip šuolyje į tolį: oranžinis „Ruoškis…“, tada žalias „Šok!“. Pašoki abiem kojom žalioje zonoje – personažas peršoka barjerą ir greitis nenukrenta. Nepašokai – barjeras nuvirsta, personažas suklumpa ir sulėtėja (~0,5 s), bet bėgi toliau (jokios diskvalifikacijos). Rezultatas – finišo laikas ir „barjerai 7/8“ su taškeliais (žalias – peršoktas, raudonas – nuverstas). Rekordas, istorija, TV lenta kaip sprinte. LT + EN.
