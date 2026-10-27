@@ -43,7 +43,7 @@ const tile=document.createElement("a");
 tile.className="sp-tile wl-tile tap";tile.href="#/siena";
 tile.innerHTML=`<span class="sp-tile-txt"><span class="eyebrow">${tr("setup.title")}</span><b class="d">${tr("wl.title")}</b><small>${tr("wl.tileSub")}</small></span>
 <span class="sp-tile-art" aria-hidden="true"><span class="wl-tile-wall"></span>${mascot("r","sidestep",{anim:true})}${mascot("y","squat",{anim:true})}</span><span class="sp-tile-go" data-icon="arrow-right"></span>`;
-(document.querySelector(".hd-tile")??document.querySelector(".lj-tile")??document.getElementById("rankCard"))?.after(tile);
+(document.querySelector(".bw-tile")??document.querySelector(".hd-tile")??document.querySelector(".lj-tile")??document.getElementById("rankCard"))?.after(tile);
 
 const app=document.getElementById("app")??document.body;
 app.insertAdjacentHTML("beforeend",`

@@ -29,7 +29,8 @@ import "./sprint/sprint.ts";
 import "./boxing/boxing.ts"; // after sprint: its Pradžia tile goes right below the sprint tile
 import "./longjump/longjump.ts"; // Šuolis į tolį: its tile goes below the boxing tile
 import "./hurdles/hurdles.ts"; // Barjerinis bėgimas: its tile goes below the long jump tile
-import "./wall/wall.ts"; // Siena: its tile goes below the hurdles tile
+import "./bowling/bowling.ts"; // Boulingas: its tile goes below the hurdles tile
+import "./wall/wall.ts"; // Siena: its tile goes below the bowling tile
 
 // the TV/laptop scoreboard never shows the first-run onboarding (a fresh browser there has no nickname/history)
 if(parse(location.hash).v==="screen")render();
