@@ -1,19 +1,20 @@
-// Slidinėjimas – rules, the generated course and the ski physics (issue #23, idea #4). PURE: no DOM, no storage
-// (test/unit/ski.test.ts). One skier at a time (like Šuolis į tolį): lean left/right to steer, pull both arms down
-// like ski poles to speed up, lean back to brake. The course is a seeded downhill ribbon with snow walls, centre
-// line and slalom gates. Passing a gate cleanly counts; passing outside it costs MISS_PENALTY seconds; hitting a
-// flag stops the skier dead (CRASH_S); every second outside the boundary line is added as a time penalty.
-// Final time = raw time + time out of bounds + missed gates × MISS_PENALTY. Fastest final time wins.
+// Slidinėjimas – rules, the generated course and the ski physics (issue #23, idea #4; two-player race #30). PURE:
+// no DOM, no storage (test/unit/ski.test.ts). One skier at a time in solo/turn-based modes; in the 2-player race
+// two Skier objects use the same course, each with its own controls and camera. Lean left/right to steer, pull
+// arms down like ski poles to speed up, lean back to brake. The course is a seeded downhill ribbon with snow walls,
+// centre line and slalom gates. Passing a gate cleanly counts; passing outside it costs MISS_PENALTY seconds;
+// hitting a flag stops the skier dead (CRASH_S); every second outside the boundary line is added as a time
+// penalty. Final time = raw time + time out of bounds + missed gates × MISS_PENALTY. Fastest final time wins.
 import {VIS} from "../detect/exercises.ts";
 import type {Lm} from "../detect/classifier.ts";
 
 // ---------- course ----------
 export const COURSE_M=400;       // finish line distance down the slope
-export const HALF_W=7.5;         // boundary line half-width (m)
+export const HALF_W=7.0;         // boundary line half-width (m)
 export const SOFT_W=2.2;         // deep snow outside it before the hard snow wall
-export const GATE_FIRST=55;      // first gate
-export const GATE_EVERY=42;      // gate spacing (m)
-export const GATE_HALF=2.7;      // half the gate span (pole to pole = 5.4 m)
+export const GATE_FIRST=45;      // first gate (issue #30: shorter run-up than 55 m)
+export const GATE_EVERY=30;      // gate spacing (m); 12 gates on the 400 m course
+export const GATE_HALF=2.1;      // half the gate span (pole to pole = 4.2 m, was 5.4 m)
 export const POLE_HIT=0.75;      // skier + pole radius (m): closer than this = you hit the flag
 export const MISS_PENALTY=2;     // seconds added for every missed gate
 export const LIMIT_S=120;        // a run that takes longer is a DNF
@@ -55,7 +56,8 @@ function rng(seed:number){
 export const centerAt=(c:Course,z:number)=>c.a1*Math.sin(z/c.l1+c.p1)+c.a2*Math.sin(z/c.l2+c.p2);
 export function newCourse(seed=1):Course{
   const r=rng(seed);
-  const c:Course={seed,gates:[],trees:[],a1:1.8+r()*1.8,l1:70+r()*60,p1:r()*Math.PI*2,a2:.8+r(),l2:34+r()*22,p2:r()*Math.PI*2};
+  // issue #30: harder course – shorter bends and a wider amplitude than before, but still inside the ribbon
+  const c:Course={seed,gates:[],trees:[],a1:2.0+r()*2.0,l1:55+r()*45,p1:r()*Math.PI*2,a2:.9+r()*.9,l2:28+r()*16,p2:r()*Math.PI*2};
   const n=Math.floor((COURSE_M-GATE_FIRST)/GATE_EVERY)+1;
   for(let i=0;i<n;i++){
     const z=GATE_FIRST+i*GATE_EVERY;
@@ -136,6 +138,16 @@ export function tick(s:Skier,c:Course,dt:number,input:SkiInput=NO_INPUT):SkiEven
   if(s.z>=COURSE_M){s.raw=s.t;s.fin=s.t+penalty(s);ev.push({type:"finish"})}
   else if(s.t>=LIMIT_S){s.dnf=true;ev.push({type:"dnf"})}
   return ev;
+}
+
+// ---------- two-player race: pose assignment ----------
+// MediaPipe returns poses sorted by mirrored x (leftmost on screen first). With two poses P1 = left, P2 = right;
+// a lone pose belongs to the player on that half of the frame. Pure so the model→player mapping is unit-tested.
+export function splitPoses<T extends {x:number}>(poses:T[]):[T|null,T|null]{
+  const out:[T|null,T|null]=[null,null];
+  if(poses.length>=2){out[0]=poses[0];out[1]=poses[1]}
+  else if(poses.length===1)out[poses[0].x>=.5?1:0]=poses[0];
+  return out;
 }
 
 // ---------- turns and ranking ----------
