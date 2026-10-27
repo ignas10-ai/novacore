@@ -1,0 +1,173 @@
+/* Slidinėjimas (src/ski), Claude Design sticker style. Reuses the sprint tile / setup / HUD / call / results classes
+   (.sp-tile, .sp-seg, .sp-pb, .sp-how, .sp-card, .sp-map, .sp-call, .sp-res-head, .sp-row); only the differences
+   live here. Tokens from main.css :root; per-player colour = --tone set inline. */
+
+/* ---------- Pradžia tile: icy blue, after the green hurdles tile ---------- */
+.sk-tile{background:linear-gradient(100deg,#BFE3FF 0 64%,#EAF6FF 64% 100%);color:var(--ink);margin-top:-4px}
+.sk-tile .sp-tile-txt .eyebrow{color:var(--blue-ink)}
+.sk-tile .sp-tile-txt b{color:var(--ink)}
+.sk-tile .sp-tile-txt small{color:color-mix(in srgb,var(--ink) 78%,transparent)}
+.sk-tile .sp-tile-art .mascot:first-child{translate:0 -8px;rotate:-5deg}
+.sk-tile .sp-tile-art .mascot:last-child{translate:0 2px;rotate:7deg}
+
+/* ---------- setup ---------- */
+#ski .wrap{gap:18px}
+#ski .pick{display:flex;flex-direction:column;gap:10px}
+.sk-hero{position:relative;height:clamp(200px,52vw,260px);border:var(--bw-lg) solid var(--ol);border-radius:var(--r-lg);overflow:hidden;isolation:isolate;box-shadow:var(--sh-lg);
+  background:linear-gradient(180deg,#79BCFF 0 40%,#E8F4FF 40% 100%)}
+.sk-hero::before{content:"";position:absolute;inset:40% -30% -30%;z-index:-1;background:linear-gradient(180deg,#D8ECFF,#fff 75%);clip-path:polygon(24% 0,76% 0,118% 100%,-18% 100%)}
+.sk-hero-big{position:absolute;left:16px;top:8px;font:400 clamp(34px,10vw,54px)/1.12 var(--disp);color:#fff;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:0 5px 0 var(--blue);white-space:nowrap}
+.sk-hero-sub{position:absolute;left:20px;top:calc(14px + clamp(34px,10vw,54px)*1.22);padding:3px 10px;border-radius:8px;background:var(--ink);color:var(--yellow);font:900 12px/1.2 var(--body);letter-spacing:.14em;text-transform:uppercase}
+.sk-hero-slope{position:absolute;inset:40% 0 auto;height:calc(60% + 2px);z-index:-1;background:
+  repeating-linear-gradient(105deg,transparent 0 22px,rgba(47,107,255,.06) 22px 24px)}
+.sk-hero-g{position:absolute;width:7px;height:64px;margin-top:-52px;border-left:4px solid var(--ink);border-top:4px solid var(--ink)}
+.sk-hero-g::before{content:"";position:absolute;left:0;top:0;width:34px;height:20px;background:var(--red);border:2px solid var(--ink);clip-path:polygon(0 0,100% 0,62% 100%,0 100%)}
+.sk-hero-g:nth-of-type(2n)::before{background:var(--blue);clip-path:polygon(0 0,100% 0,100% 100%,38% 100%);left:auto;right:0;translate:0 0}
+.sk-hero-m{position:absolute;left:9%;bottom:5%;width:29%;max-width:128px;rotate:-8deg}
+.sk-hero-m2{position:absolute;right:7%;bottom:14%;width:22%;max-width:98px;rotate:9deg;opacity:.92}
+.sk-seg{grid-template-columns:repeat(4,minmax(0,1fr))}
+.sk-seg button small{font-size:12px}
+.sk-party{padding:0 4px}
+.sk-names ol{list-style:none;display:grid;gap:10px;margin-top:12px}
+.sk-nrow{display:flex;align-items:center;gap:10px}
+.sk-nrow[hidden]{display:none}
+.sk-nface{flex:none;display:grid;width:44px;height:44px;border-radius:50%;border:3px solid var(--tone);background:#fff;overflow:hidden}
+.sk-nface .m-avatar{width:100%;height:100%}
+.sk-name{flex:1;min-width:0;min-height:48px;padding:0 14px;border:var(--bw) solid var(--ol);border-radius:var(--r-ctl);background:var(--surface);color:var(--ink);font:800 17px/1.2 var(--body);outline:0;
+  transition:box-shadow var(--duration-fast) var(--ease-ui)}
+.sk-name::placeholder{color:color-mix(in srgb,var(--ink) 45%,transparent);font-weight:700}
+.sk-name:focus{box-shadow:0 0 0 3px var(--blue)}
+.sk-guide ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.sk-guide li{display:flex;align-items:center;gap:8px;min-width:0;padding:8px 10px;border:2.5px solid var(--ink);border-radius:12px;background:var(--surface-2);font:800 13px/1.25 var(--body)}
+.sk-guide li>span:first-child{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--ink);color:#fff;--ic:16px}
+.sk-guide li:nth-child(2)>span:first-child{background:var(--blue)}
+.sk-guide li:nth-child(3)>span:first-child{background:var(--red)}
+.sk-guide li:nth-child(4)>span:first-child{background:var(--yellow);color:var(--ink)}
+.sk-rules{margin-top:12px}
+
+/* ---------- run ---------- */
+body.skiing .fs,body:has(#skEnd:not(.hide)) .fs{display:none}
+body.skiing #stage{height:clamp(80px,16vh,140px)} /* smaller corner preview than the sprint: the slope is the show */
+.sk-run{background:#E8F4FF}
+.sk-top{grid-template-columns:minmax(0,1.35fr) auto minmax(0,1fr)}
+.sk-top .sp-card{--tone:var(--red);gap:6px}
+.sk-top .sp-face{width:32px;height:32px}
+.sk-me-n{font:900 15px/1.15 var(--body);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.sk-me-a{font:800 11.5px/1.25 var(--body);color:var(--fg-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.sk-me .sp-bar{margin-top:3px}
+.sk-clock{display:flex;flex-direction:column;align-items:center;min-width:76px;padding:4px 10px 2px}
+.sk-clock .d{font-size:27px}
+.sk-pen{font:900 11px/1.2 var(--body);color:var(--yellow);white-space:nowrap;padding-bottom:2px}
+.sk-pen[hidden]{display:none}
+.sk-best{--tone:var(--ink)}
+.sk-best b{font-size:17px}
+.sk-best small{font:800 10.5px/1.2 var(--body);color:var(--fg-faint);white-space:nowrap}
+.sk-tro{background:var(--yellow);border-color:var(--ink);color:var(--ink);place-items:center;--ic:20px}
+.sk-map{margin-top:10px}
+.sk-ticks{position:absolute;inset:0 12px 0 0;pointer-events:none}
+.sk-ticks i{position:absolute;top:2px;bottom:2px;width:2px;margin-left:-1px;background:color-mix(in srgb,#fff 62%,transparent)}
+.sk-fin{background:conic-gradient(var(--ink) 25%,#fff 0 50%,var(--ink) 0 75%,#fff 0) 0 0/8px 8px}
+.sk-map .sp-dotw{z-index:1}
+.sk-map .sp-dot{background:var(--red)}
+.sk-live{position:absolute;left:50%;top:calc(max(10px,env(safe-area-inset-top)) + 104px);translate:-50% 0;display:flex;align-items:baseline;gap:6px;padding:2px 10px 1px;
+  border:2.5px solid var(--ink);border-radius:var(--r-pill);background:var(--ink);color:#fff;box-shadow:0 2px 0 var(--ink);pointer-events:none}
+.sk-live b{font:400 16px/1.15 var(--disp);color:var(--yellow)}
+.sk-live small{font:800 10px/1.2 var(--body);color:#fff;text-transform:uppercase;letter-spacing:.08em}
+.sk-legend{position:absolute;left:50%;bottom:max(12px,env(safe-area-inset-bottom));translate:-50% 0;display:flex;gap:6px;width:max-content;max-width:calc(100% - 24px);padding:0 6px;pointer-events:none;
+  opacity:0;transition:opacity var(--duration-slow) var(--ease-ui)}
+.sk-legend.on{opacity:1}
+.sk-legend span{display:inline-flex;align-items:center;gap:4px;padding:3px 8px 2px;border:2.5px solid var(--ink);border-radius:var(--r-pill);background:#fff;color:var(--ink);font:800 10.5px/1.2 var(--body);white-space:nowrap}
+.sk-legend i{display:grid;place-items:center;width:16px;height:16px;--ic:13px;background:var(--yellow);border-radius:50%;border:2px solid var(--ink)}
+.sk-call.is-num b{font-size:clamp(84px,26vmin,170px);color:#fff}
+.sk-call.is-go b{font-size:clamp(52px,15vmin,104px);color:var(--yellow);max-width:100%}
+.sk-call.is-gate b{font-size:clamp(38px,11vmin,70px);color:var(--green);-webkit-text-stroke-color:var(--ink)}
+.sk-call.is-gate small{background:var(--green);color:#fff}
+.sk-call.is-bad b{font-size:clamp(36px,10vmin,66px);color:var(--red)}
+.sk-call.is-fin b{font-size:clamp(54px,16vmin,110px);color:var(--yellow)}
+.sk-call.is-fin small{background:var(--yellow);color:var(--ink)}
+@media (max-width:380px){
+  .sk-top{grid-template-columns:minmax(0,1fr) auto;gap:6px}
+  .sk-top .sp-face{width:26px;height:26px}
+  .sk-top .sp-card{gap:4px;padding-left:6px;padding-right:8px}
+  .sk-clock{min-width:58px;padding:4px 6px 2px}.sk-clock .d{font-size:22px}
+  .sk-me-n{font-size:13px}.sk-me-a{font-size:10.5px}.sk-best b{font-size:15px}
+  .sk-live{top:calc(max(10px,env(safe-area-inset-top)) + 96px)}
+  .sk-legend span{font-size:9.5px;padding:2px 6px 1px}
+}
+@media (max-width:760px){
+  .sk-top{grid-template-columns:minmax(0,1fr) auto}
+  .sk-best{display:none} /* portrait: the name and gate count need the room, the record lives on the setup screen */
+}
+@media (orientation:portrait){
+  .sk-legend{top:calc(max(10px,env(safe-area-inset-top)) + 136px);bottom:auto;flex-wrap:wrap;max-width:calc(100% - 24px);justify-content:center}
+}
+
+/* turn card: "Dabar čiuožia" + arms-up gate + standings, over the dimmed slope */
+.sk-turn{position:absolute;inset:0;z-index:3;display:grid;place-items:start center;padding:calc(max(16px,env(safe-area-inset-top)) + 64px) 16px 16px;background:color-mix(in srgb,var(--ink) 45%,transparent)}
+.sk-turn[hidden]{display:none}
+.sk-turn.in .sk-turn-card{animation:modal-in var(--duration-slow) var(--ease-bounce) both}
+.sk-turn.out{animation:sk-out 240ms var(--ease-ui) both}
+@keyframes sk-out{to{opacity:0}}
+.sk-turn-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;width:min(100%,380px);padding:100px 18px 16px;margin-top:60px;border:var(--bw-lg) solid var(--ink);border-radius:var(--r-lg);background:var(--surface);box-shadow:0 6px 0 var(--ink);text-align:center}
+.sk-turn-art{position:absolute;top:-64px;left:50%;translate:-50% 0;width:136px}
+.sk-turn-n{font:400 clamp(34px,10vw,48px)/1.15 var(--disp);color:var(--tone,var(--ink));-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;overflow-wrap:break-word;max-width:100%}
+.sk-turn-a{font:900 15px/1.3 var(--body);color:var(--fg-mute)}
+.sk-gate{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;padding:8px 12px;border:var(--bw) solid var(--ink);border-radius:16px;background:var(--surface-2);text-align:left;font:800 15px/1.3 var(--body);color:var(--ink)}
+.sk-gate[hidden]{display:none}
+.sk-gate svg{flex:none;width:40px;height:40px;rotate:-90deg}
+.sk-gate circle{fill:none;stroke:color-mix(in srgb,var(--ink) 18%,transparent);stroke-width:4}
+.sk-gate .sk-ring{stroke:var(--yellow-ink);stroke-dasharray:100;stroke-dashoffset:100;stroke-linecap:round;transition:stroke-dashoffset 120ms linear}
+.sk-gate.ok{background:var(--yellow-tint)}
+.sk-mini{list-style:none;display:grid;gap:6px;width:100%;margin-top:10px}
+.sk-mini[hidden]{display:none}
+.sk-mini.many{grid-template-columns:1fr 1fr}
+.sk-mini li{display:flex;min-width:0;align-items:center;gap:8px;padding:4px 10px 4px 4px;border:2.5px solid var(--ink);border-radius:var(--r-pill);background:var(--surface)}
+.sk-mini li.now{background:var(--yellow-tint)}
+.sk-mface{flex:none;display:grid;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--tone);overflow:hidden;background:#fff}
+.sk-mface .m-avatar{width:100%;height:100%}
+.sk-mname{flex:1;min-width:0;font:800 14px/1.2 var(--body);text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sk-mini b{font-size:17px;line-height:1.1}
+.sk-controls{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px 8px;margin-top:8px;font:800 11.5px/1.3 var(--body);color:var(--fg-mute)}
+.sk-controls span{display:grid;place-items:center;width:18px;height:18px;--ic:13px;background:var(--surface-2);border:2px solid var(--ink);border-radius:50%}
+@media (orientation:landscape) and (max-height:500px){
+  .sk-turn{place-items:center start;padding:12px 12px 12px max(24px,env(safe-area-inset-left))}
+  .sk-turn-card{display:grid;grid-template-columns:120px minmax(0,1fr);column-gap:16px;row-gap:2px;align-items:center;justify-items:start;width:min(62vw,560px);padding:14px 18px 14px 14px;margin:0;text-align:left}
+  .sk-turn-card>*{grid-column:2}
+  .sk-turn-art{position:static;grid-column:1;grid-row:1 / span 6;translate:none;width:120px;align-self:center}
+  .sk-turn-n{font-size:clamp(28px,8vh,40px)}
+  .sk-gate{margin-top:6px;padding:6px 10px}.sk-gate svg{width:32px;height:32px}
+  .sk-mini{grid-template-columns:1fr 1fr;margin-top:6px}
+  .sk-top{grid-template-columns:minmax(0,250px) auto minmax(0,210px);justify-content:space-between}
+  .sk-live{top:calc(max(8px,env(safe-area-inset-top)) + 88px)}
+  .sk-legend{bottom:max(8px,env(safe-area-inset-bottom))}
+}
+
+/* ---------- results ---------- */
+#skEnd{background:var(--bg)}
+#skEnd .wrap{gap:16px}
+#skEnd:not(.hide)>.wrap{animation:modal-in var(--duration-slow) var(--ease-smooth-out) both}
+#skEnd .cta{display:flex;flex-direction:column;gap:12px;padding-top:6px}
+.sk-res-head{background:repeating-conic-gradient(from 0deg at 80% 70%,var(--c,var(--blue)) 0 8deg,color-mix(in srgb,#fff 18%,var(--c,var(--blue))) 8deg 16deg)}
+.sk-res-head p{color:#fff}
+.sk-res-head[data-c="y"]{color:var(--ink)}
+.sk-res-head[data-c="y"] p{color:var(--ink)}
+.sk-res-head .wl{color:var(--ink)}
+.sk-res-head[data-c="ink"] .wl{color:#fff}
+#skRec{white-space:nowrap;align-self:flex-start}
+.sk-row{gap:10px;padding-right:12px}
+.sk-row .sp-row-t{color:var(--ink);font-size:20px}
+.sk-row:first-child .sp-row-t{color:var(--tone-ink)}
+.sk-row .sp-row-face{border-color:var(--tone)}
+.sk-row .sp-row-txt small{display:block}
+.sk-dots{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+.sk-dots i{width:9px;height:9px;border-radius:3px;border:1.5px solid color-mix(in srgb,var(--ink) 25%,transparent);background:var(--surface-2)}
+.sk-dots i.ok{background:var(--green);border-color:var(--ink)}
+.sk-dots i.miss{background:var(--yellow);border-color:var(--ink)}
+.sk-dots i.hit{background:var(--red);border-color:var(--ink)}
+@media (orientation:landscape) and (max-height:500px){
+  #skEnd .wrap{max-width:820px;display:grid;grid-template-columns:1fr 1fr;column-gap:20px;align-content:center}
+  #skEnd .sk-res-head{margin-top:0;grid-row:1 / span 2;min-height:0;align-self:stretch;justify-content:center}
+  #skEnd .cta{grid-column:2;flex-direction:row}
+  #skEnd .cta .go{flex:1;white-space:nowrap;font-size:18px}
+}
+@media (prefers-reduced-motion:reduce){.sk-hero-m,.sk-hero-m2,.sk-turn.in .sk-turn-card{animation:none}}

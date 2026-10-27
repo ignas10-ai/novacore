@@ -38,7 +38,7 @@ try{
   await p.evaluateOnNewDocument(()=>{localStorage.setItem("novacore.onb","1");localStorage.setItem("novacore.nick","Ignas");localStorage.setItem("novacore.wlNames",JSON.stringify(["","Martynas","Ąžuolė Žemaitytė",""]))});
   await p.goto(`http://localhost:${port}/${lang==="en"?"?lang=en":""}#/`,{waitUntil:"networkidle0"});
   await p.$eval(".wl-tile",el=>el.scrollIntoView({block:"center"}));await shot("home-tile",500);
-  ok("plytelė po boulingo",await q(()=>document.querySelector(".bw-tile")?.nextElementSibling?.classList.contains("wl-tile")));
+  ok("plytelė po slidinėjimo",await q(()=>document.querySelector(".sk-tile")?.nextElementSibling?.classList.contains("wl-tile")));
   await p.click(".wl-tile");await shot("setup",900);
   ok("maršrutas #/siena",await q(()=>location.hash==="#/siena"));
   await p.click(`[data-wl="${players}"]`);await sleep(200);
