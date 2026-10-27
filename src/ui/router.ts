@@ -4,9 +4,9 @@
 // real history (Android back always does what the screen's back button does). Tabs replace each other; only Home
 // stays underneath, so back from any tab lands on Pradžia, then leaves the app.
 // The game flow (#ready/#end/#clips) and the onboarding are not routes: they claim back via setBackHandler().
-export type View="home"|"groups"|"group"|"library"|"profile"|"setup"|"sprint"|"boxing"|"longjump"|"hurdles"|"screen";
-const SCREEN:Record<View,string>={home:"home",groups:"groups",group:"group",library:"library",profile:"profile",setup:"start",sprint:"sprint",boxing:"boxing",longjump:"longjump",hurdles:"hurdles",screen:"screen"};
-const TAB:Record<View,string>={home:"home",groups:"groups",group:"groups",library:"library",profile:"profile",setup:"home",sprint:"home",boxing:"home",longjump:"home",hurdles:"home",screen:""};
+export type View="home"|"groups"|"group"|"library"|"profile"|"setup"|"sprint"|"boxing"|"longjump"|"hurdles"|"ski"|"screen";
+const SCREEN:Record<View,string>={home:"home",groups:"groups",group:"group",library:"library",profile:"profile",setup:"start",sprint:"sprint",boxing:"boxing",longjump:"longjump",hurdles:"hurdles",ski:"ski",screen:"screen"};
+const TAB:Record<View,string>={home:"home",groups:"groups",group:"groups",library:"library",profile:"profile",setup:"home",sprint:"home",boxing:"home",longjump:"home",hurdles:"home",ski:"home",screen:""};
 
 export function parse(hash:string):{v:View;arg:string}{
   const [a,b]=hash.replace(/^#\/?/,"").split("/");
@@ -18,6 +18,7 @@ export function parse(hash:string):{v:View;arg:string}{
   if(a==="boksas")return {v:"boxing",arg:""}; // src/boxing
   if(a==="tolis")return {v:"longjump",arg:""}; // src/longjump
   if(a==="barjerai")return {v:"hurdles",arg:""}; // src/hurdles
+  if(a==="slidinejimas")return {v:"ski",arg:""}; // src/ski
   if(a==="ekranas")return {v:"screen",arg:b?decodeURIComponent(b):""};
   return {v:"home",arg:""}; // also #/zaidimas (game entry) after a reload
 }

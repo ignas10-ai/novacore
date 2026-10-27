@@ -76,6 +76,13 @@ describe("histItem",()=>{
     expect(li.querySelector(".what")!.textContent).toBe("Sprintas 100 m · dvikova");
     expect([...li.querySelectorAll(".pts b")].map(b=>b.textContent)).toEqual(["12,35 s","–"]);
   });
+  it("skiing row prints each final time; 3-4 players collapse to the fastest",()=>{
+    const two=histItem(game({mode:"ski",players:2,times:[23.456,25.1],score:[0,0]}) as any,0,[0,0,0]);
+    expect(two.querySelector(".what")!.textContent).toBe("Slidinėjimas · 2 žaidėjai");
+    expect([...two.querySelectorAll(".pts b")].map(b=>b.textContent)).toEqual(["23,46 s","25,10 s"]);
+    const four=histItem(game({mode:"ski",players:4,times:[30.2,22.34,25,null],score:[0,0]}) as any,0,[0,0,0]);
+    expect([...four.querySelectorAll(".pts b")].map(b=>b.textContent)).toEqual(["22,34 s"]);
+  });
   it("best game gets .best, unknown exercise ids print as-is",()=>{
     const li=histItem(game({score:[40,0],ex:["squat","plank"]}) as any,0,[0,40,0]);
     expect(li.classList.contains("best")).toBe(true);expect(li.querySelector(".what")!.textContent).toMatch(/Pritūpimai, plank$/);

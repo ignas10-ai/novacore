@@ -11,6 +11,7 @@ export interface Game{
   pts?:number[]; acc?:number[]; combo?:number[]; // boxing (src/boxing): points, accuracy % and best combo per player (score stays [0,0])
   clr?:number[]; // hurdles (src/hurdles, times like the sprint): hurdles cleared per player (of 8)
   jumps?:(number|null)[][]; // long jump (src/longjump): 3 results in m per player (1-4 players), null = foul (score stays [0,0])
+  skiRaw?:(number|null)[];skiPen?:number[];skiGates?:number[];skiMiss?:number[];skiHit?:number[]; // skiing (src/ski, times = final incl. penalties)
 }
 export const WEEK_GOAL=5;
 

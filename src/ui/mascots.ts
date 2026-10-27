@@ -8,7 +8,7 @@
 export type Who="r"|"b"|"y"|"g"; // y / g = Geltonas, Žalias (Šuolis į tolį party mode, src/longjump)
 export type Mood="fierce"|"smirk"|"happy"|"sad";
 export type ExId="squat"|"jack"|"knees"|"squatjump"|"sidestep"|"lunge"|"crunch";
-export type Pose="idle"|"vs"|"win"|"lose"|"guard"|"punch"|ExId; // guard / punch = Boksas (src/boxing)
+export type Pose="idle"|"vs"|"win"|"lose"|"guard"|"punch"|"ski"|ExId; // guard / punch = Boksas (src/boxing), ski = Slidinėjimas (src/ski)
 
 const INK="#14183A";
 const C={r:{body:"#FF3B3B",band:"#FFC61A"},b:{body:"#2F6BFF",band:"#FFFFFF"},y:{body:"#FFC61A",band:"#FF3B3B"},g:{body:"#16B67A",band:"#FFC61A"}};
@@ -73,6 +73,7 @@ const POSES:Record<Pose,P>={
   crunch:{gl:[56,128],gr:[144,128]},
   guard:{gl:[52,136],gr:[148,136]},
   punch:{gl:[58,138],gr:[186,98]}, // front glove jabs toward the side the mascot faces (mirrored for Mėlynas)
+  ski:{gl:[48,132],gr:[152,132]}, // gloves hold the poles at chest height (Slidinėjimas)
 };
 export const EX_IDS:ExId[]=["squat","jack","knees","squatjump","sidestep","lunge","crunch"];
 
@@ -118,4 +119,4 @@ const ICON:Record<ExId,string>={
 export const exIcon=(id:string)=>`<svg class="ex-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${(ICON as Record<string,string>)[id]||ICON.squat}</svg>`.replace(/<circle /g,'<circle fill="currentColor" stroke="none" ');
 // exercise illustration: alternate red/blue like the picker order (squat red, jack blue, ...)
 export const exWho=(id:string):Who=>EX_IDS.indexOf(id as ExId)%2?"b":"r";
-export const exArt=(id:string,anim=true)=>mascot(exWho(id),(EX_IDS.includes(id as ExId)?id:id==="boxing"?"punch":id==="sprint"||id==="hurdles"?"knees":"idle") as Pose,{anim});
+export const exArt=(id:string,anim=true)=>mascot(exWho(id),(EX_IDS.includes(id as ExId)?id:id==="boxing"?"punch":id==="ski"?"ski":id==="sprint"||id==="hurdles"?"knees":"idle") as Pose,{anim});
