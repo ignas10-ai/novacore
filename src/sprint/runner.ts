@@ -53,6 +53,17 @@ export function jumpPose(o:Pose,k:number){
   o.sh[1]=e(e(-40,150,s),60,l);o.el[1]=e(e(50,-20,s),25,l);
   o.lean=e(e(14,4,s),26,l);o.bob=0;o.p=k;
 }
+// Barjerinis bėgimas (src/hurdles). k = hop progress 0..1: lead leg shoots straight forward over the bar, trail knee
+// tucked out to the side, body folded forward with the opposite glove reaching -> the lead leg comes down first
+export function hurdlePose(o:Pose,k:number){
+  const e=(a:number,b:number,f:number)=>a+(b-a)*Math.min(1,Math.max(0,f));
+  const up=k/.5, dn=(k-.5)/.5;
+  o.th[0]=k<.5?e(40,92,up):e(92,20,dn);o.kn[0]=k<.5?e(60,6,up):e(6,10,dn);o.ft[0]=10;
+  o.th[1]=k<.5?e(-30,10,up):e(10,62,dn);o.kn[1]=k<.5?e(40,110,up):e(110,70,dn);o.ft[1]=-20;
+  o.sh[0]=k<.5?e(10,-40,up):e(-40,20,dn);o.el[0]=70;
+  o.sh[1]=k<.5?e(30,95,up):e(95,40,dn);o.el[1]=k<.5?e(80,15,up):e(15,70,dn);
+  o.lean=k<.5?e(14,34,up):e(34,16,dn);o.bob=0;o.p=k;
+}
 export function landPose(o:Pose,t:number){ // sitting in the sand after the landing, gloves forward
   o.th[0]=86;o.kn[0]=100;o.ft[0]=-6;o.th[1]=80;o.kn[1]=96;o.ft[1]=-10;
   o.sh[0]=78;o.el[0]=22;o.sh[1]=64;o.el[1]=28;o.lean=30;o.bob=-.006*Math.abs(Math.sin(t*3));o.p=t;
