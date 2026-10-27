@@ -68,6 +68,14 @@ describe("pin physics",()=>{
     expect(a.frames[0].p[0].x).not.toBe(b.frames[0].p[0].x);
     expect(exact.frames[0].p[0].x).toBe(PINS[0][0]); // seed 0 keeps the unit tests exact
   });
+  it("swept pins from the previous ball do not sit on the deck and block the next ball",()=>{
+    const standing=[true,false,false,false,false,false,false,false,false,false];
+    const t=simulateThrow(standing,0,0,11);
+    const last=t.frames.at(-1)!;
+    expect(last.p[1].x).toBe(PINS[1][0]);
+    expect(last.p[1].z).toBe(PINS[1][1]);
+    expect(t.standing).toEqual(standing);
+  });
   it("off-centre hits leave pins; a second ball only hits what is still standing",()=>{
     const first=simulateThrow(full,0.7,0,11);
     expect(first.down.length).toBeGreaterThan(0);
