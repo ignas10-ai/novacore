@@ -2,7 +2,7 @@
 // poling/braking/steering physics, ranking and the camera gestures (lean, pole pull, lean back).
 import {describe,it,expect} from "vitest";
 import type {Lm} from "../../src/detect/classifier.ts";
-import {COURSE_M,HALF_W,SOFT_W,GATE_FIRST,GATE_EVERY,GATE_HALF,MISS_PENALTY,LIMIT_S,GLIDE,BRAKE_V,V_MAX,
+import {COURSE_M,HALF_W,SOFT_W,GATE_FIRST,GATE_EVERY,GATE_HALF,MISS_PENALTY,LIMIT_S,GLIDE,BRAKE_V,V_MAX,PUSH_DOUBLE,
   newCourse,newSkier,newPoleState,tick,readControl,penalty,rank,bestTime,total,turnOf,centerAt} from "../../src/ski/logic.ts";
 
 function drive(course:ReturnType<typeof newCourse>,{pushEvery=.72,brake=0}={}){
@@ -20,12 +20,12 @@ function drive(course:ReturnType<typeof newCourse>,{pushEvery=.72,brake=0}={}){
 }
 
 // synthetic MediaPipe frame; raw x is mirrored inside readControl (ar=1), so a smaller raw x = further right on screen
-function frame(o:{sx?:number;hipX?:number;shY?:number;hipY?:number;wristY?:number;wristX?:number;ear?:number;vis?:number}={}):Lm[]{
+function frame(o:{sx?:number;hipX?:number;shY?:number;hipY?:number;wristY?:number;wristLY?:number;wristRY?:number;wristX?:number;ear?:number;vis?:number}={}):Lm[]{
   const a:any[]=Array.from({length:33},()=>({x:.5,y:.5,z:0,visibility:o.vis??1}));
   const sx=o.sx??.5,hx=o.hipX??.5,shY=o.shY??.3,hipY=o.hipY??.6,wristY=o.wristY??.42,wristX=o.wristX??.5;
   a[11]={x:sx-.08,y:shY,z:0,visibility:o.vis??1};a[12]={x:sx+.08,y:shY,z:0,visibility:o.vis??1};
   a[13]={x:sx-.12,y:wristY-.08,z:0,visibility:o.vis??1};a[14]={x:sx+.12,y:wristY-.08,z:0,visibility:o.vis??1};
-  a[15]={x:wristX-.05,y:wristY,z:0,visibility:o.vis??1};a[16]={x:wristX+.05,y:wristY,z:0,visibility:o.vis??1};
+  a[15]={x:wristX-.05,y:o.wristLY??wristY,z:0,visibility:o.vis??1};a[16]={x:wristX+.05,y:o.wristRY??wristY,z:0,visibility:o.vis??1};
   a[23]={x:hx-.06,y:hipY,z:0,visibility:o.vis??1};a[24]={x:hx+.06,y:hipY,z:0,visibility:o.vis??1};
   a[0]={x:.5,y:.2,z:0,visibility:o.vis??1};a[1]={x:.45,y:.22,z:0,visibility:o.vis??1};a[2]={x:.55,y:.22,z:0,visibility:o.vis??1};
   return a as Lm[];
@@ -189,12 +189,12 @@ describe("camera controls",()=>{
     const upright=readControl(frame({shY:.3,hipY:.6}),1,newPoleState(),1000);
     expect(upright.brake).toBe(0);
   });
-  it("both gloves pulling down from chest past the hips = one pole push; it must re-arm",()=>{
+  it("both gloves pulling down from chest past the hips = one strong pole push; it must re-arm",()=>{
     const p=newPoleState(),now=1000;
     let c=readControl(frame({wristY:.42}),1,p,now);
     expect(c.push).toBe(false);
     c=readControl(frame({wristY:.65}),1,p,now+120);
-    expect(c.push).toBe(true);
+    expect(c.push).toBe(true);expect(c.pushes).toBe(2);expect(c.power).toBe(PUSH_DOUBLE);
     c=readControl(frame({wristY:.68}),1,p,now+160);
     expect(c.push).toBe(false); // still low: no double count
     c=readControl(frame({wristY:.42}),1,p,now+320);
@@ -202,15 +202,51 @@ describe("camera controls",()=>{
     c=readControl(frame({wristY:.65}),1,p,now+440);
     expect(c.push).toBe(true);
   });
+  it("one hand at a time works; alternating hands each count",()=>{
+    const p=newPoleState(),now=1000;
+    readControl(frame({wristLY:.42,wristRY:.42}),1,p,now);
+    let c=readControl(frame({wristLY:.65,wristRY:.42}),1,p,now+120); // left dives, right stays
+    expect(c.push).toBe(true);expect(c.pushes).toBe(1);expect(c.hand).toBe(0);expect(c.power).toBe(1);
+    c=readControl(frame({wristLY:.66,wristRY:.42}),1,p,now+240);
+    expect(c.push).toBe(false); // left is still low
+    readControl(frame({wristLY:.42,wristRY:.42}),1,p,now+360); // left back up -> re-arms
+    c=readControl(frame({wristLY:.42,wristRY:.65}),1,p,now+480); // right dives
+    expect(c.push).toBe(true);expect(c.pushes).toBe(1);expect(c.hand).toBe(1);
+  });
+  it("a short partial pull (chest to waist) also counts",()=>{
+    const p=newPoleState(),now=1000;
+    readControl(frame({wristY:.55}),1,p,now);
+    const c=readControl(frame({wristY:.68}),1,p,now+120);
+    expect(c.push).toBe(true);
+  });
+  it("a hand held still or a tiny jiggle does not push",()=>{
+    const p=newPoleState(),now=1000;
+    readControl(frame({wristY:.42}),1,p,now);
+    expect(readControl(frame({wristY:.42}),1,p,now+120).push).toBe(false);
+    expect(readControl(frame({wristY:.44}),1,p,now+240).push).toBe(false); // slow 2 cm
+    expect(readControl(frame({wristY:.46}),1,p,now+360).push).toBe(false);
+  });
   it("a slow lower or one hand out to the side is not a pole push",()=>{
     const p=newPoleState(),now=1000;
     readControl(frame({wristY:.42}),1,p,now);
-    const slow=readControl(frame({wristY:.52}),1,p,now+500); // 0.2 u over 0.5 s = 0.4 u/s
+    const slow=readControl(frame({wristY:.46}),1,p,now+500); // 4 cm over 0.5 s = 0.27 u/s
     expect(slow.push).toBe(false);
     const q=newPoleState();
-    readControl(frame({wristY:.42,wristX:.85}),1,q,now); // hands wide, not in front of the body
-    const wide=readControl(frame({wristY:.65,wristX:.85}),1,q,now+120);
+    readControl(frame({wristY:.42,wristX:.95}),1,q,now); // hands wide, not in front of the body
+    const wide=readControl(frame({wristY:.65,wristX:.95}),1,q,now+120);
     expect(wide.push).toBe(false);
+  });
+  it("alternating arm strokes detected from the camera actually raise the speed",()=>{
+    const p=newPoleState(),course=newCourse(3),s=newSkier(course);
+    let now=1000,down=false;
+    readControl(frame({wristY:.42}),1,p,now);
+    for(let k=0;k<10;k++){
+      down=!down;
+      const r=readControl(frame({wristY:down?.65:.42}),1,p,now+=120);
+      tick(s,course,1/60,{steer:0,brake:0,push:r.push,power:r.power});
+    }
+    expect(s.poles).toBeGreaterThan(2);
+    expect(s.v).toBeGreaterThan(GLIDE);
   });
   it("lost visibility / NaN / a missing torso = no controls (the game keeps gliding)",()=>{
     const p=newPoleState();

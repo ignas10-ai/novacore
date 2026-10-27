@@ -19,11 +19,11 @@ export const MISS_PENALTY=2;     // seconds added for every missed gate
 export const LIMIT_S=120;        // a run that takes longer is a DNF
 
 // ---------- ski physics ----------
-export const START_V=8;          // m/s out of the start hut
-export const GLIDE=9;            // m/s the slope keeps without poling
-export const V_MAX=26;           // m/s cap
-export const PUSH_V=2.2;         // m/s added by one double-pole push
-export const DRAG_TAU=3.0;       // s: speed eases toward GLIDE (slow snow friction)
+export const START_V=9;          // m/s out of the start hut
+export const GLIDE=10;           // m/s the slope keeps without poling
+export const V_MAX=26;           // m/s cap (~94 km/h)
+export const PUSH_V=1.9;         // m/s added by one hand push
+export const DRAG_TAU=3.6;       // s: speed eases toward GLIDE (slow snow friction)
 export const BRAKE_V=4;          // m/s target while leaning back
 export const BRAKE_TAU=.55;      // s: braking is quick
 export const STEER_MAX=.35;      // rad: full lean turns the skis ~20°
@@ -34,11 +34,12 @@ export const LEAN_MAX=.34;       // torso lean (in torso lengths) = full steer
 export const LEAN_DEAD=.06;      // ignore tiny sway
 export const BRAKE_ON=1.02;      // torso height / shoulder width below this = start braking
 export const BRAKE_FULL=.68;     // ... and this = full brake
-export const PUSH_SPEED=1.25;    // torso-lengths/s downward wrist speed that counts as a pole push
-export const PUSH_TOP=.55;       // hands must be above shoulderY + this*u to re-arm
-export const PUSH_BOTTOM=.02;    // ... and below hipY + this*u to pull
-export const HAND_IN=.95;        // both gloves inside this*u of the body centre (not out to the sides)
-export const PUSH_RETURN=.18;    // s before the next push can arm again
+export const PUSH_SPEED=.65;     // torso-lengths/s peak downward wrist speed that counts as a pole push
+export const PUSH_DIST=.08;      // a wrist must drop this much (torso lengths) for one stroke
+export const PUSH_RETURN=.08;    // ... and rise this much again before the next stroke
+export const PUSH_GAP=.18;       // s per hand: no double count from one swing
+export const PUSH_DOUBLE=1.6;    // both hands together = one stronger push
+export const HAND_IN=1.15;       // a hand this far (torso lengths) from the body centre is out to the side
 
 const clamp=(v:number,a:number,b:number)=>Math.min(b,Math.max(a,v));
 
@@ -81,8 +82,8 @@ export const newSkier=(c:Course):Skier=>({
   x:centerAt(c,0),z:0,v:START_V,heading:0,t:0,crash:0,oob:0,miss:0,hit:0,clean:0,gate:0,poles:0,
   fin:null,raw:null,dnf:false,maxV:START_V,res:c.gates.map(()=>null),
 });
-export interface SkiInput{steer:number;brake:number;push:boolean}
-export const NO_INPUT:SkiInput={steer:0,brake:0,push:false};
+export interface SkiInput{steer:number;brake:number;push:boolean;power?:number}
+export const NO_INPUT:SkiInput={steer:0,brake:0,push:false,power:1};
 export const penalty=(s:Skier)=>s.oob+s.miss*MISS_PENALTY;
 export const liveTime=(s:Skier)=>s.t+penalty(s);
 export type SkiEvent={type:"clean"|"miss"|"hit"|"finish"|"dnf";gate?:number};
@@ -107,7 +108,7 @@ export function tick(s:Skier,c:Course,dt:number,input:SkiInput=NO_INPUT):SkiEven
   else if(target>s.v)tau=.8;
   if(target<s.v)tau=crash?.35:brake>.12?BRAKE_TAU:DRAG_TAU;
   s.v+=(target-s.v)*(1-Math.exp(-dt/tau));
-  if(!crash&&brake<.15&&!oob0&&input.push){s.v=Math.min(V_MAX,s.v+PUSH_V);s.poles++}
+  if(!crash&&brake<.15&&!oob0&&input.push){s.v=Math.min(V_MAX,s.v+PUSH_V*clamp(input.power??1,.5,1.8));s.poles++}
   s.v=clamp(s.v,0,V_MAX);
   if(s.v>s.maxV)s.maxV=s.v;
   // move along the heading (z = down the slope, x = across it)
@@ -156,46 +157,54 @@ export const bestTime=(times:(number|null)[])=>times.reduce<number>((m,t)=>t!=nu
 
 // ---------- camera controls (mirrored screen space, frame-height units) ----------
 export interface Body{sx:number;sy:number;hx:number;hy:number;sw:number;u:number;ar:number}
-export interface Ctrl{ok:boolean;steer:number;brake:number;push:boolean;poleSpeed:number;body:Body|null}
-export interface PoleState{armed:boolean;lastY:number;lastT:number;lastPush:number}
-export const newPoleState=():PoleState=>({armed:false,lastY:0,lastT:0,lastPush:0});
+export interface Ctrl{ok:boolean;steer:number;brake:number;push:boolean;pushes:number;power:number;hand:-1|0|1;poleSpeed:number;body:Body|null}
+export interface HandState{armed:boolean;topY:number;lowY:number;peak:number;lastY:number;lastT:number;lastPush:number}
+export interface PoleState{hands:[HandState,HandState]}
+export const newHandState=():HandState=>({armed:true,topY:0,lowY:0,peak:0,lastY:0,lastT:0,lastPush:0});
+export const newPoleState=():PoleState=>({hands:[newHandState(),newHandState()]});
 const ok=(p:Lm|undefined)=>!!p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&(p.visibility??1)>VIS;
-const later=(t:number,now:number)=>now>t?now:t;
+const resetHand=(h:HandState,now:number)=>{h.armed=true;h.topY=0;h.lowY=0;h.peak=0;h.lastY=0;h.lastT=now};
 
-// read one fresh pose frame. `ps` is mutated (the push gesture is a small state machine) - call it ONCE per new
-// inference frame, not on every animation frame, or the downward speed reads as 0.
+// read one fresh pose frame. `ps` is mutated (each hand has its own stroke state) - call it ONCE per new inference
+// frame, not on every animation frame, or the downward speed reads as 0. A push = one wrist dropping PUSH_DIST from
+// its recent high with a peak downward speed above PUSH_SPEED, anywhere between shoulder and thigh height; the hand
+// is re-armed when it comes back up. Alternating hands and both hands together both work.
 export function readControl(lm:Lm[],ar:number,ps:PoleState,now:number):Ctrl{
-  const no:Ctrl={ok:false,steer:0,brake:0,push:false,poleSpeed:0,body:null};
+  const no:Ctrl={ok:false,steer:0,brake:0,push:false,pushes:0,power:1,hand:-1,poleSpeed:0,body:null};
   const a=lm?.[11],b=lm?.[12],h1=lm?.[23],h2=lm?.[24];
-  if(!ok(a)||!ok(b)||!ok(h1)||!ok(h2)){ps.armed=false;ps.lastT=later(ps.lastT,now);return no}
+  if(!ok(a)||!ok(b)||!ok(h1)||!ok(h2)){resetHand(ps.hands[0],now);resetHand(ps.hands[1],now);return no}
   const ax=(1-a.x)*ar,bx=(1-b.x)*ar,hx1=(1-h1.x)*ar,hx2=(1-h2.x)*ar;
   const sx=(ax+bx)/2,sy=(a.y+b.y)/2,hx=(hx1+hx2)/2,hy=(h1.y+h2.y)/2;
   const sw=Math.hypot(ax-bx,a.y-b.y),u=Math.hypot(hx-sx,hy-sy);
-  if(!(u>.04)||!(sw>.02)){ps.armed=false;ps.lastT=later(ps.lastT,now);return no}
+  if(!(u>.04)||!(sw>.02)){resetHand(ps.hands[0],now);resetHand(ps.hands[1],now);return no}
   const lean=clamp((sx-hx)/u/LEAN_MAX,-1,1);
   const steer=Math.abs(lean)<=LEAN_DEAD?0:lean>0?clamp((lean-LEAN_DEAD)/(1-LEAN_DEAD),0,1):-clamp((-lean-LEAN_DEAD)/(1-LEAN_DEAD),0,1);
   // leaning back shortens the torso in the front camera: torso height / shoulder width drops
   const ratio=(hy-sy)/sw;
   const brake=clamp((BRAKE_ON-ratio)/(BRAKE_ON-BRAKE_FULL),0,1);
-  // double-pole gesture: both gloves dive together from chest height past the hips
-  const e1=lm[13],e2=lm[14],w1=lm[15],w2=lm[16];
-  let push=false,poleSpeed=0;
-  if(ok(e1)&&ok(e2)&&ok(w1)&&ok(w2)){
-    const wx1=(1-w1.x)*ar,wx2=(1-w2.x)*ar;
-    const avgY=(w1.y+w2.y)/2,avgX=(wx1+wx2)/2;
-    const inside=Math.abs(wx1-sx)<HAND_IN*u&&Math.abs(wx2-sx)<HAND_IN*u&&Math.abs(avgX-sx)<HAND_IN*u;
-    const dt=ps.lastT?Math.max(.001,(now-ps.lastT)/1000):0;
-    const down=dt>0&&dt<.4?clamp((avgY-ps.lastY)/u/dt,0,6):0;
-    poleSpeed=down;
-    const top=sy+PUSH_TOP*u,bottom=hy+PUSH_BOTTOM*u;
-    if(!inside||avgY<sy-.6*u){ps.armed=false}
-    else{
-      if(!ps.armed&&avgY<top&&avgY>sy-.45*u&&down<1.0&&now-ps.lastPush>PUSH_RETURN*1000)ps.armed=true;
-      if(ps.armed&&avgY>bottom&&down>PUSH_SPEED){push=true;ps.armed=false;ps.lastPush=now}
+  // per-hand pole stroke: both hands together = one stronger push; alternating hands = one push each
+  let pushes=0,hand:-1|0|1=-1,poleSpeed=0;
+  for(let i=0;i<2;i++){
+    const hs=ps.hands[i],el=lm[i?14:13],wr=lm[i?16:15];
+    if(!ok(el)||!ok(wr)){resetHand(hs,now);continue}
+    const wy=wr.y,wx=(1-wr.x)*ar;
+    const dt=hs.lastT?Math.max(.001,(now-hs.lastT)/1000):0;
+    if(!(dt>0&&dt<.45)){hs.topY=wy;hs.lowY=wy;hs.lastY=wy;hs.lastT=now;hs.peak=0;continue}
+    const dy=wy-hs.lastY;
+    const down=clamp(dy/u/dt,0,8);
+    if(down>poleSpeed)poleSpeed=down;
+    if(!hs.armed){
+      // re-arm when the hand comes back up from the bottom of the last stroke (or is raised above the shoulder)
+      if(wy<hs.lowY-PUSH_RETURN*u||wy<sy-.1*u){hs.armed=true;hs.topY=wy;hs.lowY=wy;hs.peak=0}
+    }else{
+      if(hs.topY===0||wy<hs.topY){hs.topY=wy;hs.lowY=wy;hs.peak=0}
+      else if(wy>hs.lowY){hs.lowY=wy;hs.peak=Math.max(hs.peak,down)}
+      const inside=Math.abs(wx-sx)<HAND_IN*u;
+      if(inside&&wy>sy-.05*u&&hs.lowY-hs.topY>=PUSH_DIST*u&&hs.peak>=PUSH_SPEED&&now-hs.lastPush>=PUSH_GAP*1000){
+        pushes++;hand=i as 0|1;hs.armed=false;hs.lastPush=now;hs.lowY=wy;hs.peak=0;
+      }
     }
-    ps.lastY=avgY;ps.lastT=now;
-  }else{
-    ps.armed=false;ps.lastT=later(ps.lastT,now);ps.lastY=0;
+    hs.lastY=wy;hs.lastT=now;
   }
-  return {ok:true,steer,brake,push,poleSpeed,body:{sx,sy,hx,hy,sw,u,ar}};
+  return {ok:true,steer,brake,push:pushes>0,pushes,power:pushes>1?PUSH_DOUBLE:1,hand:pushes===1?hand:-1,poleSpeed,body:{sx,sy,hx,hy,sw,u,ar}};
 }

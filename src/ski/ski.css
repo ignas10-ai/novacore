@@ -52,7 +52,16 @@ body.skiing #stage{height:clamp(80px,16vh,140px)} /* smaller corner preview than
 .sk-top{grid-template-columns:minmax(0,1.35fr) auto minmax(0,1fr)}
 .sk-top .sp-card{--tone:var(--red);gap:6px}
 .sk-top .sp-face{width:32px;height:32px}
-.sk-me-n{font:900 15px/1.15 var(--body);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.sk-me{position:relative}
+.sk-me-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0}
+.sk-me-n{font:900 15px/1.15 var(--body);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;min-width:0}
+.sk-kmh{display:inline-flex;align-items:baseline;gap:2px;flex:none;line-height:1}
+.sk-kmh b{font:400 24px/1 var(--disp);color:var(--ink);font-variant-numeric:tabular-nums}
+.sk-kmh small{font:900 9px/1 var(--body);color:var(--fg-faint);letter-spacing:.02em}
+.sk-boost{position:absolute;right:8px;bottom:-11px;padding:2px 8px 1px;border:2.5px solid var(--ink);border-radius:var(--r-pill);background:var(--yellow);color:var(--ink);
+  font:900 11px/1.2 var(--body);box-shadow:0 2px 0 var(--ink);opacity:0;scale:.7;transition:opacity 100ms var(--ease-ui),scale 100ms var(--ease-ui);pointer-events:none;z-index:2}
+.sk-boost.on{opacity:1;scale:1;animation:sk-boost .42s var(--ease-bounce) both}
+@keyframes sk-boost{0%{scale:.55;rotate:-6deg}55%{scale:1.12;rotate:3deg}100%{scale:1;rotate:0}}
 .sk-me-a{font:800 11.5px/1.25 var(--body);color:var(--fg-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 .sk-me .sp-bar{margin-top:3px}
 .sk-clock{display:flex;flex-direction:column;align-items:center;min-width:76px;padding:4px 10px 2px}
@@ -91,6 +100,7 @@ body.skiing #stage{height:clamp(80px,16vh,140px)} /* smaller corner preview than
   .sk-top .sp-card{gap:4px;padding-left:6px;padding-right:8px}
   .sk-clock{min-width:58px;padding:4px 6px 2px}.sk-clock .d{font-size:22px}
   .sk-me-n{font-size:13px}.sk-me-a{font-size:10.5px}.sk-best b{font-size:15px}
+  .sk-kmh b{font-size:20px}.sk-kmh small{font-size:8px}
   .sk-live{top:calc(max(10px,env(safe-area-inset-top)) + 96px)}
   .sk-legend span{font-size:9.5px;padding:2px 6px 1px}
 }
