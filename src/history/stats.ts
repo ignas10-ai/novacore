@@ -9,6 +9,7 @@ export interface Game{
   beat?:boolean; // this game beat an opened challenge
   mode?:string; times?:(number|null)[]; splits?:number[][]; // sprint (src/sprint): 100 m time per player in s, 10 m splits
   pts?:number[]; acc?:number[]; combo?:number[]; // boxing (src/boxing): points, accuracy % and best combo per player (score stays [0,0])
+  clr?:number[]; // hurdles (src/hurdles, times like the sprint): hurdles cleared per player (of 8)
   jumps?:(number|null)[][]; // long jump (src/longjump): 3 results in m per player (1-4 players), null = foul (score stays [0,0])
 }
 export const WEEK_GOAL=5;

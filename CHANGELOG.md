@@ -1,5 +1,11 @@
 # Pakeitimų žurnalas
 
+## 2026-10-27 — ketvirtas sporto mini žaidimas „Barjerinis bėgimas“ (#14, šaka `claude/14-hurdles`)
+
+- **Kaip žaidžiama:** Pradžioje po „Šuolis į tolį“ – žalia plytelė „Barjerinis bėgimas“ (`#/barjerai`). 1 žaidėjas (prieš savo rekordą) arba 2 žaidėjų dvikova dviem takais kaip sprinte. 100 m, 8 barjerai (16, 26 … 86 m). Bėgi vietoje – greitis pagal tą patį sprinto kojų keitimo tempą. Prieš kiekvieną barjerą takas nusidažo kaip šuolyje į tolį: oranžinis „Ruoškis…“, tada žalias „Šok!“. Pašoki abiem kojom žalioje zonoje – personažas peršoka barjerą ir greitis nenukrenta. Nepašokai – barjeras nuvirsta, personažas suklumpa ir sulėtėja (~0,5 s), bet bėgi toliau (jokios diskvalifikacijos). Rezultatas – finišo laikas ir „barjerai 7/8“ su taškeliais (žalias – peršoktas, raudonas – nuverstas). Rekordas, istorija, TV lenta kaip sprinte. LT + EN.
+- **Taisyklės kode (`src/hurdles/logic.ts`, grynos):** atsispyrimas skaičiuojamas nuo momento, kai pėdos atsiplėšė (ne kai detektorius patvirtina), todėl vėluojantis patvirtinimas nebaudžia; ore žingsniai nesiskaičiuoja, o nusileidus tempas tęsiamas toks pat (8 švarūs barjerai ≈ tas pats laikas kaip lygus 100 m).
+- **Patikrinta:** `npm test` (12 naujų testų: barjerų išdėstymas, zonos, peršokta / nuversta, vėlus patvirtinimas, per anksti, greičio praradimas, laikas vs sprintas), `npm run build`, Playwright (naujas `hurdles.spec.ts` + visi seni), `tools/hurdles-check.mjs` su e2e kamera (mūsų maskotas): solo 390×844 ir 844×390, dvikova 360×640 ir 640×360 – kadrai `Downloads/NovaCore/hurdles/`. **Dar reikia tikro telefono:** ar pilnu greičiu spėjama pašokti žalioje zonoje, ar atsispyrimas pagaunamas bėgant tarp barjerų, dvikova su tikrais šuoliais.
+
 ## 2026-10-26 — Šuolis į tolį: matoma atsispyrimo zona (Martyno pastaba, #1)
 
 - Takas prieš liniją: 8 m juosta, kuri ryškėja iš oranžinės į geltoną, tada paskutiniai 2,5 m žali (anksčiau buvo tik 2 m geltona). Viršuje – oranžinis „Ruoškis…“, žalioje zonoje didelis žalias „Šok!“. Tas pats spalvų perėjimas ir mažame žemėlapyje.

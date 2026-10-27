@@ -28,6 +28,7 @@ import {App} from "@capacitor/app";
 import "./sprint/sprint.ts";
 import "./boxing/boxing.ts"; // after sprint: its Pradžia tile goes right below the sprint tile
 import "./longjump/longjump.ts"; // Šuolis į tolį: its tile goes below the boxing tile
+import "./hurdles/hurdles.ts"; // Barjerinis bėgimas: its tile goes below the long jump tile
 
 // the TV/laptop scoreboard never shows the first-run onboarding (a fresh browser there has no nickname/history)
 if(parse(location.hash).v==="screen")render();
