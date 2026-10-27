@@ -258,7 +258,10 @@ function doJump(tTake:number,now:number){
   if(r!=="ok")return;
   const T=A.take!;
   // flight = best(v) from the take-off point, so the print lands exactly at line + distance (0 m: short of the pit)
-  phase="air";phaseAt=now;airFrom=T.x;airLen=Math.max(.8,bestJump(T.v));airT=flightS(airLen);landX=T.dist>0?LINE_M+T.dist:T.x+airLen;
+  // the flight starts at the real take-off, not at the confirmation (TK_HOLD + camera frames, ~0.15-0.3 s on a
+  // phone): the runner is already in the air with the player instead of lagging behind (Martynas, #16).
+  // ponytail: capped at 0.35 s back so a slow phone does not skip half the arc; tune if phones lag more
+  phase="air";phaseAt=Math.max(tTake,now-350);airFrom=T.x;airLen=Math.max(.8,bestJump(T.v));airT=flightS(airLen);landX=T.dist>0?LINE_M+T.dist:T.x+airLen;
   callRoot.classList.remove("on");jumpEl.classList.remove("on");
   sfx.leap();
 }

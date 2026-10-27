@@ -4,7 +4,7 @@ import {describe,it,expect} from "vitest";
 import {readFileSync} from "node:fs";
 import type {Lm} from "../../src/detect/classifier.ts";
 import {newGame,update,bodyOf,slotPos,region,assign,fist,segDist,rngFrom,multOf,lifeAt,gapAt,maxActive,accuracy,winner,
-  SLOTS,BASE,GOLD_PTS,BOMB_PTS,HAND_COOL,ARM_S,R_U,EXT,type Game,type Target,type Kind} from "../../src/boxing/logic.ts";
+  SLOTS,onBody,BASE,GOLD_PTS,BOMB_PTS,HAND_COOL,ARM_S,R_U,EXT,type Game,type Target,type Kind} from "../../src/boxing/logic.ts";
 
 // a standing person in MIRRORED screen space (x 0..1 left->right on screen, ar 1): torso = s, shoulders 0.75 s wide.
 // l / r = screen-left / screen-right wrist (landmarks 15 / 16); elbow:false hides the elbows so the fist = the wrist.
@@ -47,6 +47,12 @@ describe("body + target placement",()=>{
       expect(q.x).toBeCloseTo(bx+dx*b.u);expect(q.y).toBeCloseTo(b.sy+dy*b.u);expect(q.r).toBeCloseTo(R_U*b.u);
     });
     expect(slotPos(b,3,reg).x).toBeLessThan(b.lx);expect(slotPos(b,4,reg).x).toBeGreaterThan(b.rx);expect(slotPos(b,2,reg).y).toBeLessThan(b.sy-b.u);
+  });
+  it("no slot sits on the head, torso or a guard (Martynas #17); a pad clamped onto the body is detected",()=>{
+    const b=bodyOf(pose(0.5,0.5,0.2),16/9)!;
+    for(let s=0;s<SLOTS.length;s++)expect(onBody(b,slotPos(b,s,[0,16/9])),`slot ${s}`).toBe(false);
+    expect(onBody(b,{x:b.cx,y:b.sy+0.3*b.u,r:0.05})).toBe(true); // chest
+    expect(onBody(b,{x:b.lx,y:b.sy-0.5*b.u,r:0.05})).toBe(true); // by the face, where the gloves guard
   });
   it("scales with distance: half the size = half the offsets",()=>{
     const near=bodyOf(pose(0.5,0.5,0.24),1)!,far=bodyOf(pose(0.5,0.5,0.12),1)!;
