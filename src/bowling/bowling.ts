@@ -1,5 +1,6 @@
-// Boulingas (issue #20, idea from #4): pick a hand with the camera, aim with the hand, lean to hook, swing down to
-// release. 1-4 players take turns (only the thrower stands in front of the phone); 3 or 5 frames, real ten-pin
+// Boulingas (issue #20, idea from #4; tuning #26): pick a hand with the camera (2 s rings, switchable), aim with the
+// hand, turn the knuckle to spin, make a full back-to-front swing to release. 1-4 players take turns (only the thrower
+// stands in front of the phone); 3 or 5 frames, real ten-pin
 // scoring (strike / spare / split / miss), the last frame gets bonus balls. Rules + pin physics are PURE in logic.ts
 // (test/unit/bowling.test.ts); this file is the screens, the camera gesture, the lane rendering and the flow.
 // Flow: Pradžia tile -> #/boulingas (setup) -> startFlow(BOWLING) -> #loading -> #ready (arms-up gate, game.ts) ->
@@ -24,9 +25,8 @@ import {screenPhase,setScreenMode} from "../cast/cast.ts";
 import type {ScreenState} from "../cast/room.ts";
 import {
   PINS, LANE_W, BALL_R, PIN_H, PIN_Z, MAX_Z, DEFAULT_FRAMES, SPEED_MIN, SPEED_MAX,
-  CHOOSE_HOLD, AIM_HOLD, DROP_Y, DROP_SPEED, LEAN_MAX,
-  control, handChoice, aimOf, ballX, throwSpeed, simulateThrow, newSeries, turnOf, rackCount, addRoll,
-  isSplit, scoreCard, rank, rollMarks, bestTotal, type Series, type Throw,
+  control, handChoice, aimOf, ballX, throwSpeed, simulateThrow, newSeries, turnOf, rackCount, maxRolls, addRoll,
+  isSplit, scoreCard, rank, rollMarks, bestTotal, pickStep, spinOf, swing, swingState, type Series, type Throw, type SwingState,
 } from "./logic.ts";
 
 const WHO:Who[]=["r","b","y","g"];
@@ -96,8 +96,15 @@ document.body.insertAdjacentHTML("beforeend",`
     <div class="bw-scoreboard" id="bwBoard" aria-label="${tr("bw.standings")}"></div>
     <div class="bw-status" id="bwStatus"><span class="bw-frame-pill" id="bwFrame"></span><span class="bw-left-pill" id="bwLeft"></span></div>
   </div>
-  <div class="bw-hand" id="bwHand" aria-live="polite"><span class="bw-hand-txt"><b id="bwHandT"></b><small id="bwHandS"></small></span><span class="bw-hand-bar"><i id="bwHBar"></i></span></div>
-  <div class="bw-aim" id="bwAim"><span data-icon="target"></span><b id="bwAimT"></b></div>
+  <div class="bw-hand" id="bwHand" aria-live="polite">
+    <div class="bw-picks">
+      <span class="bw-pick" id="bwPickL" aria-hidden="true"><svg viewBox="0 0 36 36"><circle class="bw-pick-bg" cx="18" cy="18" r="15.9"/><circle class="bw-pick-ring" id="bwRingL" cx="18" cy="18" r="15.9" pathLength="100"/></svg><span>${tr("bw.sideLeft")}</span></span>
+      <span class="bw-hand-txt"><b id="bwHandT"></b><small id="bwHandS"></small></span>
+      <span class="bw-pick" id="bwPickR" aria-hidden="true"><svg viewBox="0 0 36 36"><circle class="bw-pick-bg" cx="18" cy="18" r="15.9"/><circle class="bw-pick-ring" id="bwRingR" cx="18" cy="18" r="15.9" pathLength="100"/></svg><span>${tr("bw.sideRight")}</span></span>
+    </div>
+    <span class="bw-hand-bar"><i id="bwHBar"></i></span>
+  </div>
+  <div class="bw-aim" id="bwAim"><span class="bw-aim-dot"></span><b id="bwAimT"></b></div>
   <div class="sp-call bw-call" id="bwCall" aria-live="assertive"><b class="d" id="bwCallT"></b><small id="bwCallS"></small></div>
   <div class="bw-turn" id="bwTurn" hidden>
     <div class="bw-turn-card" role="dialog" aria-labelledby="bwTurnN">
@@ -131,6 +138,7 @@ fillIcons(document);
 const runRoot=$("#bwRun"), endRoot=$("#bwEnd"), cvs=$<HTMLCanvasElement>("#bwCv"), ctx=cvs.getContext("2d",{alpha:false})!;
 const callRoot=$("#bwCall"), callT=$("#bwCallT"), callS=$("#bwCallS"), turnRoot=$("#bwTurn"), gateRoot=$("#bwGate"), ring=$("#bwRing"), gateT=$("#bwGateT");
 const boardEl=$("#bwBoard"), frameEl=$("#bwFrame"), leftEl=$("#bwLeft"), handEl=$("#bwHand"), handT=$("#bwHandT"), handS=$("#bwHandS"), hbar=$("#bwHBar"), aimEl=$("#bwAim"), aimT=$("#bwAimT");
+const pickEls=[$("#bwPickL"),$("#bwPickR")], pickRings=[$("#bwRingL"),$("#bwRingR")];
 
 // ---------- history (mode "bowling", bwTotals / bwRolls / bwFrames) ----------
 // ---------- setup: 1-4 players, names, 3/5 frames ----------
@@ -169,8 +177,9 @@ type Phase="off"|"card"|"hand"|"aim"|"roll";
 let phase:Phase="off", phaseAt=0, raf=0, last=0, hudAt=0, callTimer=0, startAt=0, cardUntil=0, firstTurn=true, lastPlayer=-1;
 let series:Series=newSeries(2,DEFAULT_FRAMES), names0:string[]=[], pb=0;
 let sim:Throw|null=null, throwAt=0, resultAt=0, nextAt=0, resultShown=false, lastThrow:number[]=[], throwSpeedUsed=0;
-let chosen:0|1=1, aim=0, hook=0, aimAt=0, armed=false, holdAt=0, prevWrist:{y:number;t:number}|null=null;
-let holdSide:-1|0|1=-1;
+let chosen:0|1=1, aim=0, spin=0, aimLocked=false, prevWrist:{x:number;y:number;t:number}|null=null;
+let pickProg:[number,number]=[0,0], lastPickAt=0;
+let SW:SwingState=swingState();
 let lmKeep:Lm[]|null=null, scripted=false, forceHand:0|1|null=null, gateHold=0, gateLast=0;
 let L:LaneLayout, bg:HTMLCanvasElement|null=null, lastAimText="", lastFrameText="", lastLeftText="";
 const PN=90, part=new Float32Array(PN*6); let partN=0; // x,y,vx,vy,age,life (screen px)
@@ -209,7 +218,7 @@ function showCard(now:number,needGate:boolean){
   callRoot.className="sp-call bw-call";handEl.classList.remove("on");aimEl.classList.remove("on");
   const turnN=$("#bwTurnN");turnN.textContent=names0[p];turnN.style.setProperty("--tone",TONE[p]);
   $("#bwTurnArt").innerHTML=mascot(WHO[p],"guard",{anim:true});
-  $("#bwTurnA").textContent=`${tr("bw.frame",{n:t.f+1,total:series.frames})} · ${tr("bw.throw",{n:roll+1})}`;
+  $("#bwTurnA").textContent=`${tr("bw.frame",{n:t.f+1,total:series.frames})} · ${tr("bw.throwOf",{n:roll+1,total:maxRolls(series)})}`;
   gateRoot.hidden=!needGate;ring.style.strokeDashoffset="100";gateT.textContent=tr("bw.armsUp");
   const mini=$("#bwMini");mini.hidden=n<2;mini.classList.toggle("many",n>2);
   const cardNow=scoreCard(series);
@@ -241,54 +250,62 @@ function startHand(now:number){
   phase="hand";phaseAt=now;S.running=true;firstTurn=false;
   turnRoot.classList.remove("in");turnRoot.classList.add("out");
   setTimeout(()=>{if(phase!=="card")turnRoot.hidden=true},240);
-  holdAt=0;holdSide=-1;forceHand=null;prevWrist=null;armed=false;
-  call(tr("bw.pickHand"),tr("bw.pickHandSub"),"is-aim",1900);
-  setHand(tr("bw.pickHand"),tr("bw.pickHandSub"),0,false);
+  forceHand=null;prevWrist=null;aimLocked=false;
+  pickProg=[0,0];lastPickAt=0;SW=swingState();
+  handEl.dataset.mode="pick";handEl.style.setProperty("--tone",TONE[series.p]);handEl.style.setProperty("--tone-ink",TONE_INK[series.p]);
+  setPicks(pickProg,null);
+  clearTimeout(callTimer);callRoot.classList.remove("on"); // the bottom card with both rings is the instruction
+  setHand(tr("bw.pickHand"),tr("bw.pickHint"),0,true);
 }
 function chooseHand(side:0|1,now:number){
   if(phase!=="hand")return;
-  chosen=side;phase="aim";aimAt=now;armed=false;prevWrist=null;aim=0;hook=0;
+  chosen=side;phase="aim";aim=0;spin=0;aimLocked=false;prevWrist=null;SW=swingState();
+  handEl.dataset.mode="aim";
   clearTimeout(callTimer);callRoot.classList.remove("on"); // the big call hides, the bottom card takes over
-  setHand(tr("bw.raise"),tr("bw.aimSub"),0,false);
+  setHand(tr("bw.raise"),tr("bw.aimSub"),0,true);
   updateAimText();
   sfx.round();
 }
 function handStep(now:number,lm:Lm[]|null){
   if(scripted){if(forceHand!=null)chooseHand(forceHand,now);return} // the e2e camera never picks a hand
   const c=lm?control(lm,ar()):null;
-  if(!c){holdAt=0;holdSide=-1;setHand(tr("bw.noHand"),tr("bw.pickHandSub"),0,false);return}
+  const dt=lastPickAt?Math.min(.1,(now-lastPickAt)/1000):0;lastPickAt=now;
+  if(!c){
+    pickProg=pickStep(pickProg,null,dt);setPicks(pickProg,null);
+    setHand(tr("bw.noHand"),tr("bw.pickHint"),0,true);return;
+  }
   const side=handChoice(c);
-  if(side==null){holdAt=0;holdSide=-1;setHand(tr("bw.pickHand"),tr("bw.pickHandSub"),0,false);return}
-  if(side!==holdSide){holdSide=side;holdAt=now}
-  const pct=holdAt?Math.min(1,(now-holdAt)/CHOOSE_HOLD):0;
-  setHand(side?tr("bw.pickRight"):tr("bw.pickLeft"),tr("bw.hold"),pct,true);
-  if(pct>=1)chooseHand(side,now);
+  pickProg=pickStep(pickProg,side,dt);setPicks(pickProg,side);
+  if(side==null){setHand(tr("bw.pickHand"),tr("bw.pickHint"),0,true);return}
+  setHand(side?tr("bw.pickRight"):tr("bw.pickLeft"),tr("bw.hold"),0,true);
+  if(pickProg[side]>=1)chooseHand(side,now);
 }
 function aimStep(now:number,lm:Lm[]|null){
   if(scripted){setHand(tr("bw.aim"),tr("bw.aimSub"),1,true);return}
   const c=lm?control(lm,ar()):null;
-  if(!c){prevWrist=null;setHand(tr("bw.noHand"),tr("bw.aimSub"),0,false);return}
+  if(!c){prevWrist=null;SW=swingState();aimLocked=false;setHand(tr("bw.noHand"),tr("bw.aimSub"),0,true);return}
   const w=c.wrists[chosen];
-  if(w.ok){
-    const a=aimOf(c,chosen);if(a!=null)aim=clamp(aim+(a-aim)*0.32,-1,1);
-    hook=clamp(hook+(clamp(c.lean/LEAN_MAX,-1,1)*0.9-hook)*0.25,-1,1);
-    if(w.y<c.body.sy+c.body.u*0.24)armed=true;
-    const dt=prevWrist?(now-prevWrist.t)/1000:0;
-    const spd=prevWrist&&dt>0?(w.y-prevWrist.y)/dt/c.body.u:0;
-    if(armed&&now-aimAt>AIM_HOLD&&w.y>c.body.sy+c.body.u*DROP_Y&&spd>DROP_SPEED){
-      launch(now,aim,hook,throwSpeed(spd));return;
-    }
-    prevWrist={y:w.y,t:now};
-    if(!armed)setHand(tr("bw.raise"),tr("bw.aimSub"),0,false);
-    else if(now-aimAt<AIM_HOLD)setHand(tr("bw.aim"),tr("bw.hold"),1,true);
-    else setHand(tr("bw.swing"),tr("bw.aimSub"),1,true);
-  }else{prevWrist=null;setHand(tr("bw.noHand"),tr("bw.aimSub"),0,false)}
+  if(!w.ok){prevWrist=null;SW=swingState();aimLocked=false;setHand(tr("bw.noHand"),tr("bw.aimSub"),0,true);return}
+  const dt=prevWrist?Math.min(.2,(now-prevWrist.t)/1000):0;
+  const lateral=prevWrist&&dt>0?(w.x-prevWrist.x)/dt/c.body.u:0;
+  spin=clamp(spin+(spinOf(w.knuckle,lateral)-spin)*0.28,-1,1);
+  // the hand position aims only until the wind-up starts; then the line is locked while the arm swings
+  if(!aimLocked){const a=aimOf(c,chosen);if(a!=null)aim=clamp(aim+(a-aim)*0.32,-1,1)}
+  const r=swing(SW,{ok:true,y:w.y,z:w.z},c.body,now);
+  prevWrist={x:w.x,y:w.y,t:now};
+  if(r==="back"){aimLocked=true;setHand(tr("bw.windup"),tr("bw.aimSub"),1,true)}
+  else if(r==="forward")setHand(tr("bw.forward"),tr("bw.aimSub"),1,true);
+  if(r==="release"){launch(now,aim,spin,throwSpeed(SW.peak));return}
+  if(SW.phase==="idle"){
+    if(aimLocked)aimLocked=false;
+    setHand(tr("bw.aim"),tr("bw.swingHint"),0,true);
+  }
   updateAimText();
 }
-function launch(now:number,aimV:number,hookV:number,speed:number){
+function launch(now:number,aimV:number,spinV:number,speed:number){
   if(phase!=="aim")return;
-  aim=clamp(aimV,-1,1);hook=clamp(hookV,-1,1);throwSpeedUsed=clamp(speed,SPEED_MIN,SPEED_MAX);
-  sim=simulateThrow(series.rack,aim,hook,throwSpeedUsed);
+  aim=clamp(aimV,-1,1);spin=clamp(spinV,-1,1);throwSpeedUsed=clamp(speed,SPEED_MIN,SPEED_MAX);
+  sim=simulateThrow(series.rack,aim,spin,throwSpeedUsed);
   phase="roll";phaseAt=now;throwAt=now;resultShown=false;
   resultAt=now+(PIN_Z/throwSpeedUsed)*1000+220;
   nextAt=now+Math.max(3300,(PIN_Z/throwSpeedUsed)*1000+RESULT_EXTRA+900);
@@ -391,7 +408,7 @@ function updateHud(){
     const cardEl=$(`#bwP${i}`);if(cardEl)cardEl.classList.toggle("now",i===t.p&&!series.done);
     const fr=$(`#bwF${i}`);if(fr){const m=series.frameRolls[i].map((x,f)=>x.length?rollMarks(x).join(""):"").filter(Boolean).join(" ");if(fr.textContent!==m)fr.textContent=m||"–"}
   }
-  const ft=`${tr("bw.frame",{n:Math.min(series.frames,t.f+1),total:series.frames})} · ${tr("bw.throw",{n:t.roll+1})}`;
+  const ft=`${tr("bw.frame",{n:Math.min(series.frames,t.f+1),total:series.frames})} · ${tr("bw.throwOf",{n:t.roll+1,total:maxRolls(series)})}`;
   if(ft!==lastFrameText){lastFrameText=ft;frameEl.textContent=ft}
   const left=series.done?"":tr("bw.left",{n:rackCount(series)});
   if(left!==lastLeftText){lastLeftText=left;leftEl.textContent=left;leftEl.hidden=!left}
@@ -405,6 +422,13 @@ function buildBoard(){
   }));
   totalCache.clear();
 }
+function setPicks(p:[number,number],side:0|1|null){
+  for(let i=0;i<2;i++){
+    pickRings[i].style.strokeDashoffset=String(100-clamp(p[i],0,1)*100);
+    pickEls[i].classList.toggle("on",side===i);
+    pickEls[i].classList.toggle("done",p[i]>=1);
+  }
+}
 function setHand(title:string,sub:string,pct:number,on:boolean){
   handEl.classList.toggle("on",on);
   if(handT.textContent!==title)handT.textContent=title;
@@ -414,8 +438,8 @@ function setHand(title:string,sub:string,pct:number,on:boolean){
 }
 function updateAimText(){
   const boards=Math.round((aim*0.5+0.5)*39);
-  const side=hook<-0.12?"←":hook>0.12?"→":"";
-  const txt=`${tr("bw.aimBoard",{n:clamp(boards,1,39)})}${side?" · "+side:""}`;
+  const side=spin<-0.12?tr("bw.spinLeft"):spin>0.12?tr("bw.spinRight"):"";
+  const txt=`${tr("bw.aimBoard",{n:clamp(boards,1,39)})}${side}`;
   if(txt!==lastAimText){lastAimText=txt;aimT.textContent=txt}
   aimEl.classList.add("on");
 }
@@ -426,25 +450,26 @@ function tvState():Partial<ScreenState>{
   const score:[number,number]=n===2?[cardNow.totals[0],cardNow.totals[1]]:[cardNow.totals[t.p]??0,0];
   const winner=done&&n===2?(()=>{const r=rank(cardNow.totals);return r[0].place===1&&r[1].place!==1?(r[0].i+1) as 1|2:0})():0;
   return {players:n===2?2:1,duration:GAME_CLOCK,left:Math.max(0,GAME_CLOCK-(performance.now()-startAt)/1000),round:t.f,mult:1,
-    ex:{id:"bowling",name:done?tr("bw.title"):`${names0[t.p]??""} · ${tr("bw.throw",{n:t.roll+1})}`.slice(0,40)},
+    ex:{id:"bowling",name:done?tr("bw.title"):`${names0[t.p]??""} · ${tr("bw.throwOf",{n:t.roll+1,total:maxRolls(series)})}`.slice(0,40)},
     score,reps:cardNow.totals.reduce((a,_,i)=>a+series.frameRolls[i].flat().reduce((x,y)=>x+y,0),0),winner};
 }
 
 // ---------- test hooks (e2e / headless tools) ----------
 function fakeRoll(ids:number[]){
   if(phase!=="aim")return;
-  sim={down:ids.slice(),frames:[],endT:0,speed:0,aim,hook};
+  sim={down:ids.slice(),frames:[],endT:0,speed:0,aim,hook:spin};
   phase="roll";phaseAt=performance.now();throwAt=phaseAt;resultAt=phaseAt+200;nextAt=phaseAt+2400;resultShown=false;
   setHand("","",0,false);aimEl.classList.remove("on");
 }
 (window as any).__bw={
   state:()=>({phase,p:series.p,f:series.f,roll:turnOf(series).roll,rack:rackCount(series),rackIds:series.rack.map((v,i)=>v?i:-1).filter(i=>i>=0),
-    totals:scoreCard(series).totals,rolls:series.frameRolls.map(fr=>fr.map(x=>x.slice())),done:series.done,aim,hook,last:lastThrow.slice(),sim:sim?{down:sim.down.slice(),endT:sim.endT}:null}),
+    totals:scoreCard(series).totals,rolls:series.frameRolls.map(fr=>fr.map(x=>x.slice())),done:series.done,aim,spin,last:lastThrow.slice(),sim:sim?{down:sim.down.slice(),endT:sim.endT}:null}),
   script:()=>{scripted=true}, // ignore the camera (the e2e fake camera cannot make the gestures)
   ready:()=>{if(phase==="card")startHand(performance.now())}, // skip the gate / card delay
   hand:(side:0|1)=>{forceHand=side;if(phase==="hand")chooseHand(side,performance.now())},
-  aim:(a:number,h=0)=>{aim=clamp(a,-1,1);hook=clamp(h,-1,1);updateAimText();if(phase==="aim")setHand(tr("bw.swing"),tr("bw.aimSub"),1,true)},
-  throw:(speed=11)=>{if(phase==="aim")launch(performance.now(),aim,hook,speed)},
+  pick:(side:0|1,p:number)=>{pickProg[side]=clamp(p,0,1);setPicks(pickProg,side)}, // visual/e2e ring check
+  aim:(a:number,s=0)=>{aim=clamp(a,-1,1);spin=clamp(s,-1,1);updateAimText();if(phase==="aim")setHand(tr("bw.aim"),tr("bw.aimSub"),1,true)},
+  throw:(speed=11)=>{if(phase==="aim")launch(performance.now(),aim,spin,speed)},
   // deterministic scoring path for the e2e: knock these pin ids (or the first N standing pins) now
   pins:(ids:number[])=>fakeRoll(ids),
   knock:(n:number)=>fakeRoll(series.rack.map((v,i)=>v?i:-1).filter(i=>i>=0).slice(0,n)),
@@ -598,8 +623,10 @@ function drawBall(x:number,z:number,p:number){
   if(r>10){ctx.fillStyle="#070A20";for(const a of [-.45,0,.45]){ctx.beginPath();ctx.arc(X+a*r*.38,Y-r*.98,r*.13,0,Math.PI*2);ctx.fill()}}
   ctx.restore();
 }
-function drawAimPath(gx:number,gy:number,gh:number,aimV:number,hookV:number,on:boolean){
-  const startX=sxAt(aimV*.12,0),startY=L.yNear-2;
+// Perspective aiming: no lines and no crosshairs. A trail of translucent balls follows the predicted curve and a
+// bigger ghost ball sits where the ball crosses the head pin (the hand's line). The near balls are large / faint,
+// the far ones small / clearer, so the lane depth reads on its own.
+function drawAimPath(gx:number,gy:number,gh:number,aimV:number,spinV:number,on:boolean){
   // the ghost bowler: a translucent body + the throwing arm reaching toward the aim
   const p=series.p,handX=gx+aimV*gh*.42,handY=gy-gh*.62;
   ctx.save();
@@ -619,45 +646,39 @@ function drawAimPath(gx:number,gy:number,gh:number,aimV:number,hookV:number,on:b
     ctx.lineWidth=Math.max(3,gh*.035);ctx.strokeStyle=TONE[p];
     ctx.beginPath();ctx.moveTo(gx+(chosen?-1:1)*gh*.08,hy+hr*.9);ctx.lineTo(gx+(chosen?-1:1)*gh*.16,hy+hr*.9+gh*.22);ctx.stroke();
     ctx.fillStyle=TONE[p];ctx.beginPath();ctx.arc(handX,handY,gh*.045,0,Math.PI*2);ctx.fill();
-    // the ball in the hand
-    drawBallAt(handX,handY-gh*.02,gh*.05);
+    // the ball in the hand (solid enough to see, still part of the hologram)
+    drawGhostBall(handX,handY-gh*.02,gh*.055,TONE[p],.95,true);
   }else{
     ctx.lineWidth=Math.max(3,gh*.035);
     for(const s of [-1,1]){ctx.beginPath();ctx.moveTo(gx+s*gh*.08,hy+hr*.9);ctx.lineTo(gx+s*gh*.3,hy+hr*1.1);ctx.stroke()}
   }
   ctx.restore();
   if(!on)return;
-  // the projected line down the lane + a target ring where the ball crosses the head pin
-  ctx.save();
-  // the hand -> the foul line (so the hologram visibly throws along the line)
-  ctx.beginPath();ctx.moveTo(handX,handY);ctx.lineTo(startX,startY);
-  ctx.strokeStyle="rgba(255,255,255,.2)";ctx.lineWidth=2;ctx.setLineDash([2,7]);ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(startX,startY);
-  for(let z=1;z<=PIN_Z;z+=.6)ctx.lineTo(sxAt(ballX(z,aimV,hookV),z),yAt(z));
-  ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=3;ctx.setLineDash([2,9]);ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.strokeStyle=TONE[p];ctx.globalAlpha=.55;ctx.lineWidth=2;ctx.stroke();
-  const tx=ballX(PIN_Z,aimV,hookV),X=sxAt(tx,PIN_Z),Y=yAt(PIN_Z),r=clamp(pinHAt(PIN_Z)*.34,8,20);
-  const inLane=Math.abs(tx)<LANE_W/2-BALL_R*.3;
-  ctx.globalAlpha=1;ctx.strokeStyle=inLane?"#FFC61A":"#FF3B3B";ctx.lineWidth=3;
-  ctx.beginPath();ctx.arc(X,Y,r,0,Math.PI*2);ctx.stroke();
-  ctx.beginPath();ctx.arc(X,Y,r*.45,0,Math.PI*2);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(X-r*1.5,Y);ctx.lineTo(X+r*1.5,Y);ctx.moveTo(X,Y-r*1.5);ctx.lineTo(X,Y+r*1.5);ctx.stroke();
-  ctx.restore();
+  // the projected ball path as a trail of perspective spheres (no line)
+  const inLane=Math.abs(ballX(PIN_Z,aimV,spinV))<LANE_W/2-BALL_R*.3;
+  const tone=inLane?TONE[p]:"#FF3B3B";
+  for(let i=1;i<=9;i++){
+    const z=PIN_Z*i/9,X=sxAt(ballX(z,aimV,spinV),z),r=Math.max(2.2,ballRAt(z)*.56),Y=yAt(z)-r*.55;
+    drawGhostBall(X,Y,r,tone,.10+.15*(i/9),false);
+  }
+  // the target: a bigger ghost ball at the head pin instead of a ring / crosshair
+  const tx=ballX(PIN_Z,aimV,spinV),X=sxAt(tx,PIN_Z),Y=yAt(PIN_Z),r=Math.max(7,ballRAt(PIN_Z)*1.15);
+  ctx.save();ctx.globalAlpha=.2;ctx.fillStyle="#070920";ctx.beginPath();ctx.ellipse(X,Y+r*.35,r*1.5,r*.36,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  drawGhostBall(X,Y-r*.55,r,tone,.62,true);
 }
-function drawBallAt(X:number,Y:number,r:number){
-  ctx.save();const g=ctx.createRadialGradient(X-r*.35,Y-r*.4,r*.1,X,Y,r);g.addColorStop(0,"#fff");g.addColorStop(.25,"#5B8CFF");g.addColorStop(1,"#070A20");
-  ctx.fillStyle=g;ctx.beginPath();ctx.arc(X,Y,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#070920";ctx.lineWidth=2;ctx.stroke();ctx.restore();
+function drawGhostBall(X:number,Y:number,r:number,tone:string,alpha:number,glow:boolean){
+  ctx.save();ctx.globalAlpha=alpha;
+  if(glow){ctx.shadowColor=tone;ctx.shadowBlur=Math.max(8,r*2.2)}
+  const g=ctx.createRadialGradient(X-r*.35,Y-r*.4,r*.08,X,Y,r);
+  g.addColorStop(0,"#FFFFFF");g.addColorStop(.3,tone);g.addColorStop(1,"#070A20");
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(X,Y,r,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;ctx.globalAlpha=alpha*.7;ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(X-r*.32,Y-r*.38,Math.max(1,r*.16),0,Math.PI*2);ctx.fill();
+  ctx.restore();
 }
 function drawGhost(p:number,aimV:number,on:boolean,now:number){
   const gx=L.cx,gy=L.yNear-L.H*.20,gh=Math.min(L.H*.25,198);
-  drawAimPath(gx,gy,gh,aimV,hook,on);
-  if(phase==="hand"){
-    // a soft glow on the side the camera sees (the hold ring says how close the choice is)
-    if(holdSide>=0){ctx.save();ctx.globalAlpha=.18;ctx.fillStyle=TONE[p];ctx.beginPath();ctx.arc(gx+(holdSide?1:-1)*gh*.3,gy-gh*.7,gh*.18,0,Math.PI*2);ctx.fill();ctx.restore()}
-  }
-  void now;
+  drawAimPath(gx,gy,gh,aimV,spin,on);
+  void p;void now;
 }
 function burst(){
   if(reduced())return;
@@ -699,6 +720,7 @@ function reset(){
   cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);
   callRoot.className="sp-call bw-call";turnRoot.hidden=true;handEl.classList.remove("on");aimEl.classList.remove("on");
   setScreenMode(null);sim=null;scripted=false;forceHand=null;lmKeep=null;lastPlayer=-1;firstTurn=true;
+  pickProg=[0,0];lastPickAt=0;SW=swingState();aimLocked=false;handEl.dataset.mode="";
   part.fill(0);partN=0;bg=null;totalCache.clear();lastFrameText=lastLeftText=lastAimText="";
   runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("sprinting","bowling");
 }
