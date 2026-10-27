@@ -254,7 +254,7 @@ function chooseHand(side:0|1,now:number){
   sfx.round();
 }
 function handStep(now:number,lm:Lm[]|null){
-  if(scripted&&forceHand!=null){chooseHand(forceHand,now);return}
+  if(scripted){if(forceHand!=null)chooseHand(forceHand,now);return} // the e2e camera never picks a hand
   const c=lm?control(lm,ar()):null;
   if(!c){holdAt=0;holdSide=-1;setHand(tr("bw.noHand"),tr("bw.pickHandSub"),0,false);return}
   const side=handChoice(c);

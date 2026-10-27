@@ -21,21 +21,24 @@ test("bowling, 2 players x 3 frames: hand -> aim -> ball, scorecard, history, ba
   await (await tap(page,"#bwN2","P2 name")).fill("Martynas");
   await tap(page,'[data-bwf="3"]',"3 frames");
   await a11y(page,"bowling-setup",info);
+  await page.evaluate(()=>(window as any).__bw.script()); // before the game: the fake camera must never pick a hand
 
   await tap(page,"#bwGo","Į taką");
   await screen(page,"ready").toBeVisible({timeout:120_000});
   await screen(page,"bwRun").toBeVisible({timeout:120_000});
-  await page.evaluate(()=>(window as any).__bw.script());
   const order:string[]=[];
   const turns=2*3*2; // two balls per frame, no strike/spare (3 pins each)
+  const atTurn=async()=>{
+    await expect.poll(async()=>{const s=await bw(page);return s.phase==="card"||s.phase==="hand"},{timeout:30_000}).toBe(true);
+    return bw(page);
+  };
 
   for(let k=0;k<turns;k++){
-    await expect.poll(async()=>(await bw(page)).phase,{timeout:30_000}).toBe("card");
-    const before=await bw(page);
+    const before=await atTurn();
     order.push(`${before.p}:${before.f}`);
     await expect(page.locator("#bwTurnN"),"turn card names the current bowler").toHaveText(before.p?"Martynas":/./);
     if(k===0)await a11y(page,"bowling-turn",info);
-    await page.evaluate(()=>(window as any).__bw.ready());
+    if(before.phase==="card")await page.evaluate(()=>(window as any).__bw.ready()); // no gate: skip the card delay
     await expect.poll(async()=>(await bw(page)).phase,{timeout:10_000}).toBe("hand");
     await page.evaluate(()=>window.__bw.hand(1));
     await expect.poll(async()=>(await bw(page)).phase,{timeout:10_000}).toBe("aim");
