@@ -44,6 +44,8 @@ export const sfx={
   leap:()=>{noise(.18,.18);tone(330,.22,.14,"triangle");tone(660,.18,.1,"triangle",.06);buzz(35)},
   land:()=>{noise(.28,.42);tone(110,.2,.26,"sine");buzz(90)},
   horn:()=>{tone(185,.5,.2,"sawtooth");tone(139,.5,.16,"sawtooth",.04);buzz(220)},
+  // Slidinėjimas (src/ski): a short pole-plant whoosh on every detected push
+  push:()=>{noise(.06,.14);tone(560,.06,.05,"sine")},
 };
 const save=(k:string,on:boolean)=>{try{localStorage.setItem(k,on?"1":"0")}catch(e){}};
 document.addEventListener("click",e=>{

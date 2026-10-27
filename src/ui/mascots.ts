@@ -85,8 +85,10 @@ export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mo
   const mood=o.mood||p.mood||(RIGHT(who)?"fierce":"smirk");
   const up=p.up?` transform="${p.up}"`:"";
   const a11y=o.label?`role="img" aria-label="${o.label}"`:`aria-hidden="true"`;
+  const skis=pose==="ski"?`<g class="m-skis">${[66,134].map((x,k)=>`<g transform="translate(${x} 216) rotate(${k?-4:4})"><rect x="-26" y="-4" width="52" height="9" rx="4.5" fill="${c.body}" stroke="${INK}" stroke-width="4"/><rect x="-18" y="-1" width="36" height="3" rx="1.5" fill="#fff" opacity=".8"/></g>`).join("")}</g>`:"";
   return `<svg class="mascot m-${who} mp-${pose}${o.anim?" anim":""}${o.cls?" "+o.cls:""}" viewBox="0 0 200 230" ${a11y} focusable="false">`
     +`<ellipse class="m-shadow" cx="100" cy="221" rx="54" ry="7" fill="${INK}" opacity=".14"/>`
+    +skis
     +`<g class="m-fig"><g class="m-fi">`
     +`<g class="m-up"${up}><g class="m-ui"><rect class="m-body" x="66" y="126" width="68" height="66" rx="30" fill="${c.body}" stroke="${INK}" stroke-width="${SW}"/></g></g>`
     +`<g class="m-legs">${leg("l",76,p.ll)}${leg("r",100,p.lr)}</g>` // over the body: a lifted knee reads in front of it
