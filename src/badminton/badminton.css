@@ -108,6 +108,9 @@ body.badminton .fs,body:has(#bdEnd:not(.hide)) .fs{display:none}
 #bdEnd .wrap{gap:16px}
 #bdEnd:not(.hide)>.wrap{animation:modal-in var(--duration-slow) var(--ease-smooth-out) both}
 .bd-res-head{padding-right:130px}
+/* the sunburst alternates red and a lighter red: navy (not white) keeps 4.5:1 on both segments */
+#bdWin,#bdSub{color:var(--ink)}
+#bdAgain{background:var(--red-deep)} /* white on --red is 3.5:1; --red-deep is the 4.5:1 surface token */
 .bd-final{display:flex;align-items:baseline;justify-content:center;gap:14px;font:400 clamp(42px,12vw,66px)/1 var(--disp);color:var(--ink)}
 .bd-final .p1{color:var(--red)}
 .bd-final .p2{color:var(--blue)}
