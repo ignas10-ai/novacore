@@ -38,8 +38,8 @@ function strip(k:string){try{const u=new URL(location.href);u.searchParams.delet
 export const WEB=Capacitor.isNativePlatform()?"https://novacore-two.vercel.app":location.origin;
 export async function share(url:string,text:string,noteEl:HTMLElement){
   // Android WebView has no navigator.share -> the native share sheet
-  if(Capacitor.isNativePlatform())try{await Share.share({title:"NovaCore",text,url});return}catch(e){if(/cancel/i.test(String(e)))return}
-  try{if(navigator.share){await navigator.share({title:"NovaCore",text,url});return}}
+  if(Capacitor.isNativePlatform())try{await Share.share({title:"MoveClash",text,url});return}catch(e){if(/cancel/i.test(String(e)))return}
+  try{if(navigator.share){await navigator.share({title:"MoveClash",text,url});return}}
   catch(e){if((e as Error).name==="AbortError")return}
   try{await navigator.clipboard.writeText(url);toast(t("grp.copied"))}
   catch(e){note(noteEl,url)}

@@ -6,6 +6,22 @@
 - **Metimas:** `throwArm()` nebepaleidžia metimo nuo bet kokio rankos judesio. Pirmiausia ranka turi būti **ramiai laikoma** prie peties / virš jo 0,15 s (arba aiškiai už galvos / nugaros), tada reikia tikro mosto: `SWING_MIN`=3,2 vieneto/s, forward/down judesys, minimalus `RELEASE_Z`=0,10 arba `RELEASE_Y`=0,25 judesys, startas virš peties ir paleidimas ne žemiau kaip -0,35. Bėgant su ranka virš peties, nuo bėgimo bounce'o ar lėto nuleidimo metimas nebeaptinkamas; `SWING_MAX`=26 / |z|>0,9 / |h|>1,5 kadrai laikomi MediaPipe glitch'u.
 - **Patikrinta:** `npm test` – **474 testai** (24 `test/unit/javelin.test.ts`, įskaitant tikrus `knees`/`knees2`/`knees3` įrašus abiem rankoms – jie nebeturi netikrų metimų), `npx tsc --noEmit`, `npm run build`, `PW_PORT=4280 npx playwright test test/e2e/javelin.spec.ts`. **Dar reikia tikro telefono:** ar 0,15 s laikymas ir 3,2 vieneto/s slenkstis patogūs realiam mostui 2–3 m atstumu.
 
+## 2026-10-28 — UI: stiklinis stilius + nauji veikėjai + pavadinimas MoveClash (#38, #8, šaka `claude/38-ui-wii`)
+
+- **Pavadinimas:** visur, kur mato žmogus – MoveClash (app, žaidimų reklaminės lentos, manifestai, dokumentai). `localStorage` raktai, paketas `lt.novacore.app` ir domenas nekeisti.
+- **Stilius (Igno pasirinktas 10-28):** tamsiai mėlynas fonas, matinio stiklo kortelės, tikri žaidimų kadrai sulieti fone, gradientinis pagrindinis mygtukas rungties spalva. Viskas `src/styles/glass.css` (importuojama paskutinė iš `main.ts`), tokenai perrašomi tik app ekranams / rezultatams / lapams – kameros srautas ir žaidimų HUD nekeisti.
+- **Veikėjai (Claude Design v2):** 4 veikėjai + 9 sporto pozos + pergalė `public/chars/*.webp`. Pradžios „Šiandien“ kortelė (rungtis keičiasi kasdien), rungčių plytelės su sporto pozomis, nustatymų antraštės (sulietas kadras + poza), rezultatų antraštė su pergalės poza.
+- **Veikėjo pasirinkimas:** Profilis → Kometa / Banga / Saulė / Mėta (`src/ui/chars.ts`); galvutė Pradžioje ir Profilyje, veikėjas ant pakylos. Senas 2 personažų pasirinkimas nustatymuose pašalintas. Mokėjimai – atskiras issue (po SfT).
+- **Kadrai:** `npm run scenes` (`tools/scenes.mjs`) perfotografuoja `public/scenes/*.webp` gulsčiai su e2e kamera.
+
+## 2026-10-28 — UI: Wii Sports stilius, raudonas akcentas (#38, šaka `claude/38-ui-wii`)
+
+- **Kryptis:** Igno pasirinktas Wii Sports viršelis – baltas fonas, ploni pilki kontūrai, minkšti šešėliai, Nunito 900 vietoj Titan One app'o tekstuose, vienas raudonas akcentas. Žaidimų scenos (canvas, Titan One ant lentų) nekeistos.
+- **Tokenai (`src/styles/main.css` `:root`):** tie patys pavadinimai, naujos reikšmės (`--bg` balta, `--ol` #DDE1E5, `--bw` 1.5px, `--sh*` minkšti, `--disp` Nunito). Visi UI tonai (`data-tone` blue/yellow/ink) → raudona šeima; žaidėjų spalvos P1 raudona / P2 mėlyna lieka.
+- **Pradžia:** 3 tikrų žaidimų kadrų koliažas, „Nova“ pilkas + „Core“ raudonas žodženklis (pervadinus #8 – tik tekstas), piktogramų eilė (`src/ui/pictos.ts`), didelis „Žaisti“, tinklelis „Visos rungtys“. `home.ts` surenka kiekvieno žaidimo `.sp-tile` į `#games` ir prideda piktogramą – nauji žaidimai (ietis, badmintonas) atsiras patys su ⭐ piktograma, kol jiems nepridėta sava.
+- **Kadrai:** `public/scenes/*.webp` (640×400, iš e2e kameros žaidimo) – plytelėse, žaidimų nustatymų antraštėse ir rezultatų „Laimėjo …!“ juostoje. Boksas lieka su personažais (žaidžiamas ant kameros vaizdo).
+- **Žaidimų failų neliesta** (`src/<žaidimas>/*` – Martyno PR), viskas perrašyta per `main.css` didesniu specifiškumu.
+
 ## 2026-10-27 — naujas sporto mini žaidimas „Iečio metimas“ (#31, Martyno idėja iš #4, šaka `martynas/31-ietis`)
 
 - **Kaip žaidžiama:** Pradžioje po „Siena“ – raudonai geltona plytelė „Iečio metimas“ (`#/ietis`). 1–4 žaidėjai meta paeiliui, prieš kamerą stovi tik metėjas. Pirmiausia reikia pasirinkti metančią ranką: ištiesk ją į savo pusę ir laikyk – atitinkamas ratas pildosi 2 s, kitas tuo metu išsikrauna; per tą laiką galima persigalvoti. Tada trumpas (14 m) įsibėgėjimas vietoje, ietį laikant prie peties / šiek tiek aukščiau, ir prie linijos mostas ranka į priekį. Pavėluotas metimas po linijos anuliuojamas. 3 bandymai, laimi didžiausia trijų metimų suma.

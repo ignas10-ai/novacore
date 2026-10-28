@@ -17,7 +17,7 @@ export function layout(W:number,H:number,dpr:number):Layout{
 // palette (scene only; UI colours stay in main.css tokens)
 const C={skyTop:"#A9D3FF",skyBot:"#E6F2FF",roof:"#1E2552",stand:["#2B3470","#323C7E","#28306A"],track:"#D9604A",trackDark:"#C24F3C",
   line:"rgba(255,255,255,.92)",grass:"#7CC36E",grassDark:"#6BB15F",ink:"#14183A",crowd:["#FF3B3B","#2F6BFF","#FFC61A","#FFFFFF","#FF4F93","#12B886","#1FB0EA","#F4C3A0","#A86A45"]};
-const boardSet=(a:string,b:string):[string,string,string][]=>[["#14183A","#FFFFFF","NOVACORE"],["#FF3B3B","#FFFFFF",a],["#FFC61A","#14183A","NOVACORE"],["#2F6BFF","#FFFFFF",b]];
+const boardSet=(a:string,b:string):[string,string,string][]=>[["#14183A","#FFFFFF","MOVECLASH"],["#FF3B3B","#FFFFFF",a],["#FFC61A","#14183A","MOVECLASH"],["#2F6BFF","#FFFFFF",b]];
 export const SKEW=.28; // lines across the lanes lean back with depth (x shift per px of track depth)
 
 let L:Layout, skyG:CanvasGradient, trackG:CanvasGradient, stands:HTMLCanvasElement, boards:HTMLCanvasElement, grass:HTMLCanvasElement;

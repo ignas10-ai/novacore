@@ -67,7 +67,7 @@ export async function startFlow(mode:GameMode|null=null){
   try{
     const sizeLabel=await openCamera();
     loadMsg.textContent=t("load.cam",{size:sizeLabel,fps:Math.round(S.camFps)});
-    console.info(`NovaCore kamera: ${cam.videoWidth}×${cam.videoHeight} @ ${Math.round(S.camFps)} fps`);
+    console.info(`MoveClash kamera: ${cam.videoWidth}×${cam.videoHeight} @ ${Math.round(S.camFps)} fps`);
     await loadModel(S.players);
     const wait=700-(performance.now()-loadingSince);
     if(wait>0)await new Promise(r=>setTimeout(r,wait));

@@ -39,7 +39,7 @@ body.hurdling .fs,body:has(#hdEnd:not(.hide)) .fs{display:none}
 .hd-map>i{background:var(--yellow);width:3px;margin-left:-1.5px}
 .hd-cues{display:flex;justify-content:space-between;max-width:760px;margin:10px auto 0;gap:8px}
 .hd-run.solo .hd-cues{justify-content:center}
-.hd-jump{padding:6px 16px 4px;border:var(--bw) solid var(--ink);border-radius:var(--r-pill);background:var(--yellow);color:var(--ink);font:400 24px/1.15 var(--disp);box-shadow:0 4px 0 var(--ink);
+.hd-jump{padding:6px 16px 4px;border:var(--bw) solid var(--ink);border-radius:var(--r-pill);background:var(--yellow);color:var(--ink);font:900 24px/1.15 var(--disp);box-shadow:0 4px 0 var(--ink);
   opacity:0;scale:.6;transition:opacity var(--duration-quick) var(--ease-ui),scale var(--duration-quick) var(--ease-ui)}
 .hd-jump:empty{visibility:hidden}
 .hd-jump.on{opacity:1;scale:1}
