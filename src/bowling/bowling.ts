@@ -97,14 +97,15 @@ document.body.insertAdjacentHTML("beforeend",`
     <div class="bw-status" id="bwStatus"><span class="bw-frame-pill" id="bwFrame"></span><span class="bw-left-pill" id="bwLeft"></span></div>
   </div>
   <div class="bw-hand" id="bwHand" aria-live="polite">
-    <div class="bw-picks">
-      <span class="bw-pick" id="bwPickL" aria-hidden="true"><svg viewBox="0 0 36 36"><circle class="bw-pick-bg" cx="18" cy="18" r="15.9"/><circle class="bw-pick-ring" id="bwRingL" cx="18" cy="18" r="15.9" pathLength="100"/></svg><span>${tr("bw.sideLeft")}</span></span>
-      <span class="bw-hand-txt"><b id="bwHandT"></b><small id="bwHandS"></small></span>
-      <span class="bw-pick" id="bwPickR" aria-hidden="true"><svg viewBox="0 0 36 36"><circle class="bw-pick-bg" cx="18" cy="18" r="15.9"/><circle class="bw-pick-ring" id="bwRingR" cx="18" cy="18" r="15.9" pathLength="100"/></svg><span>${tr("bw.sideRight")}</span></span>
-    </div>
+    <span class="bw-hand-txt"><b id="bwHandT"></b><small id="bwHandS"></small></span>
     <span class="bw-hand-bar"><i id="bwHBar"></i></span>
   </div>
   <div class="bw-aim" id="bwAim"><span class="bw-aim-dot"></span><b id="bwAimT"></b></div>
+  <div class="bw-pick" id="bwPick" hidden>
+    <div class="bw-pick-top" aria-live="polite"><b class="d" id="bwPickT"></b><small id="bwPickS"></small></div>
+    <div class="bw-pick-hand bw-pick-l" id="bwPickL" aria-hidden="true"><svg viewBox="0 0 36 36"><circle class="bw-pick-bg" cx="18" cy="18" r="15.9"/><circle class="bw-pick-fill" id="bwRingL" cx="18" cy="18" r="15.9" pathLength="100"/></svg><b>${tr("bw.sideLeft")}</b><span id="bwPctL">0%</span></div>
+    <div class="bw-pick-hand bw-pick-r" id="bwPickR" aria-hidden="true"><svg viewBox="0 0 36 36"><circle class="bw-pick-bg" cx="18" cy="18" r="15.9"/><circle class="bw-pick-fill" id="bwRingR" cx="18" cy="18" r="15.9" pathLength="100"/></svg><b>${tr("bw.sideRight")}</b><span id="bwPctR">0%</span></div>
+  </div>
   <div class="sp-call bw-call" id="bwCall" aria-live="assertive"><b class="d" id="bwCallT"></b><small id="bwCallS"></small></div>
   <div class="bw-turn" id="bwTurn" hidden>
     <div class="bw-turn-card" role="dialog" aria-labelledby="bwTurnN">
@@ -138,7 +139,8 @@ fillIcons(document);
 const runRoot=$("#bwRun"), endRoot=$("#bwEnd"), cvs=$<HTMLCanvasElement>("#bwCv"), ctx=cvs.getContext("2d",{alpha:false})!;
 const callRoot=$("#bwCall"), callT=$("#bwCallT"), callS=$("#bwCallS"), turnRoot=$("#bwTurn"), gateRoot=$("#bwGate"), ring=$("#bwRing"), gateT=$("#bwGateT");
 const boardEl=$("#bwBoard"), frameEl=$("#bwFrame"), leftEl=$("#bwLeft"), handEl=$("#bwHand"), handT=$("#bwHandT"), handS=$("#bwHandS"), hbar=$("#bwHBar"), aimEl=$("#bwAim"), aimT=$("#bwAimT");
-const pickEls=[$("#bwPickL"),$("#bwPickR")], pickRings=[$("#bwRingL"),$("#bwRingR")];
+const pickRoot=$("#bwPick"), pickT=$("#bwPickT"), pickS=$("#bwPickS");
+const pickEls=[$("#bwPickL"),$("#bwPickR")], pickRings=[$("#bwRingL"),$("#bwRingR")], pickPcts=[$("#bwPctL"),$("#bwPctR")];
 
 // ---------- history (mode "bowling", bwTotals / bwRolls / bwFrames) ----------
 // ---------- setup: 1-4 players, names, 3/5 frames ----------
@@ -200,6 +202,7 @@ function begin(){
   series=newSeries(n,frames);firstTurn=true;lastPlayer=-1;
   pb=bestTotal(loadHist(),frames);
   sim=null;resultShown=false;part.fill(0);partN=0;lastAimText=lastFrameText=lastLeftText="";
+  pickRoot.hidden=true;pickRoot.classList.remove("in","out");document.body.classList.remove("bowling-picking");
   runRoot.classList.remove("hide");endRoot.classList.add("hide");
   document.body.classList.add("sprinting","bowling"); // .sprinting = the corner camera preview (sprint.css)
   startAt=performance.now();S.running=false;
@@ -216,6 +219,7 @@ function showCard(now:number,needGate:boolean){
   phase="card";phaseAt=now;S.running=false;gateHold=0;gateLast=0;
   const t=cur(),p=t.p,roll=t.roll;
   callRoot.className="sp-call bw-call";handEl.classList.remove("on");aimEl.classList.remove("on");
+  pickRoot.hidden=true;pickRoot.classList.remove("in","out");document.body.classList.remove("bowling-picking");
   const turnN=$("#bwTurnN");turnN.textContent=names0[p];turnN.style.setProperty("--tone",TONE[p]);
   $("#bwTurnArt").innerHTML=mascot(WHO[p],"guard",{anim:true});
   $("#bwTurnA").textContent=`${tr("bw.frame",{n:t.f+1,total:series.frames})} · ${tr("bw.throwOf",{n:roll+1,total:maxRolls(series)})}`;
@@ -252,16 +256,23 @@ function startHand(now:number){
   setTimeout(()=>{if(phase!=="card")turnRoot.hidden=true},240);
   forceHand=null;prevWrist=null;aimLocked=false;
   pickProg=[0,0];lastPickAt=0;SW=swingState();
-  handEl.dataset.mode="pick";handEl.style.setProperty("--tone",TONE[series.p]);handEl.style.setProperty("--tone-ink",TONE_INK[series.p]);
+  handEl.style.setProperty("--tone",TONE[series.p]);handEl.style.setProperty("--tone-ink",TONE_INK[series.p]);
   setPicks(pickProg,null);
-  clearTimeout(callTimer);callRoot.classList.remove("on"); // the bottom card with both rings is the instruction
-  setHand(tr("bw.pickHand"),tr("bw.pickHint"),0,true);
+  setPickText(tr("bw.pickHand"),`${names0[series.p]} · ${tr("bw.pickHint")}`);
+  pickRoot.hidden=false;pickRoot.classList.remove("out");void pickRoot.offsetWidth;pickRoot.classList.add("in");
+  document.body.classList.add("bowling-picking");
+  clearTimeout(callTimer);callRoot.classList.remove("on"); // the pick overlay is the instruction
+  handEl.classList.remove("on");
 }
 function chooseHand(side:0|1,now:number){
   if(phase!=="hand")return;
+  pickProg[side]=1;setPicks(pickProg,side); // show the chosen bubble full before it fades
+  pickRoot.classList.remove("in");pickRoot.classList.add("out");
+  document.body.classList.remove("bowling-picking");
+  setTimeout(()=>{if(phase!=="hand"){pickRoot.hidden=true;pickRoot.classList.remove("in","out")}},240);
   chosen=side;phase="aim";aim=0;spin=0;aimLocked=false;prevWrist=null;SW=swingState();
   handEl.dataset.mode="aim";
-  clearTimeout(callTimer);callRoot.classList.remove("on"); // the big call hides, the bottom card takes over
+  clearTimeout(callTimer);callRoot.classList.remove("on"); // the pick overlay hides, the aim card takes over
   setHand(tr("bw.raise"),tr("bw.aimSub"),0,true);
   updateAimText();
   sfx.round();
@@ -272,12 +283,12 @@ function handStep(now:number,lm:Lm[]|null){
   const dt=lastPickAt?Math.min(.1,(now-lastPickAt)/1000):0;lastPickAt=now;
   if(!c){
     pickProg=pickStep(pickProg,null,dt);setPicks(pickProg,null);
-    setHand(tr("bw.noHand"),tr("bw.pickHint"),0,true);return;
+    setPickText(tr("bw.stepIn"),`${names0[series.p]} · ${tr("bw.noHand")}`);return;
   }
   const side=handChoice(c);
   pickProg=pickStep(pickProg,side,dt);setPicks(pickProg,side);
-  if(side==null){setHand(tr("bw.pickHand"),tr("bw.pickHint"),0,true);return}
-  setHand(side?tr("bw.pickRight"):tr("bw.pickLeft"),tr("bw.hold"),0,true);
+  if(side==null){setPickText(tr("bw.pickHand"),`${names0[series.p]} · ${tr("bw.pickHint")}`);return}
+  setPickText(tr("bw.hold"),`${names0[series.p]} · ${side?tr("bw.pickRight"):tr("bw.pickLeft")}`);
   if(pickProg[side]>=1)chooseHand(side,now);
 }
 function aimStep(now:number,lm:Lm[]|null){
@@ -402,16 +413,29 @@ $("#bwHome").onclick=()=>{resetGame();screenPhase("idle");document.body.classLis
 
 // ---------- HUD + prompts ----------
 const totalCache=new Map<number,string>();
+interface HudCell{cell:HTMLElement;marks:HTMLElement[];cum:HTMLElement}
+let hudCells:HudCell[][]=[];
 // turn/leftOverride: during the result call keep the THROWER's frame/ball and the pins left by that ball, while the
 // scorecard totals/frames already include the throw (the next player's card starts only on the next turn card)
 function updateHud(turn?:{p:number;f:number;roll:number},leftOverride?:number){
   const cardNow=scoreCard(series),t=turn??cur();
-  if(boardEl.dataset.n!==String(n))buildBoard();
+  if(boardEl.dataset.key!==`${n}:${frames}`)buildBoard();
   for(let i=0;i<n;i++){
     const v=String(cardNow.totals[i]);
     if(totalCache.get(i)!==v){totalCache.set(i,v);const el=$(`#bwT${i}`);if(el)el.textContent=v}
-    const cardEl=$(`#bwP${i}`);if(cardEl)cardEl.classList.toggle("now",i===t.p&&!series.done);
-    const fr=$(`#bwF${i}`);if(fr){const m=series.frameRolls[i].map((x,f)=>x.length?rollMarks(x).join(""):"").filter(Boolean).join(" ");if(fr.textContent!==m)fr.textContent=m||"–"}
+    const row=$(`#bwP${i}`);if(row)row.classList.toggle("now",i===t.p&&!series.done);
+    for(let f=0;f<frames;f++){
+      const hc=hudCells[i]?.[f];if(!hc)continue;
+      const marks=rollMarks(series.frameRolls[i][f]??[]);
+      for(let j=0;j<hc.marks.length;j++){
+        const txt=marks[j]??"";
+        if(hc.marks[j].textContent!==txt)hc.marks[j].textContent=txt;
+      }
+      const score=cardNow.frameScores[i][f],s=score==null?"·":String(score);
+      if(hc.cum.textContent!==s)hc.cum.textContent=s;
+      hc.cell.classList.toggle("cur",i===t.p&&f===t.f&&!series.done);
+      hc.cell.classList.toggle("has",(series.frameRolls[i][f]?.length??0)>0);
+    }
   }
   const total=t.f===series.frames-1?3:2;
   const ft=`${tr("bw.frame",{n:Math.min(series.frames,t.f+1),total:series.frames})} · ${tr("bw.throwOf",{n:t.roll+1,total})}`;
@@ -420,21 +444,42 @@ function updateHud(turn?:{p:number;f:number;roll:number},leftOverride?:number){
   const left=series.done||nLeft<=0?"":tr("bw.left",{n:nLeft});
   if(left!==lastLeftText){lastLeftText=left;leftEl.textContent=left;leftEl.hidden=!left}
 }
+// the classic bowling table: frames across, the two/three throw marks + the running frame score in each box, the
+// series total on the right. A real <table> so the header/rows are announced properly; the current player/frame lit.
 function buildBoard(){
+  boardEl.dataset.key=`${n}:${frames}`;
   boardEl.dataset.n=String(n);
-  boardEl.replaceChildren(...[...Array(n).keys()].map(i=>{
-    const el=document.createElement("div");el.className=`bw-pc p${i+1}`;el.id=`bwP${i}`;
-    el.innerHTML=`<span class="bw-pc-face">${avatar(WHO[i])}</span><span class="bw-pc-txt"><b>${names0[i]??DEF[i]}</b><small id="bwF${i}">–</small></span><b class="d bw-pc-total" id="bwT${i}">0</b>`;
-    return el;
+  const head=Array.from({length:frames},(_,f)=>`<th scope="col" class="bw-tfh"><span>${f+1}</span></th>`).join("");
+  const rows=Array.from({length:n},(_,p)=>{
+    const cells=Array.from({length:frames},(_,f)=>{
+      const slots=f===frames-1?3:2;
+      return `<td class="bw-tframe"><div class="bw-tcell"><span class="bw-tmarks">${Array.from({length:slots},()=>"<i></i>").join("")}</span><small class="bw-tcum">·</small></div></td>`;
+    }).join("");
+    return `<tr class="bw-tr p${p+1}" id="bwP${p}"><th scope="row" class="bw-tname"><span class="bw-tname-in"><span class="bw-tface">${avatar(WHO[p])}</span><b></b></span></th>${cells}<td class="bw-ttot" id="bwT${p}">0</td></tr>`;
+  }).join("");
+  boardEl.innerHTML=`<table class="bw-table"><caption class="sr-only">${tr("bw.standings")}</caption><thead><tr><th scope="col" class="bw-tname"><span class="sr-only">${tr("bw.players")}</span></th>${head}<th scope="col" class="bw-ttot" aria-label="${tr("bw.sum")}">Σ</th></tr></thead><tbody>${rows}</tbody></table>`;
+  for(let p=0;p<n;p++){
+    const nm=boardEl.querySelector<HTMLElement>(`#bwP${p} .bw-tname b`);
+    if(nm)nm.textContent=names0[p]??DEF[p];
+  }
+  hudCells=Array.from({length:n},(_,p)=>[...boardEl.querySelectorAll<HTMLElement>(`#bwP${p} .bw-tframe`)].map(td=>{
+    const cell=td.querySelector<HTMLElement>(".bw-tcell")!;
+    return {cell,marks:[...cell.querySelectorAll<HTMLElement>(".bw-tmarks i")],cum:cell.querySelector<HTMLElement>(".bw-tcum")!};
   }));
   totalCache.clear();
 }
 function setPicks(p:[number,number],side:0|1|null){
   for(let i=0;i<2;i++){
-    pickRings[i].style.strokeDashoffset=String(100-clamp(p[i],0,1)*100);
+    const v=clamp(p[i],0,1);
+    pickRings[i].style.strokeDashoffset=String(100-v*100);
+    pickPcts[i].textContent=`${Math.round(v*100)}%`;
     pickEls[i].classList.toggle("on",side===i);
-    pickEls[i].classList.toggle("done",p[i]>=1);
+    pickEls[i].classList.toggle("full",v>=1);
   }
+}
+function setPickText(title:string,sub:string){
+  if(pickT.textContent!==title)pickT.textContent=title;
+  if(pickS.textContent!==sub)pickS.textContent=sub;
 }
 function setHand(title:string,sub:string,pct:number,on:boolean){
   handEl.classList.toggle("on",on);
@@ -494,7 +539,8 @@ function resize(){
 }
 addEventListener("resize",()=>{if(phase!=="off")resize()});
 function laneLayout(W:number,H:number,players:number):LaneLayout{
-  const yNear=H*0.955, yFar=H*(players>2?0.37:0.315), nearHalf=W*0.62, farHalf=Math.min(W*0.18, nearHalf*0.34);
+  const land=W>H&&H<520; // the frame table needs a little more room in phone landscape
+  const yNear=H*0.955, yFar=H*(land?(players>2?0.44:0.38):(players>2?0.37:0.315)), nearHalf=W*0.62, farHalf=Math.min(W*0.18, nearHalf*0.34);
   return {W,H,cx:W/2,yNear,yFar,nearHalf,farHalf,top:Math.max(8,H*0.03)};
 }
 const easeZ=(z:number)=>Math.pow(clamp(z/MAX_Z,0,1),0.72);
@@ -727,10 +773,11 @@ function frame(now:number){
 function reset(){
   cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);
   callRoot.className="sp-call bw-call";turnRoot.hidden=true;handEl.classList.remove("on");aimEl.classList.remove("on");
+  pickRoot.hidden=true;pickRoot.classList.remove("in","out");
   setScreenMode(null);sim=null;scripted=false;forceHand=null;lmKeep=null;lastPlayer=-1;firstTurn=true;
   pickProg=[0,0];lastPickAt=0;SW=swingState();aimLocked=false;handEl.dataset.mode="";
   part.fill(0);partN=0;bg=null;totalCache.clear();lastFrameText=lastLeftText=lastAimText="";
-  runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("sprinting","bowling");
+  runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("sprinting","bowling","bowling-picking");
 }
 export const BOWLING:GameMode={
   start:begin,

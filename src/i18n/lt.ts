@@ -852,6 +852,7 @@ export const lt={
   "bw.standings":"Rezultatai",
   "bw.results":"Rezultatai",
   "bw.left":"Liko {n}",
+  "bw.sum":"Suma",
   "bw.total":"{n} tšk.",
   "bw.soloSub":"Tavo rezultatas per {n} raundus",
   "bw.strikes":"strike: {n}",

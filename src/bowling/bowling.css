@@ -58,20 +58,44 @@
 body.bowling .fs,body:has(#bwEnd:not(.hide)) .fs{display:none}
 .bw-run{background:#070A20}
 .bw-hud{position:absolute;inset:0 0 auto;z-index:2;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));pointer-events:none}
-.bw-scoreboard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-width:760px;margin:0 auto}
-.bw-scoreboard[data-n="1"]{grid-template-columns:minmax(0,1fr);max-width:420px}
-.bw-pc{display:flex;align-items:center;gap:6px;min-width:0;padding:4px 9px 4px 4px;border:var(--bw) solid var(--ink);border-radius:16px;background:#fff;box-shadow:0 3px 0 var(--ink);--tone:var(--red)}
-.bw-pc.p2{--tone:var(--blue)}
-.bw-pc.p3{--tone:var(--yellow)}
-.bw-pc.p4{--tone:var(--green)}
-.bw-pc.now{box-shadow:0 0 0 3px var(--yellow),0 3px 0 var(--ink)}
-.bw-pc-face{flex:none;display:grid;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--tone);background:#fff;overflow:hidden}
-.bw-pc-face .m-avatar{width:100%;height:100%}
-.bw-pc-txt{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.1}
-.bw-pc-txt b{font:900 13px/1.15 var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bw-pc-txt small{font:800 10.5px/1.25 var(--body);color:var(--fg-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em}
-.bw-pc-total{font-size:22px;line-height:1.1;color:var(--ink)}
+.bw-scoreboard{max-width:760px;margin:0 auto;border:var(--bw) solid var(--ink);border-radius:16px;background:#fff;box-shadow:0 3px 0 var(--ink);overflow:hidden}
+.bw-scoreboard[data-n="1"]{max-width:460px}
+/* the classic bowling table: frames across, marks + running score in each box, series total on the right */
+.bw-table{width:100%;border-collapse:collapse;table-layout:fixed;font-variant-numeric:tabular-nums}
+.bw-table caption{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.bw-table thead th{height:18px;padding:0 1px;border-right:1.5px solid color-mix(in srgb,var(--ink) 16%,transparent);border-bottom:2px solid var(--ink);background:var(--surface-2);color:var(--fg-faint);font:900 9.5px/1.1 var(--body);letter-spacing:.02em;text-align:center}
+.bw-table thead th:last-child{border-right:0}
+.bw-table tbody th,.bw-table tbody td{padding:0;border-top:2px solid color-mix(in srgb,var(--ink) 18%,transparent);border-right:1.5px solid color-mix(in srgb,var(--ink) 16%,transparent);background:#fff;vertical-align:middle}
+.bw-table tbody tr:first-child th,.bw-table tbody tr:first-child td{border-top:0}
+.bw-table tbody th:last-child,.bw-table tbody td:last-child{border-right:0}
+.bw-tname{width:clamp(76px,21vw,120px);padding:1px 4px!important;text-align:left}
+.bw-tname-in{display:flex;min-width:0;align-items:center;gap:4px}
+.bw-tface{flex:none;display:grid;width:22px;height:22px;border:2px solid var(--tone,var(--ink));border-radius:50%;background:#fff;overflow:hidden}
+.bw-tface .m-avatar{width:100%;height:100%}
+.bw-tname b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:900 10px/1.15 var(--body);color:var(--ink)}
+.bw-tr.p1{--tone:var(--red)}
+.bw-tr.p2{--tone:var(--blue)}
+.bw-tr.p3{--tone:var(--yellow)}
+.bw-tr.p4{--tone:var(--green)}
+.bw-tr.now .bw-tname,.bw-tr.now .bw-ttot{background:var(--yellow-tint)}
+.bw-tr.now td{background:color-mix(in srgb,var(--yellow) 8%,#fff)}
+.bw-tr.now .bw-tname{box-shadow:inset 4px 0 0 var(--tone)}
+.bw-tfh span{display:block;line-height:1.1}
+.bw-tframe{padding:1px 2px!important;text-align:center}
+.bw-tcell{display:flex;min-height:30px;flex-direction:column;align-items:center;justify-content:center;gap:0;border-radius:5px;padding:1px 0;transition:background var(--duration-fast) var(--ease-ui),box-shadow var(--duration-fast) var(--ease-ui)}
+.bw-tcell.cur{background:var(--yellow-tint);box-shadow:inset 0 0 0 2px var(--yellow-ink)}
+.bw-tmarks{display:flex;min-height:11px;align-items:center;justify-content:center;gap:1px}
+.bw-tmarks i{min-width:6px;font-style:normal;font:900 10.5px/1.1 var(--body);color:var(--ink);text-align:center}
+.bw-tcum{font:800 8.5px/1.1 var(--body);color:var(--fg-faint);font-variant-numeric:tabular-nums}
+.bw-tcell.has .bw-tcum{color:var(--ink)}
+.bw-ttot{width:clamp(30px,8vw,52px);padding:0 2px!important;background:#fff;color:var(--ink);text-align:center;font:400 18px/1 var(--disp);font-variant-numeric:tabular-nums}
+.bw-table thead .bw-ttot{font:400 12px/1 var(--disp);color:var(--ink)}
+.bw-scoreboard[data-n="3"] .bw-tcell,.bw-scoreboard[data-n="4"] .bw-tcell{min-height:24px}
+.bw-scoreboard[data-n="3"] .bw-tmarks i,.bw-scoreboard[data-n="4"] .bw-tmarks i{font-size:9.5px}
+.bw-scoreboard[data-n="3"] .bw-tcum,.bw-scoreboard[data-n="4"] .bw-tcum{font-size:8px}
+.bw-scoreboard[data-n="3"] .bw-tname b,.bw-scoreboard[data-n="4"] .bw-tname b{font-size:9.5px}
 .bw-status{display:flex;justify-content:space-between;align-items:center;gap:8px;max-width:760px;margin:6px auto 0;pointer-events:none}
+.bw-scoreboard[data-n="1"]+.bw-status{max-width:460px}
 .bw-frame-pill,.bw-left-pill{padding:4px 10px 3px;border:2.5px solid var(--ink);border-radius:var(--r-pill);background:#fff;color:var(--ink);box-shadow:0 2px 0 var(--ink);font:800 12px/1.25 var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bw-left-pill{background:var(--yellow-tint)}
 /* current instruction: pick a hand / aim / swing */
@@ -79,19 +103,28 @@ body.bowling .fs,body:has(#bwEnd:not(.hide)) .fs{display:none}
   border:var(--bw) solid var(--ink);border-radius:18px;background:#fff;box-shadow:0 5px 0 var(--ink);opacity:0;scale:.94;pointer-events:none;
   transition:opacity var(--duration-quick) var(--ease-ui),scale var(--duration-quick) var(--ease-bounce)}
 .bw-hand.on{opacity:1;scale:1}
-/* hand pick: one filling ring on each side (hold 2 s, switch any time) */
-.bw-picks{display:grid;grid-template-columns:56px minmax(0,1fr) 56px;align-items:center;gap:8px;min-width:0}
-.bw-pick{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;color:var(--fg-faint);transition:color var(--duration-quick) var(--ease-ui)}
-.bw-pick svg{width:52px;height:52px;rotate:-90deg}
-.bw-pick-bg{fill:none;stroke:color-mix(in srgb,var(--ink) 14%,transparent);stroke-width:5}
-.bw-pick-ring{fill:none;stroke:color-mix(in srgb,var(--ink) 28%,transparent);stroke-width:5;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100;transition:stroke-dashoffset 80ms linear,stroke var(--duration-quick) var(--ease-ui)}
-.bw-pick span{font:900 11px/1.15 var(--body);letter-spacing:.02em;white-space:nowrap}
-.bw-pick.on{color:var(--tone-ink,var(--blue-ink))}
-.bw-pick.on .bw-pick-ring{stroke:var(--tone,var(--blue))}
-.bw-pick.done .bw-pick-ring{stroke:var(--green)}
-.bw-hand[data-mode="pick"] .bw-hand-bar{display:none}
-.bw-hand[data-mode="aim"] .bw-picks{grid-template-columns:1fr}
-.bw-hand[data-mode="aim"] .bw-pick{display:none}
+/* hand pick: the same big bubbles as Iečio metimas (#31) - the camera moves to the centre, a ring fills 2 s on
+   each side, the active side lifts, the full side turns yellow. The player may switch until a ring is full. */
+.bw-pick{position:absolute;inset:0;z-index:11;pointer-events:none}
+.bw-pick[hidden]{display:none}
+.bw-pick.in{animation:modal-in var(--duration-slow) var(--ease-smooth-out) both}
+.bw-pick.out{animation:bw-out 240ms var(--ease-ui) both}
+.bw-pick-top{position:absolute;left:12px;right:12px;top:calc(max(12px,env(safe-area-inset-top)) + 118px);display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.bw-pick-top b{font:400 clamp(24px,7vw,34px)/1.15 var(--disp);color:#fff;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:0 4px 0 var(--ink)}
+.bw-pick-top small{max-width:34ch;font:800 13px/1.35 var(--body);color:#fff;text-shadow:0 2px 0 var(--ink)}
+.bw-pick-hand{position:absolute;top:55%;translate:0 -50%;width:clamp(82px,23vw,108px);display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:8px 6px 7px;border:var(--bw) solid var(--ink);border-radius:22px;background:rgba(255,255,255,.94);box-shadow:0 4px 0 var(--ink);
+  transition:scale var(--duration-quick) var(--ease-ui),background var(--duration-quick) var(--ease-ui)}
+.bw-pick-l{left:max(10px,env(safe-area-inset-left))}
+.bw-pick-r{right:max(10px,env(safe-area-inset-right))}
+.bw-pick-hand.on{background:var(--yellow-tint);scale:1.05}
+.bw-pick-hand.full{background:var(--yellow);scale:1.09}
+.bw-pick-hand svg{width:min(74px,17vw);height:auto;rotate:-90deg}
+.bw-pick-bg{fill:none;stroke:color-mix(in srgb,var(--ink) 18%,transparent);stroke-width:4}
+.bw-pick-fill{fill:none;stroke:var(--red);stroke-dasharray:100;stroke-dashoffset:100;stroke-linecap:round;transition:stroke-dashoffset 80ms linear,stroke var(--duration-quick) var(--ease-ui)}
+.bw-pick-r .bw-pick-fill{stroke:var(--blue)}
+.bw-pick-hand b{font:900 12px/1.2 var(--body);color:var(--ink);text-align:center;white-space:nowrap}
+.bw-pick-hand span{font:400 14px/1 var(--disp);color:var(--ink)}
 .bw-hand-txt{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1px;min-width:0}
 .bw-hand-txt b{font:900 15px/1.2 var(--body);overflow-wrap:anywhere}
 .bw-hand-txt small{font:700 12.5px/1.3 var(--body);color:var(--fg-faint)}
@@ -142,11 +175,12 @@ body.bowling .fs,body:has(#bwEnd:not(.hide)) .fs{display:none}
 .bw-mname{flex:1;min-width:0;font:800 14px/1.2 var(--body);text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bw-mini b{font-size:17px;line-height:1.1}
 @media (max-width:380px){
-  .bw-scoreboard{gap:4px}
-  .bw-pc{padding:3px 7px 3px 3px;gap:4px}
-  .bw-pc-face{width:26px;height:26px}
-  .bw-pc-txt b{font-size:12px}
-  .bw-pc-total{font-size:19px}
+  .bw-table thead th{font-size:9px}
+  .bw-tface{width:19px;height:19px}
+  .bw-tname b{font-size:9px}
+  .bw-tmarks i{font-size:9.5px}
+  .bw-tcum{font-size:8px}
+  .bw-ttot{font-size:16px}
   .bw-frame-pill,.bw-left-pill{font-size:11px;padding:3px 8px 2px}
 }
 @media (orientation:portrait){
@@ -154,13 +188,25 @@ body.bowling .fs,body:has(#bwEnd:not(.hide)) .fs{display:none}
   body.bowling #stage canvas{object-fit:cover}
 }
 @media (orientation:landscape) and (max-height:500px){
-  .bw-scoreboard{max-width:none;grid-template-columns:minmax(0,220px) minmax(0,220px);justify-content:center}
-  .bw-scoreboard[data-n="1"]{max-width:300px}
+  .bw-scoreboard{max-width:760px}
+  .bw-table thead th{height:16px;font-size:9px}
+  .bw-tname{width:clamp(58px,12vw,96px)}
+  .bw-tface{width:18px;height:18px}
+  .bw-tname b{font-size:9px}
+  .bw-tcell{min-height:22px}
+  .bw-scoreboard[data-n="3"] .bw-tcell,.bw-scoreboard[data-n="4"] .bw-tcell{min-height:20px}
+  .bw-tmarks i{font-size:9.5px}
+  .bw-tcum{font-size:8px}
+  .bw-ttot{font-size:16px}
   .bw-status{margin-top:4px}
-  .bw-hand{bottom:max(10px,env(safe-area-inset-bottom));width:min(64vw,430px)}
+  .bw-hand{bottom:max(10px,env(safe-area-inset-bottom));width:min(58vw,400px)}
   .bw-aim{bottom:max(10px,env(safe-area-inset-bottom))}
+  /* the frame table owns the top; keep the camera preview low over the approach, not over the scores/pins */
+  body.bowling #stage{top:auto;bottom:max(10px,env(safe-area-inset-bottom));height:clamp(70px,18vh,110px)}
   .bw-call{top:22%}
   .bw-call.is-aim{display:none} /* the bottom card carries the instruction; no room between the pins and the bowler */
+  .bw-pick-top{top:calc(max(8px,env(safe-area-inset-top)) + 64px)}
+  .bw-pick-hand{top:58%;width:96px}
   .bw-turn{place-items:center start;padding:12px 12px 12px max(24px,env(safe-area-inset-left))}
   .bw-turn-card{display:grid;grid-template-columns:120px minmax(0,1fr);column-gap:16px;row-gap:2px;align-items:center;justify-items:start;width:min(62vw,560px);padding:14px 18px 14px 14px;margin:0;text-align:left}
   .bw-turn-card>*{grid-column:2}
@@ -169,6 +215,12 @@ body.bowling .fs,body:has(#bwEnd:not(.hide)) .fs{display:none}
   .bw-gate{margin-top:6px;padding:6px 10px}.bw-gate svg{width:32px;height:32px}
   .bw-mini{grid-template-columns:1fr 1fr;margin-top:6px}
 }
+/* hand pick takes over the screen (as in Iečio metimas): camera centred between the two bubbles, HUD dimmed */
+body.bowling-picking #stage{inset:auto;left:50%;top:54%;translate:-50% -50%;right:auto;bottom:auto;width:clamp(150px,44vw,250px);height:auto;aspect-ratio:var(--sp-cam-ar,1.78);z-index:10;
+  border-radius:20px;border:var(--bw) solid var(--ink);box-shadow:0 5px 0 var(--ink)}
+body.bowling-picking #stage canvas{object-fit:cover}
+body.bowling-picking #bwCv{filter:brightness(.55) saturate(.8)}
+body.bowling-picking .bw-hud,body.bowling-picking .bw-hand,body.bowling-picking .bw-aim,body.bowling-picking .bw-call{opacity:0;pointer-events:none}
 
 /* ---------- results ---------- */
 #bwEnd{background:var(--bg)}
@@ -204,4 +256,4 @@ body.bowling .fs,body:has(#bwEnd:not(.hide)) .fs{display:none}
   #bwEnd .cta .go{font-size:16px;min-width:0}
   #bwEnd .cta #bwHome{flex:none;width:58px;padding:0;font-size:0;gap:0}
 }
-@media (prefers-reduced-motion:reduce){.bw-hero-m,.bw-turn.in .bw-turn-card{animation:none}}
+@media (prefers-reduced-motion:reduce){.bw-hero-m,.bw-turn.in .bw-turn-card,.bw-pick.in{animation:none}.bw-pick-hand{transition:none}}
