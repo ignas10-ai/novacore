@@ -233,7 +233,6 @@ function setIncoming(receiver:Side,now:number){
     setRun(receiver,ownX(receiver,c.x),ownZ(receiver,c.z));
     if(mark.side===viewSide&&!hintedTarget){hintedTarget=true;note(tr("bd.hitHint"),1600)}
   }else homeRun(receiver);
-  homeRun(receiver===0?1:0);
   paintActive();
 }
 

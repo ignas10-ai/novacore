@@ -32,12 +32,12 @@ test("badminton 2 players: camera cuts to the receiver, target, results, history
   },{timeout:15_000}).toBe(true);
   expect((await bd(page)).near).toBe(1);
   await expect(page.locator("#bdC2"),"P2's card is the active one").toHaveClass(/active/);
-  await page.screenshot({path:"test-results/badminton-2p-target.png"});
 
-  // P2 returns (a drop keeps the return inside P1's court); the camera cuts back to P1 and the new bubble is on P1's side
-  await page.evaluate(()=>(window as any).__bd.hitNow(1,"drop"));
+  // P2 returns at the marked contact (a drop keeps the return inside P1's court); the camera cuts back to P1
+  expect(await page.evaluate(()=>(window as any).__bd.hitNow(1,"drop"))).toBe(true);
   await expect.poll(async()=>(await bd(page)).near,{timeout:10_000}).toBe(0);
   await expect.poll(async()=>(await bd(page)).mark?.side,{timeout:10_000}).toBe(0);
+  await page.screenshot({path:"test-results/badminton-2p-return.png"});
 
   // finish the match through the hook; P1 wins every point
   for(let i=0;i<11;i++){

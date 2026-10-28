@@ -36,12 +36,12 @@ test("badminton third person: target bubble, auto-run, return, jump smash",async
   expect(s1.mark.x).toBeGreaterThanOrEqual(-2.59);
   expect(s1.mark.x).toBeLessThanOrEqual(2.59);
   expect(s1.hint,"the first target triggers the swing hint").toBe(true);
-  await expect.poll(async()=>(await bd(page)).run[0].z,{timeout:5_000}).toBeGreaterThan(2); // the character runs there
-  await page.screenshot({path:"test-results/badminton-target.png"});
 
   // a return at the marked contact (the timing window itself is unit-tested); the bot is the next receiver
   expect(await page.evaluate(()=>(window as any).__bd.hitNow(0,"clear"))).toBe(true);
   await expect.poll(async()=>(await bd(page)).strokes[0].clear,{timeout:10_000}).toBeGreaterThanOrEqual(1);
+  await expect.poll(async()=>(await bd(page)).run[0].z,{timeout:5_000}).toBeGreaterThan(2); // the character ran there
+  await page.screenshot({path:"test-results/badminton-return.png"});
 
   // jump + smash = a counted jump shot (start a fresh serve so the rally cannot end under us)
   await page.evaluate(()=>(window as any).__bd.point(0));
