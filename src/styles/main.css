@@ -1402,9 +1402,9 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
   background:linear-gradient(0deg,rgba(0,0,0,.62),rgba(0,0,0,.08) 75%),var(--res-scene,linear-gradient(180deg,#F04A55,var(--red-deep))) 50% 50%/cover no-repeat}
 .screen .sp-res-head :is(.wl,p){color:#fff}
 .screen .sp-res-head h2{font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,.4)}
-.sp-place{border:0;background:var(--surface-2);color:var(--fg-mute)}
-.sp-row:first-child .sp-place{background:var(--red);color:#fff}
-.sp-row:first-child{border-color:var(--red);background:color-mix(in srgb,var(--red) 5%,#fff)}
+.screen .sp-place{border:0;background:var(--surface-2);color:var(--fg-mute)}
+.screen .sp-row:first-child .sp-place{background:var(--red);color:#fff}
+.screen .sp-row:first-child{border-color:var(--red);background:color-mix(in srgb,var(--red) 5%,#fff)}
 /* exercise game results (#end): flat red, no rays */
 .res-burst{display:none}
 .res-bg{background:linear-gradient(180deg,#F04A55,var(--red-deep))}

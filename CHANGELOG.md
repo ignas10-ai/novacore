@@ -1,5 +1,13 @@
 # Pakeitimų žurnalas
 
+## 2026-10-28 — UI: Wii Sports stilius, raudonas akcentas (#38, šaka `claude/38-ui-wii`)
+
+- **Kryptis:** Igno pasirinktas Wii Sports viršelis – baltas fonas, ploni pilki kontūrai, minkšti šešėliai, Nunito 900 vietoj Titan One app'o tekstuose, vienas raudonas akcentas. Žaidimų scenos (canvas, Titan One ant lentų) nekeistos.
+- **Tokenai (`src/styles/main.css` `:root`):** tie patys pavadinimai, naujos reikšmės (`--bg` balta, `--ol` #DDE1E5, `--bw` 1.5px, `--sh*` minkšti, `--disp` Nunito). Visi UI tonai (`data-tone` blue/yellow/ink) → raudona šeima; žaidėjų spalvos P1 raudona / P2 mėlyna lieka.
+- **Pradžia:** 3 tikrų žaidimų kadrų koliažas, „Nova“ pilkas + „Core“ raudonas žodženklis (pervadinus #8 – tik tekstas), piktogramų eilė (`src/ui/pictos.ts`), didelis „Žaisti“, tinklelis „Visos rungtys“. `home.ts` surenka kiekvieno žaidimo `.sp-tile` į `#games` ir prideda piktogramą – nauji žaidimai (ietis, badmintonas) atsiras patys su ⭐ piktograma, kol jiems nepridėta sava.
+- **Kadrai:** `public/scenes/*.webp` (640×400, iš e2e kameros žaidimo) – plytelėse, žaidimų nustatymų antraštėse ir rezultatų „Laimėjo …!“ juostoje. Boksas lieka su personažais (žaidžiamas ant kameros vaizdo).
+- **Žaidimų failų neliesta** (`src/<žaidimas>/*` – Martyno PR), viskas perrašyta per `main.css` didesniu specifiškumu.
+
 ## 2026-10-27 — Slidinėjimas dviese ir sunkesnė trasa (#30, šaka `claude/30-ski-race`)
 
 - **Dviejų žaidėjų lenktynės:** pasirinkus 2 žaidėjus, abu stovi prieš kamerą ir lenktyniauja vienu metu. Telefonas paleidžia MediaPipe su 2 pozomis; kairioji poza = P1, dešinioji = P2, o viena poza priskiriama tam žaidėjui, kurio ekrano pusėje yra. Kiekvienas turi savo čiuožėją, valdymą, kamerą ir mosto būseną, bet abu naudoja tą patį kameros kursą su tais pačiais 12 vartų – sąžininga. Ekranas padalintas per pusę: kairė P1 (Raudonas), dešinė P2 (Mėlynas), su raudona/mėlyna skiriamąja linija; HUD turi dvi korteles, bendrą laikrodį su gyvu atstumu („P2 +12 m“) ir du žemėlapio taškus. Po bendro rankų vartų iškart 3-2-1, be turn card; laimi greitesnis laikas. Pirmas finišavęs laukia kito iki 30 s, tada kitas žymimas DNF. 1 žaidėjas ir 3–4 žaidėjai lieka senuoju režimu (3–4 – paeiliui, vienas prie kameros).
