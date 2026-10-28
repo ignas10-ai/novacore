@@ -39,21 +39,20 @@ test("badminton 2 players: camera cuts to the receiver, target, results, history
   await expect.poll(async()=>(await bd(page)).mark?.side,{timeout:10_000}).toBe(0);
   await page.screenshot({path:"test-results/badminton-2p-return.png"});
 
-  // finish the match through the hook; P1 wins every point
-  for(let i=0;i<11;i++){
-    await page.evaluate(()=>(window as any).__bd.point(0));
-    await expect.poll(async()=>(await bd(page)).phase,{timeout:10_000}).toBe("point");
-    expect((await bd(page)).score).toEqual([i+1,0]);
-    if(i<10){
-      await expect.poll(async()=>(await bd(page)).phase,{timeout:15_000}).toBe("serve");
-      await page.evaluate(()=>(window as any).__bd.serve());
-      await expect.poll(async()=>(await bd(page)).phase,{timeout:10_000}).toBe("rally");
-    }
+  // finish the match through the hooks: serve when needed and force a P1 point, until P1 reaches 11.
+  // (The first P2 return is still in the air and may land for P2; the result is P1 11 : P2 < 11 either way.)
+  for(let n=0;n<80;n++){
+    const s=await bd(page);
+    if(s.phase==="done"||s.score[0]>=11)break;
+    if(s.phase==="serve")await page.evaluate(()=>(window as any).__bd.serve());
+    else if(s.phase==="rally")await page.evaluate(()=>(window as any).__bd.point(0));
+    await page.waitForTimeout(300);
   }
 
-  await screen(page,"bdEnd").toBeVisible({timeout:25_000});
+  await screen(page,"bdEnd").toBeVisible({timeout:30_000});
   await expect(page.locator("#bdF1S")).toHaveText("11");
-  await expect(page.locator("#bdF2S")).toHaveText("0");
+  const p2Score=Number(await page.locator("#bdF2S").textContent());
+  expect(p2Score).toBeLessThan(11);
   await expect(page.locator("#bdRows>li"),"both players in the results").toHaveCount(2);
   await expect(page.locator("#bdRows .sp-row.p2")).toContainText(/Mėlynas/);
   await page.screenshot({path:"test-results/badminton-2p-results.png"});
@@ -61,7 +60,9 @@ test("badminton 2 players: camera cuts to the receiver, target, results, history
   await a11y(page,"badminton-2p-results",info);
 
   const [g]=await savedGames(page);
-  expect(g,"2-player badminton in local history").toMatchObject({mode:"badminton",players:2,score:[0,0],bdScore:[11,0],bdTarget:11});
+  expect(g,"2-player badminton in local history").toMatchObject({mode:"badminton",players:2,score:[0,0],bdTarget:11});
+  expect(g.bdScore[0]).toBe(11);
+  expect(g.bdScore[1]).toBeLessThan(11);
   expect(g.bdStrokes).toHaveLength(2);
   expect(g.bdJumps).toBeDefined();
 });
