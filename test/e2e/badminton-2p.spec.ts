@@ -55,8 +55,8 @@ test("badminton 2 players: camera cuts to the receiver, target, results, history
   expect(p2Score).toBeLessThan(11);
   await expect(page.locator("#bdRows>li"),"both players in the results").toHaveCount(2);
   await expect(page.locator("#bdRows .sp-row.p2")).toContainText(/Mėlynas/);
+  await page.waitForTimeout(1200); // let the staggered result rows finish animating
   await page.screenshot({path:"test-results/badminton-2p-results.png"});
-  await page.waitForTimeout(900);
   await a11y(page,"badminton-2p-results",info);
 
   const [g]=await savedGames(page);

@@ -58,6 +58,8 @@ test("badminton solo to 11: hand pick, serve, points, results, history, back",as
   await page.goto("/#/");
   await tap(page,".bd-tile","Badmintonas tile on Pradžia");
   await screen(page,"badminton").toBeVisible();
+  await page.waitForTimeout(500);
+  await page.screenshot({path:"test-results/badminton-setup.png"});
   expect((await state(page)).hash).toBe("#/badmintonas");
   await tap(page,'[data-bd="1"]',"1 player (vs the bot)");
   await tap(page,'[data-bdt="11"]',"first to 11");
