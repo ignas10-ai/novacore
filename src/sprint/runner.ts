@@ -68,6 +68,22 @@ export function landPose(o:Pose,t:number){ // sitting in the sand after the land
   o.th[0]=86;o.kn[0]=100;o.ft[0]=-6;o.th[1]=80;o.kn[1]=96;o.ft[1]=-10;
   o.sh[0]=78;o.el[0]=22;o.sh[1]=64;o.el[1]=28;o.lean=30;o.bob=-.006*Math.abs(Math.sin(t*3));o.p=t;
 }
+// Iečio metimas (src/javelin): override the throwing arm after runPose/standPose. k = 0 hold the javelin by the
+// shoulder / slightly above, 0.5 full wind-up behind the head, 1 the forward swing through the release.
+export function javelinPose(o:Pose,arm:number,k:number){
+  const hold=145,back=215,fwd=55,f=Math.min(1,Math.max(0,k));
+  o.sh[arm]=f<.5?hold+(back-hold)*(f/.5):back+(fwd-back)*((f-.5)/.5);
+  o.el[arm]=f<.5?25:25-17*((f-.5)/.5);
+}
+// screen position of a glove (the canvas hand position), same transform as drawRunner; used to draw the javelin.
+export function handScreen(o:Pose,x:number,groundY:number,h:number,j:number,squash=1){
+  const drop=Math.max(footDrop(o.th[0],o.kn[0],o.ft[0]),footDrop(o.th[1],o.kn[1],o.ft[1]),HIP_H*.6);
+  const a1=-o.sh[j]*D,a2=a1-o.el[j]*D;
+  const lx=(j?.02:-.02)+Math.sin(-a1)*UARM+Math.sin(-a2)*FARM;
+  const ly=SHOULDER_Y+Math.cos(a1)*UARM+Math.cos(a2)*FARM;
+  const l=o.lean*D,px=lx*Math.cos(l)-ly*Math.sin(l),py=lx*Math.sin(l)+ly*Math.cos(l);
+  return {x:x+px*h/Math.sqrt(squash),y:groundY+(-drop-o.bob+py)*h*squash};
+}
 
 // lowest sole point below the hip (units, +down): forward kinematics hip -> knee -> ankle -> heel / toe
 function footDrop(th:number,kn:number,ft:number){

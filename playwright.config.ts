@@ -5,7 +5,7 @@
 import {defineConfig} from "@playwright/test";
 import {CAM,camArgs} from "./test/e2e/paths.ts";
 
-const PORT=4180, CI=!!process.env.CI;
+const PORT=Number(process.env.PW_PORT)||4180, CI=!!process.env.CI; // PW_PORT: two agents can run e2e side by side
 
 export default defineConfig({
   testDir:"test/e2e",
