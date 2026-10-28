@@ -1,4 +1,4 @@
-# Testavimo protokolas – NovaCore su tikrais žmonėmis
+# Testavimo protokolas – MoveClash su tikrais žmonėmis
 
 Kaip patikrinti, ar kamera teisingai skaičiuoja kiekvieną pratimą, ir ką atsiųsti Ignui, kad galėtų pataisyti ribas. Parengta 2026-10-23.
 

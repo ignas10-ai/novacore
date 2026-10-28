@@ -1,4 +1,4 @@
-# NovaCore – 3 minutės judėjimo su draugais
+# MoveClash – 3 minutės judėjimo su draugais
 
 Prototipas Samsung Solve for Tomorrow 2026 (tema: sportas ir technologijos).
 Komanda: Ignas Bagdanavičius, Martynas Ignatavičius, Stela Bujanauskaitė · mokytoja Rūta Sidaugienė.

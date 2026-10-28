@@ -11,6 +11,7 @@ import {t,tn,lang,weekday,isLang,LANG_KEY} from "../i18n/i18n.ts";
 import {onView} from "./router.ts";
 import {showOnb} from "./onboarding.ts";
 import {toneOf} from "./coach.ts";
+import {setChar,applyChar,type CharId} from "./chars.ts";
 
 export const APP_VERSION="2.2"; // ponytail: bump by hand with user-visible releases
 // medal colour per badge (locked badges are grey)
@@ -82,4 +83,6 @@ $("#delData").onclick=async()=>{
   alert(t("prof.delDone"));
   location.replace(location.pathname);
 };
-$("#appVer").textContent=`NovaCore ${APP_VERSION} · Samsung Solve for Tomorrow 2026`;
+$("#appVer").textContent=`MoveClash ${APP_VERSION} · Samsung Solve for Tomorrow 2026`;
+document.querySelectorAll<HTMLElement>("[data-char]").forEach(b=>b.onclick=()=>setChar(b.dataset.char as CharId));
+applyChar();

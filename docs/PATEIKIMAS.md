@@ -8,15 +8,15 @@ Kas veikia 2026-10-23: 1 telefonas, 1–2 žaidėjai, 3 patikrinti pratimai (pri
 
 ## 1. Kokia jūsų idėja ir kaip ji paskatins fizinį aktyvumą?
 
-NovaCore – nemokamas telefono žaidimas, kuris 3 minutes paverčia judėjimu kartu su draugais.
+MoveClash – nemokamas telefono žaidimas, kuris 3 minutes paverčia judėjimu kartu su draugais.
 
 Kaip veikia: susitikę draugai pastato telefoną ant stalo ar prie sienos, atidaro nuorodą naršyklėje (nieko diegti nereikia) ir stoja prieš kamerą. Dirbtinis intelektas – pozos atpažinimas, veikiantis tiesiai telefone, vaizdo niekur nesiunčiant – atpažįsta pratimus (pritūpimus, pašokimus, aukštus kelius) ir skaičiuoja taškus kiekvienam žaidėjui. Kas 30 sekundžių keičiasi pratimas ir auga taškų daugiklis, todėl paskutinė minutė tampa tikra kova. Pasibaigus žaidimui programa pati sumontuoja 15–30 sekundžių klipą iš geriausių akimirkų – juo dalinamasi su draugais, ir taip į žaidimą ateina nauji žaidėjai. Prototipas jau veikia: novacore-two.vercel.app.
 
-Kodėl tai skatina aktyvumą: Samsung ir Norstat 2026 m. apklausoje lietuvių paaugliai judėjimo priežastimis įvardijo laiką su draugais (38 %) ir smagumą (33 %), o 60 % prie ekranų praleidžia 5 ir daugiau valandų per dieną. Mūsų apklausa tai patvirtino: iš [N] atsakiusių [X] % sužaistų tokį žaidimą susitikę su kitais, [Y] % pasidalintų klipu. Problema ne ta, kad žmonės nenori judėti – trūksta paprastos priežasties pradėti čia ir dabar, be salės, inventoriaus ir „rimto" nusiteikimo. NovaCore nereikalauja nieko, ko nėra kiekvieno kišenėje. Telefonas, kuris šiandien atitraukia nuo judėjimo, tampa priežastimi pajudėti. Tikslas: kad 3 minučių judėjimas su draugais taptų tokiu pat įprastu kaip bendra nuotrauka susitikus.
+Kodėl tai skatina aktyvumą: Samsung ir Norstat 2026 m. apklausoje lietuvių paaugliai judėjimo priežastimis įvardijo laiką su draugais (38 %) ir smagumą (33 %), o 60 % prie ekranų praleidžia 5 ir daugiau valandų per dieną. Mūsų apklausa tai patvirtino: iš [N] atsakiusių [X] % sužaistų tokį žaidimą susitikę su kitais, [Y] % pasidalintų klipu. Problema ne ta, kad žmonės nenori judėti – trūksta paprastos priežasties pradėti čia ir dabar, be salės, inventoriaus ir „rimto" nusiteikimo. MoveClash nereikalauja nieko, ko nėra kiekvieno kišenėje. Telefonas, kuris šiandien atitraukia nuo judėjimo, tampa priežastimi pajudėti. Tikslas: kad 3 minučių judėjimas su draugais taptų tokiu pat įprastu kaip bendra nuotrauka susitikus.
 
 ## 2. Tikslinė auditorija ir kaip užtikrinsite, kad sprendimas jai tiktų?
 
-Pagrindinė auditorija – [13–19 metų paaugliai / grupė pagal apklausą], kurie susitinka namuose, mokykloje per pertraukas ar vakarėliuose ir kuriems įprastas sportas atrodo nuobodus arba reikalaujantis pasiruošimo. Apklausoje labiausiai žaisti norėjo [grupė] ([X] % „taip"), bet [antra grupė] irgi atsakė [Z] % – todėl žaidimą kuriame bet kuriai kompanijai vienoje patalpoje, o ne tik mokiniams. Antra kryptis – mokyklos: 3 minučių „NovaCore pertrauka" tarp pamokų, klasė prieš klasę.
+Pagrindinė auditorija – [13–19 metų paaugliai / grupė pagal apklausą], kurie susitinka namuose, mokykloje per pertraukas ar vakarėliuose ir kuriems įprastas sportas atrodo nuobodus arba reikalaujantis pasiruošimo. Apklausoje labiausiai žaisti norėjo [grupė] ([X] % „taip"), bet [antra grupė] irgi atsakė [Z] % – todėl žaidimą kuriame bet kuriai kompanijai vienoje patalpoje, o ne tik mokiniams. Antra kryptis – mokyklos: 3 minučių „MoveClash pertrauka" tarp pamokų, klasė prieš klasę.
 
 Mes patys esame ši auditorija, todėl idėją tikriname ne teorijoje, o su savo draugais:
 1. Apklausėme [N] žmonių (mokinių, studentų, dirbančių, tėvų): [X] % žaistų, [Y] % pasidalintų klipu, dažniausia kliūtis – [„nenoriu būti filmuojamas" / kita, W %].
@@ -35,7 +35,7 @@ Patikrinome keturias esamų sprendimų grupes (pilna lentelė – KONKURENTAI.md
 - **Just Dance / Just Dance Now / Ring Fit** – šokis arba fitnesas per konsolę; Just Dance Now veikia ir su telefonu, bet telefonas laikomas rankoje, reikia antro ekrano su internetu, ir tai šokis, ne pratimai.
 - **Futurum (Solve for Tomorrow 2025)** – asmeninė AI treniruočių programa su taškais. Treniruotė vienam, ne žaidimas kompanijai.
 
-NovaCore skiriasi trimis dalykais: (1) žaidžiama **kartu, toje pačioje patalpoje, su vienu telefonu** – 0 €, jokios įrangos, jokio diegimo; (2) tai **3 minučių žaidimas**, ne treniruočių programa, todėl pradėti galima bet kur ir bet kada; (3) **automatinis klipas** – judėjimas tampa turiniu, kuriuo norisi dalintis, ir žaidimas plinta pats. Esami sprendimai sprendžia „kaip sportuoti efektyviau". Mes sprendžiame „kaip apskritai pradėti judėti, kai esi su draugais ir rankoje telefonas".
+MoveClash skiriasi trimis dalykais: (1) žaidžiama **kartu, toje pačioje patalpoje, su vienu telefonu** – 0 €, jokios įrangos, jokio diegimo; (2) tai **3 minučių žaidimas**, ne treniruočių programa, todėl pradėti galima bet kur ir bet kada; (3) **automatinis klipas** – judėjimas tampa turiniu, kuriuo norisi dalintis, ir žaidimas plinta pats. Esami sprendimai sprendžia „kaip sportuoti efektyviau". Mes sprendžiame „kaip apskritai pradėti judėti, kai esi su draugais ir rankoje telefonas".
 
 ## Kaip atsakom į kiekvieną kriterijų (iš taisyklių)
 
@@ -54,13 +54,13 @@ Turi atsakyti į 5 organizatorių klausimus: **problema/kam · tikslas · sprend
 
 | # | Skaidrė | Viena mintis |
 |---|---|---|
-| 1 | Viršelis | NovaCore – 3 minutės judėjimo su draugais. Vardai, klasė, mokykla, mokytoja. QR į 30 s demo video. |
+| 1 | Viršelis | MoveClash – 3 minutės judėjimo su draugais. Vardai, klasė, mokykla, mokytoja. QR į 30 s demo video. |
 | 2 | Problema / kam | 38 % juda dėl draugų, 60 % ≥5 val. prie ekrano (Samsung/Norstat) + mūsų [X] %. „Trūksta ne noro, o priežasties pradėti dabar." |
 | 3 | Tikslas | 3 min judėjimo su draugais = taip pat įprasta kaip bendra nuotrauka. 2 personos: „Ugnė, 15, pas draugę" · „8b, 10 min pertrauka". |
 | 4 | Sprendimas / kaip veikia | 3 ekrano kadrai iš prototipo: starto ekranas → žaidėjai kadre, taškai → klipas. Nuoroda. |
 | 5 | Po gaubtu | Kamera → pozos taškai telefone → `step()` pratimų skaičiavimas → taškai → klipas. „Vaizdas niekur neišeina." Kas jau veikia / kas planuojama (*). |
 | 6 | Mūsų tyrimas | 3 skaičiai: apklausa, tikslumas, pakartojimas. 1–2 citatos iš 9 kl. |
-| 7 | Išskirtinumas + analogai | 2×2 matrica (solo ↔ kartu · įranga ↔ tik telefonas), NovaCore vienas kampe. |
+| 7 | Išskirtinumas + analogai | 2×2 matrica (solo ↔ kartu · įranga ↔ tik telefonas), MoveClash vienas kampe. |
 | 8 | Įgyvendinimas / ištekliai | Kas toliau: 2 telefonų režimas*, 20 žaidėjų testas, mokyklų pertraukos, Žalgirio iššūkis, EN finalui. Komandos nuotrauka. Ištekliai: 0 € (nemokamos technologijos, Vercel). |
 
 Tonas: mokinių komisija, ne investuotojai – paprasta kalba, daug vaizdų, vienas skaičius per skaidrę, be žargono. Lietuviškai (finalas angliškai – vėliau).

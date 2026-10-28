@@ -1,6 +1,6 @@
 # Planas iki pateikimo (2026-11-06) ir toliau
 
-Kas, ką ir iki kada daro, kad NovaCore būtų pateiktas Samsung Solve for Tomorrow su veikiančiu prototipu, tyrimu ir tvarkingu pristatymu. Parengta 2026-10-23.
+Kas, ką ir iki kada daro, kad MoveClash būtų pateiktas Samsung Solve for Tomorrow su veikiančiu prototipu, tyrimu ir tvarkingu pristatymu. Parengta 2026-10-23.
 
 ## Terminai (iš taisyklių ir organizatorių atmintinės)
 

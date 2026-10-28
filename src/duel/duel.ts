@@ -235,7 +235,7 @@ async function sync(D:Duel){
   const b=dv.clockOffset(D.samples);
   if(b)D.off=b.off;
   D.syncing=false;
-  console.info(`NovaCore dvikova: laikrodžio skirtumas ${b?`${Math.round(b.off)} ms (RTT ${Math.round(b.rtt)} ms)`:"nežinomas"}`);
+  console.info(`MoveClash dvikova: laikrodžio skirtumas ${b?`${Math.round(b.off)} ms (RTT ${Math.round(b.rtt)} ms)`:"nežinomas"}`);
 }
 function leaveDuel(){
   const D=cur;closeSheet();if(!D)return;

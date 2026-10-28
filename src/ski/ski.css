@@ -71,7 +71,7 @@ body.skiing #stage{height:clamp(80px,16vh,140px)} /* smaller corner preview than
 .sk-me-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0}
 .sk-me-n{font:900 15px/1.15 var(--body);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;min-width:0}
 .sk-kmh{display:inline-flex;align-items:baseline;gap:2px;flex:none;line-height:1}
-.sk-kmh b{font:400 24px/1 var(--disp);color:var(--ink);font-variant-numeric:tabular-nums}
+.sk-kmh b{font:900 24px/1 var(--disp);color:var(--ink);font-variant-numeric:tabular-nums}
 .sk-kmh small{font:900 9px/1 var(--body);color:var(--fg-faint);letter-spacing:.02em}
 .sk-boost{position:absolute;right:8px;bottom:-11px;padding:2px 8px 1px;border:2.5px solid var(--ink);border-radius:var(--r-pill);background:var(--yellow);color:var(--ink);
   font:900 11px/1.2 var(--body);box-shadow:0 2px 0 var(--ink);opacity:0;scale:.7;transition:opacity 100ms var(--ease-ui),scale 100ms var(--ease-ui);pointer-events:none;z-index:2}
@@ -96,7 +96,7 @@ body.skiing #stage{height:clamp(80px,16vh,140px)} /* smaller corner preview than
 .sk-run.race .sk-map .sp-dotw2 .sp-dot{width:16px;height:16px;margin-top:-8px;translate:0 4px;background:var(--blue)}
 .sk-live{position:absolute;left:50%;top:calc(max(10px,env(safe-area-inset-top)) + 104px);translate:-50% 0;display:flex;align-items:baseline;gap:6px;padding:2px 10px 1px;
   border:2.5px solid var(--ink);border-radius:var(--r-pill);background:var(--ink);color:#fff;box-shadow:0 2px 0 var(--ink);pointer-events:none}
-.sk-live b{font:400 16px/1.15 var(--disp);color:var(--yellow)}
+.sk-live b{font:900 16px/1.15 var(--disp);color:var(--yellow)}
 .sk-live small{font:800 10px/1.2 var(--body);color:#fff;text-transform:uppercase;letter-spacing:.08em}
 .sk-legend{position:absolute;left:50%;bottom:max(12px,env(safe-area-inset-bottom));translate:-50% 0;display:flex;gap:6px;width:max-content;max-width:calc(100% - 24px);padding:0 6px;pointer-events:none;
   opacity:0;transition:opacity var(--duration-slow) var(--ease-ui)}
