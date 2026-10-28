@@ -1324,7 +1324,7 @@ body[data-view="screen"] .tabbar,body[data-view="screen"] .fs{display:none}
 .cover i{border-radius:8px;background:var(--surface-2) 50% 50%/cover no-repeat}
 .cover i:first-child{grid-row:span 2}
 [data-g="sp"]{--scene:url(/scenes/sp.webp)}[data-g="hd"]{--scene:url(/scenes/hd.webp)}[data-g="lj"]{--scene:url(/scenes/lj.webp)}
-[data-g="bw"]{--scene:url(/scenes/bw.webp)}[data-g="sk"]{--scene:url(/scenes/sk.webp)}[data-g="wl"]{--scene:url(/scenes/wl.webp)}
+[data-g="bw"]{--scene:url(/scenes/bw.webp)}[data-g="sk"]{--scene:url(/scenes/sk.webp)}[data-g="wl"]{--scene:url(/scenes/wl.webp)}[data-g="bd"]{--scene:url(/scenes/bd.webp)}
 .cover i{background-image:var(--scene)}
 .brand{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:-4px}
 /* the grey bevelled "Wii" half + red half, after the Wii Sports box logo Ignas picked */
@@ -1345,7 +1345,7 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 #games .sp-tile-art{position:relative;display:flex;justify-content:center;align-items:flex-end;height:104px;margin:0;overflow:hidden;background:color-mix(in srgb,var(--red) 8%,#fff) 50% 50%/cover no-repeat;background-image:var(--scene,none)}
 #games [data-g="bx"] .sp-tile-art{background:radial-gradient(circle at 50% 70%,#3A4F9A,#16204A)}
 #games .sp-tile[data-g] .sp-tile-art>*{translate:none;rotate:none}
-#games .sp-tile:is([data-g="sp"],[data-g="hd"],[data-g="lj"],[data-g="bw"],[data-g="sk"],[data-g="wl"]) .sp-tile-art>*{display:none}
+#games .sp-tile:is([data-g="sp"],[data-g="hd"],[data-g="lj"],[data-g="bw"],[data-g="sk"],[data-g="wl"],[data-g="bd"]) .sp-tile-art>*{display:none}
 #games .sp-tile-art .mascot{width:64px;margin:0 -6px -10px}
 #games .sp-tile>.pic{position:absolute;z-index:2;left:8px;top:76px;width:40px;height:40px;border-radius:10px;border:2.5px solid #fff}
 #games .sp-tile>.pic svg{width:24px;height:24px}
@@ -1357,7 +1357,7 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 .tabbar a[aria-current="page"] .tb-ic{border-color:transparent}
 #games .sp-tile{display:flex;flex-direction:column}
 #games .sp-tile-art{order:-1}
-.pics{gap:6px;flex-wrap:nowrap}.pic{width:min(44px,calc((100vw - 2*var(--gutter) - 36px)/7));height:auto;aspect-ratio:1}
+.pics{gap:6px;flex-wrap:nowrap;width:100%}.pics .pic{flex:0 1 46px;min-width:0;width:auto;height:auto;aspect-ratio:1}.pics .pic svg{width:62%;height:62%}
 .cover i:first-child{background-position:30% 50%}
 /* quick starts, rank card, streak: white cards, red only as the accent (was red / blue / yellow blocks) */
 .q-ic{background:color-mix(in srgb,var(--red) 9%,#fff);color:var(--red-deep)}
@@ -1411,3 +1411,11 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 #end[data-w="2"] .res-bg{background:linear-gradient(180deg,#4A80FF,var(--blue-ink))}
 #end[data-w="0"] .res-bg{background:linear-gradient(180deg,#5B6168,var(--ink))}
 #end[data-w="0"] .res-head,#end[data-w="0"] .res-head .wl,#end[data-w="0"] #endsub{color:#fff}
+/* Badmintonas (Martynas #32) – same frame treatment */
+.screen .bd-hero{border:var(--bw) solid var(--ol);border-radius:14px;box-shadow:none;background:linear-gradient(180deg,rgba(0,0,0,.42),rgba(0,0,0,0) 62%),url(/scenes/bd.webp) 50% 50%/cover no-repeat}
+.screen .bd-hero::before,.screen .bd-hero::after{display:none}
+.screen .bd-hero>:not(.bd-hero-big,.bd-hero-sub){display:none}
+.screen .bd-hero-big{font-family:var(--disp);font-weight:900;color:#fff;-webkit-text-stroke:0;text-shadow:0 2px 10px rgba(0,0,0,.45);font-size:clamp(40px,12vw,60px)}
+.screen .bd-hero-sub{background:rgba(0,0,0,.55);color:#fff;border:0}
+#bdEnd{--res-scene:url(/scenes/bd.webp)}
+.screen .sp-res-head :is(h2,.wl,p,b,span:not(.rec-badge)){color:#fff}
