@@ -6,11 +6,34 @@
 - **Pakeista:** `SWING_START` 2,0 → **1,2**, `SWING_MIN` 3,2 → **1,8**, `RELEASE_Z` 0,10 → **0,05**, `RELEASE_Y` 0,25 → **0,12**, `RELEASE_MIN` 0,10 → **0,08**, starto aukštis -0,02 → **-0,10**, paleidimo riba -0,35 → **-0,42**, `HOLD_Y` -0,05 → **-0,08**. Be patikimo MediaPipe z dabar reikia ir `RELEASE_X`=0,025 judesio į priekį / skersai, kad vertikalus bėgimo bounce'as vis tiek nebūtų metimas.
 - **Patikrinta:** `npm test` – **475 testai** (25 `test/unit/javelin.test.ts`: naujas pusinio mosto testas, esami `knees`/`knees2`/`knees3` abiem rankoms – 0 netikrų metimų), `npx tsc --noEmit`, `npm run build`, `PW_PORT=4280 npx playwright test test/e2e/javelin.spec.ts`. **Dar reikia tikro telefono:** ar 1,8 vieneto/s ir 0,12 judesio slenksčiai patogūs pusiniam mostui, o bėgimo bounce'as vis dar neaptinkamas.
 
+## 2026-10-28 — Boulingas: rankos burbulai kaip iečio metime + rėmų rezultatų lentelė (#45, šaka `claude/45-bowling-pick-table`)
+
+- **Rankos pasirinkimas:** vietoje mažos apatinės kortelės su dviem mažais ratais dabar yra toks pat didelis pasirinkimo ekranas kaip „Iečio metime“ (`#bwPick`): kamera persikelia į centrą, kairėje ir dešinėje – dideli burbulai su 2 s pildomu žiedu, rankos pavadinimu ir procentais. Aktyvi pusė pakyla ir pasižymi, pilna pasidaro geltona; per 2 s galima persigalvoti ir pereiti į kitą ranką. Pasirinkus burbulas trumpai lieka pilnas, tada ekranas užsidaro ir grįžta taikymosi kortelė. HUD/rezultatų lentelė pasirinkimo metu paslepiama. (`#bwPickL/R`, `#bwRingL/R`, `#bwPctL/R`.)
+- **Rėmų lentelė:** viršutinis HUD nebėra tik žaidėjų kortelės su eilute žymių – dabar rodoma tikra boulingo rezultatų lentelė (`#bwBoard`, `<table>`): stulpeliai 1..N raundų (3 arba 5), paskutiniame – 3 metimų vietos, dešinėje – suma. Kiekviename langelyje matomos metimų žymės (`X`, `/`, `–`, skaičiai) ir to raundo sukauptas rezultatas; dabartinis žaidėjas ir raundas paryškinami. Lentelė telpa 1–4 žaidėjams 360 px portretu ir telefonu gulsčiai; gulsčiai kameros peržiūra perkelta į apatinį dešinį kampą, kad neuždengtų lentelės ir kūgių.
+- **Patikrinta:** `npm test` – **474 testai** (46 boulingo; naujų logikos testų nereikėjo, nes keitėsi tik DOM/prezentacija), `npm run build`, `npx playwright test test/e2e/bowling.spec.ts` (2 žaidėjai × 3 raundai; papildomai tikrinami burbulai 0/50/75 %, aktyvi pusė, lentelės 5 antraštės / 2 eilutės / 6 langeliai, `3+3` žymės ir sukauptas 6), headless kadrai 390×844, 360×780, 844×390 ir 780×360 su 2 ir 4 žaidėjais / 5 raundais. **Dar reikia tikro telefono:** ar burbulai ir 2 s persijungimas patogūs realiai rankai, ar lentelė 360 px / 4 žaidėjų ekrane įskaitoma, ar gulsčiai kamera netrukdo.
+- **Pastaba:** rezultatų ekrane jau buvusios `.bw-fcell` dėžutės paliktos; viršutinė lentelė naudoja atskirus `.bw-tframe` langelius.
+
 ## 2026-10-28 — Iečio metimas: bėgimo aptikimas ir metimo gestas (#47, šaka `martynas/47-ietis-gestai`)
 
 - **Bėgimas:** javelin loop'as dabar `step(...,"knees")` kviečia **kiekvieną kameros kadrą**, kaip sprintas, o ne tik tada, kai MediaPipe grąžina naują pozų masyvą. `tick()`/`advance()` lieka kartą per ekrano kadrą; tai pašalina užstrigusį „bėgimo“ jausmą.
 - **Metimas:** `throwArm()` nebepaleidžia metimo nuo bet kokio rankos judesio. Pirmiausia ranka turi būti **ramiai laikoma** prie peties / virš jo 0,15 s (arba aiškiai už galvos / nugaros), tada reikia tikro mosto: `SWING_MIN`=3,2 vieneto/s, forward/down judesys, minimalus `RELEASE_Z`=0,10 arba `RELEASE_Y`=0,25 judesys, startas virš peties ir paleidimas ne žemiau kaip -0,35. Bėgant su ranka virš peties, nuo bėgimo bounce'o ar lėto nuleidimo metimas nebeaptinkamas; `SWING_MAX`=26 / |z|>0,9 / |h|>1,5 kadrai laikomi MediaPipe glitch'u.
 - **Patikrinta:** `npm test` – **474 testai** (24 `test/unit/javelin.test.ts`, įskaitant tikrus `knees`/`knees2`/`knees3` įrašus abiem rankoms – jie nebeturi netikrų metimų), `npx tsc --noEmit`, `npm run build`, `PW_PORT=4280 npx playwright test test/e2e/javelin.spec.ts`. **Dar reikia tikro telefono:** ar 0,15 s laikymas ir 3,2 vieneto/s slenkstis patogūs realiam mostui 2–3 m atstumu.
+
+## 2026-10-28 — UI: stiklinis stilius + nauji veikėjai + pavadinimas MoveClash (#38, #8, šaka `claude/38-ui-wii`)
+
+- **Pavadinimas:** visur, kur mato žmogus – MoveClash (app, žaidimų reklaminės lentos, manifestai, dokumentai). `localStorage` raktai, paketas `lt.novacore.app` ir domenas nekeisti.
+- **Stilius (Igno pasirinktas 10-28):** tamsiai mėlynas fonas, matinio stiklo kortelės, tikri žaidimų kadrai sulieti fone, gradientinis pagrindinis mygtukas rungties spalva. Viskas `src/styles/glass.css` (importuojama paskutinė iš `main.ts`), tokenai perrašomi tik app ekranams / rezultatams / lapams – kameros srautas ir žaidimų HUD nekeisti.
+- **Veikėjai (Claude Design v2):** 4 veikėjai + 9 sporto pozos + pergalė `public/chars/*.webp`. Pradžios „Šiandien“ kortelė (rungtis keičiasi kasdien), rungčių plytelės su sporto pozomis, nustatymų antraštės (sulietas kadras + poza), rezultatų antraštė su pergalės poza.
+- **Veikėjo pasirinkimas:** Profilis → Kometa / Banga / Saulė / Mėta (`src/ui/chars.ts`); galvutė Pradžioje ir Profilyje, veikėjas ant pakylos. Senas 2 personažų pasirinkimas nustatymuose pašalintas. Mokėjimai – atskiras issue (po SfT).
+- **Kadrai:** `npm run scenes` (`tools/scenes.mjs`) perfotografuoja `public/scenes/*.webp` gulsčiai su e2e kamera.
+
+## 2026-10-28 — UI: Wii Sports stilius, raudonas akcentas (#38, šaka `claude/38-ui-wii`)
+
+- **Kryptis:** Igno pasirinktas Wii Sports viršelis – baltas fonas, ploni pilki kontūrai, minkšti šešėliai, Nunito 900 vietoj Titan One app'o tekstuose, vienas raudonas akcentas. Žaidimų scenos (canvas, Titan One ant lentų) nekeistos.
+- **Tokenai (`src/styles/main.css` `:root`):** tie patys pavadinimai, naujos reikšmės (`--bg` balta, `--ol` #DDE1E5, `--bw` 1.5px, `--sh*` minkšti, `--disp` Nunito). Visi UI tonai (`data-tone` blue/yellow/ink) → raudona šeima; žaidėjų spalvos P1 raudona / P2 mėlyna lieka.
+- **Pradžia:** 3 tikrų žaidimų kadrų koliažas, „Nova“ pilkas + „Core“ raudonas žodženklis (pervadinus #8 – tik tekstas), piktogramų eilė (`src/ui/pictos.ts`), didelis „Žaisti“, tinklelis „Visos rungtys“. `home.ts` surenka kiekvieno žaidimo `.sp-tile` į `#games` ir prideda piktogramą – nauji žaidimai (ietis, badmintonas) atsiras patys su ⭐ piktograma, kol jiems nepridėta sava.
+- **Kadrai:** `public/scenes/*.webp` (640×400, iš e2e kameros žaidimo) – plytelėse, žaidimų nustatymų antraštėse ir rezultatų „Laimėjo …!“ juostoje. Boksas lieka su personažais (žaidžiamas ant kameros vaizdo).
+- **Žaidimų failų neliesta** (`src/<žaidimas>/*` – Martyno PR), viskas perrašyta per `main.css` didesniu specifiškumu.
 
 ## 2026-10-27 — naujas sporto mini žaidimas „Iečio metimas“ (#31, Martyno idėja iš #4, šaka `martynas/31-ietis`)
 

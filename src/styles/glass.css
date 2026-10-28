@@ -1,0 +1,114 @@
+/* GLASS (#38, 10-28 – Ignas picked it): dark navy app shell, frosted-glass surfaces, the real game frames blurred
+   behind, Claude Design v2 characters (public/chars) in their sport kit. Imported LAST from main.ts so it wins over
+   every game's own CSS at equal specificity. Scoped to the app shell + results + sheets: the camera flow / in-game
+   HUD keep their own tokens. Same token names as main.css, so the games' setup/result CSS follows. */
+.screen.app,.tabbar,.ex-sheet,.screen[id$="End"],#end{
+  --bg:#141C33;--surface:rgba(255,255,255,.1);--surface-2:rgba(255,255,255,.07);
+  --ink:#fff;--ink-2:rgba(255,255,255,.16);--fg:#fff;--fg-mute:rgba(255,255,255,.8);--fg-faint:rgba(255,255,255,.7);
+  --ol:rgba(255,255,255,.18);--line:rgba(255,255,255,.12);--line-2:rgba(255,255,255,.2);
+  --red-tint:rgba(232,39,58,.22);--blue-tint:rgba(42,91,232,.25);--yellow-tint:rgba(255,198,26,.2);
+  --red-ink:#FF8A93;--blue-ink:#9DB9FF;--yellow-ink:#FFD45A;--green-ink:#5FE0A2;--p1-ink:#FF8A93;--p2-ink:#9DB9FF;
+  --fill:#fff;--on-fill:#141C33;
+  --sh:0 6px 18px rgba(0,0,0,.25);--sh-lg:0 10px 26px rgba(0,0,0,.3);--sh-sm:0 2px 8px rgba(0,0,0,.2);
+  color:var(--fg)}
+:is(#sprint,#hurdles,#longjump,#boxing,#bowling,#ski,#wall,#badminton,#javelin){--red-ink:color-mix(in srgb,var(--gc) 45%,#fff);--red-tint:color-mix(in srgb,var(--gc) 30%,transparent)}
+[data-tone="yellow"]{--on-tone:#2A1E00}
+html,body{background:#141C33}
+.screen.app,.screen[id$="End"],#end{background:radial-gradient(120% 45% at 50% 0%,#2A3A7A 0%,rgba(42,58,122,0) 70%),#141C33}
+
+/* every card / box / pill: frosted glass */
+.screen.app :is(.box,.card,.btn:not(.red):not(.yellow),.pill:not(.accent):not(.ok),.icon-btn,.chip-btn,.quick-tile,.rank-card,.pl-card,.seg,.hist-item,.ex-row,.set-row,.lb-row,.grp-item,.add-btn,.streak-pill,.ledger>div,.me-card,.ex-tile,.ex-feat),
+.screen[id$="End"] :is(.box,.card,.btn,.sp-row,.icon-btn),#end :is(.box,.card,.btn,.icon-btn),.ex-sheet :is(.ex-tile,.box,.btn,.hist-item){
+  background-color:var(--surface);border-color:var(--ol);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:var(--fg)}
+.ex-sheet-panel{background:#1B2442;color:#fff}
+.tabbar{background:rgba(20,28,51,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 -1px 0 rgba(255,255,255,.1)}
+.tabbar a{color:rgba(255,255,255,.66)}.tabbar a[aria-current="page"]{color:#fff}
+.tabbar a[aria-current="page"] .tb-ic{background:rgba(255,255,255,.18);box-shadow:none;border-color:transparent}
+.scrolled>.wrap>.nav,.nav.inline{background:rgba(20,28,51,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.screen.app :is(input,select,textarea){background:rgba(255,255,255,.08);color:#fff;border-color:var(--ol)}
+.screen.app input::placeholder{color:rgba(255,255,255,.55)}
+
+/* primary CTA: gradient in the screen's colour */
+.screen .go:not(.alt){background:linear-gradient(90deg,var(--red),var(--red-hi));border:0;border-radius:var(--r-pill);color:#fff;
+  box-shadow:0 10px 24px color-mix(in srgb,var(--red) 40%,transparent),inset 0 1px 0 rgba(255,255,255,.35)}
+
+/* ---- Pradžia ---- */
+#home .brand{margin-top:-6px}
+#home .brand-mark{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:#fff;filter:none}
+#home .brand-mark b{background:none;color:#FF5A64;-webkit-background-clip:border-box;background-clip:border-box}
+#homeAv{background:var(--me-color) var(--me-sheet) 0 7%/300% auto no-repeat;border:2px solid rgba(255,255,255,.7)}
+#homeAv>*{display:none}
+.feat{position:relative;display:block;height:clamp(220px,62vw,270px);border-radius:28px;overflow:hidden;text-decoration:none;color:#fff;isolation:isolate;box-shadow:var(--sh-lg)}
+.feat-bg{position:absolute;inset:-12px;z-index:-1;background:var(--scene,url(/scenes/sp.webp)) 50% 50%/cover;filter:blur(5px) saturate(1.1)}
+.feat-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,10,30,.72),rgba(14,10,30,.05) 72%)}
+.feat-img{position:absolute;right:-14px;bottom:-14px;height:112%;filter:drop-shadow(0 12px 18px rgba(0,0,0,.45))}
+.feat-t{position:absolute;inset:18px auto 18px 18px;width:55%;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.feat-badge{font:800 12px Nunito;padding:5px 11px;border-radius:99px;background:var(--gc,var(--red));box-shadow:0 0 0 1.5px rgba(255,255,255,.55)}
+.feat-name{font:900 clamp(26px,8vw,32px)/1.05 var(--disp);text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.feat-go{margin-top:auto;display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 24px;border-radius:99px;font:900 18px Nunito;--ic:18px;
+  background:linear-gradient(90deg,var(--gc,var(--red)),var(--gc-hi,var(--red-hi)));box-shadow:0 10px 22px color-mix(in srgb,var(--gc,var(--red)) 45%,transparent)}
+#home .pics{display:none}
+#home .home-go{background:var(--surface);border:1px solid var(--ol);box-shadow:none;backdrop-filter:blur(14px)}
+
+/* game tiles: sport colour glass, the sport pose, name on a frosted strip */
+#games{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#games .sp-tile{position:relative;height:150px;padding:0;border:1px solid var(--ol);border-radius:20px;overflow:hidden;box-shadow:var(--sh-sm);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--gc,#7C5CFF) 80%,transparent),color-mix(in srgb,var(--gc,#7C5CFF) 28%,rgba(20,28,51,.7)))}
+#games .sp-tile-art{position:absolute;inset:4px 0 30px;height:auto;aspect-ratio:auto;border:0;background:var(--pose,none) 50% 100%/contain no-repeat;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+#games .sp-tile:is([data-g="sp"],[data-g="hd"],[data-g="lj"],[data-g="bx"],[data-g="bw"],[data-g="sk"],[data-g="wl"],[data-g="bd"],[data-g="jv"]) .sp-tile-art>*{display:none}
+#games .sp-tile>.pic{display:none}
+#games .sp-tile-txt{position:absolute;left:0;right:0;bottom:0;padding:8px 8px 9px;background:rgba(10,14,30,.5);backdrop-filter:blur(8px);text-align:center}
+#games .sp-tile-txt b{color:#fff;font-size:13px;line-height:1.15}
+#games .sp-tile-txt small{display:none}
+[data-g="sp"]{--pose:url(/chars/sprint.webp)}[data-g="hd"]{--pose:url(/chars/hurdles.webp)}[data-g="lj"]{--pose:url(/chars/longjump.webp)}
+[data-g="bx"]{--pose:url(/chars/boxing.webp);--scene:url(/scenes/sp.webp)}[data-g="bw"]{--pose:url(/chars/bowling.webp)}[data-g="sk"]{--pose:url(/chars/skiing.webp)}
+[data-g="wl"]{--pose:url(/chars/wall.webp)}[data-g="bd"]{--pose:url(/chars/badminton.webp)}[data-g="jv"]{--pose:url(/chars/javelin.webp);--scene:url(/scenes/sp.webp)}
+.screen.app .q-ic{background:rgba(255,255,255,.08);color:#fff}
+.screen.app .rank-ic{border-color:transparent}
+.screen.app .goal-bar i{background:rgba(255,255,255,.14)}.screen.app .goal-bar i.on{background:linear-gradient(90deg,#FFC83D,#FF8A3D)}
+
+/* ---- game setup heroes: the game's frame blurred + the sport pose ---- */
+#sprint{--hero:url(/scenes/sp.webp);--hp:url(/chars/sprint.webp)}#hurdles{--hero:url(/scenes/hd.webp);--hp:url(/chars/hurdles.webp)}
+#longjump{--hero:url(/scenes/lj.webp);--hp:url(/chars/longjump.webp)}#boxing{--hero:url(/scenes/sp.webp);--hp:url(/chars/boxing.webp)}
+#bowling{--hero:url(/scenes/bw.webp);--hp:url(/chars/bowling.webp)}#ski{--hero:url(/scenes/sk.webp);--hp:url(/chars/skiing.webp)}
+#wall{--hero:url(/scenes/wl.webp);--hp:url(/chars/wall.webp)}#badminton{--hero:url(/scenes/bd.webp);--hp:url(/chars/badminton.webp)}
+#javelin{--hero:url(/scenes/sp.webp);--hp:url(/chars/javelin.webp)}
+.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero){position:relative;height:clamp(250px,70vw,320px);overflow:hidden;isolation:isolate;border:1px solid var(--ol);border-radius:26px;background:#1B2442;box-shadow:var(--sh-lg)}
+.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero)>:not([class$="-big"],[class$="-sub"]){display:none!important}
+.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero)::before{content:"";display:block;position:absolute;inset:-14px;z-index:-2;background:var(--hero) 50% 50%/cover;filter:blur(6px) saturate(1.15)}
+.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero)::after{content:"";display:block;position:absolute;inset:8% -4% -6% 34%;z-index:-1;background:var(--hp) 50% 100%/contain no-repeat;filter:drop-shadow(0 14px 18px rgba(0,0,0,.45))}
+.screen :is(.sp-hero-big,.hd-hero-big,.lj-hero-big,.bw-hero-big,.sk-hero-big,.wl-hero-big,.bx-hero-big,.bd-hero-big,.jv-hero-big){position:absolute;left:18px;top:16px;z-index:1;font:900 clamp(34px,10vw,48px)/1 var(--disp);color:#fff;-webkit-text-stroke:0;text-shadow:0 2px 14px rgba(0,0,0,.5);max-width:62%}
+.screen :is(.sp-hero-sub,.hd-hero-sub,.lj-hero-sub,.bw-hero-sub,.sk-hero-sub,.wl-hero-sub,.bx-hero-sub,.bd-hero-sub,.jv-hero-sub){position:absolute;left:18px;bottom:16px;top:auto;z-index:1;padding:6px 12px;border-radius:99px;border:0;background:var(--gc);color:#fff;font:800 12px Nunito;letter-spacing:.06em}
+
+/* ---- results: the game's frame + the win pose ---- */
+#sprintEnd{--res-scene:url(/scenes/sp.webp)}#hdEnd{--res-scene:url(/scenes/hd.webp)}#ljEnd{--res-scene:url(/scenes/lj.webp)}#bwEnd{--res-scene:url(/scenes/bw.webp)}
+#skEnd{--res-scene:url(/scenes/sk.webp)}#wlEnd{--res-scene:url(/scenes/wl.webp)}#bdEnd{--res-scene:url(/scenes/bd.webp)}#boxEnd,#jvEnd{--res-scene:url(/scenes/sp.webp)}
+.screen .sp-res-head,.screen .sp-res-head:is([data-w="0"],[data-w="1"],[data-w="2"]){min-height:260px;padding-right:44%;border:1px solid var(--ol);border-radius:26px;isolation:isolate;overflow:hidden;color:#fff;
+  background:linear-gradient(0deg,rgba(14,10,30,.78),rgba(14,10,30,.12) 70%),var(--res-scene) 50% 50%/cover}
+.screen .sp-res-head .sp-res-art{display:none}
+.screen .sp-res-head::after{content:"";position:absolute;right:-6px;bottom:-10px;width:46%;height:96%;z-index:-1;background:url(/chars/win.webp) 50% 100%/contain no-repeat;filter:drop-shadow(0 12px 16px rgba(0,0,0,.45))}
+.screen .sp-res-head :is(h2,.wl,p){color:#fff}
+.screen .sp-res-head h2{font:900 clamp(30px,8.5vw,44px)/1.05 var(--disp);font-style:italic}
+.screen .sp-row:first-child{border-color:rgba(255,200,61,.7);background:rgba(255,200,61,.14)}
+.screen .sp-row:first-child .sp-place{background:linear-gradient(180deg,#FFD45A,#FFB020);color:#2A1E00}
+.res-bg{background:radial-gradient(90% 70% at 50% 30%,#FF5A64,#B3121F)}
+#end[data-w="2"] .res-bg{background:radial-gradient(90% 70% at 50% 30%,#4D7BFF,#1F49C7)}
+
+/* ---- Profilis: my character on a glass plinth + the picker ---- */
+.me-stage{position:relative;height:280px;display:flex;justify-content:center;align-items:flex-end;margin-top:-6px}
+.me-stage::before{content:"";position:absolute;bottom:6px;width:230px;height:54px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--me-color) 55%,transparent),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.3)}
+.me-stage i{position:relative;width:170px;height:256px;margin-bottom:22px;background:var(--me-sheet) 0 0/300% auto no-repeat;filter:drop-shadow(0 14px 18px rgba(0,0,0,.45))}
+.char-pick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.char-pick button{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:44px;padding:10px 4px;border-radius:18px;border:1px solid var(--ol);background:var(--surface);color:#fff;font:800 13px Nunito}
+.char-pick i{width:52px;height:52px;border-radius:50%;background:var(--c) var(--s) 0 7%/300% auto no-repeat}
+.char-pick button[aria-pressed="true"]{border-color:#fff;background:rgba(255,255,255,.2);box-shadow:0 0 0 2px rgba(255,255,255,.35)}
+#profAv{background:var(--me-color) var(--me-sheet) 0 7%/300% auto no-repeat}#profAv>*{display:none}
+#games .sp-tile[data-g] .sp-tile-art{background:var(--pose,none) 50% 100%/contain no-repeat}
+.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero)::after,.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero)::before{width:auto;height:auto;border:0;border-radius:0;translate:none;rotate:none;opacity:1;animation:none}
+/* head crop from a character sheet: the front view is the left third, head ≈ top quarter */
+.char-pick i,#homeAv,#profAv{background-size:520% auto!important;background-position:8% 6%!important}
+#profile .char-pick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%}
+#profile .char-pick button{width:auto;height:auto;min-width:0;flex-direction:column;padding:10px 4px 8px}
+#profile .char-pick i{flex:none;display:block}
+.screen .sp-res-head,.screen .sp-res-head:is([data-w="0"],[data-w="1"],[data-w="2"]){background:linear-gradient(0deg,rgba(14,10,30,.8),rgba(14,10,30,.15) 70%)}
+.screen .sp-res-head::before{content:"";position:absolute;inset:-14px;z-index:-2;background:var(--res-scene) 50% 50%/cover;filter:blur(5px) saturate(1.1)}

@@ -26,6 +26,12 @@ test("bowling, 2 players x 3 frames: hand -> aim -> ball, scorecard, history, ba
   await tap(page,"#bwGo","Į taką");
   await screen(page,"ready").toBeVisible({timeout:120_000});
   await screen(page,"bwRun").toBeVisible({timeout:120_000});
+  // the frame table is the HUD scoreboard: 3 frame columns + a player column + the total
+  await expect(page.locator("#bwBoard table"),"bowling score table").toBeVisible();
+  await expect(page.locator("#bwBoard thead th")).toHaveCount(5);
+  await expect(page.locator("#bwBoard tbody tr")).toHaveCount(2);
+  await expect(page.locator("#bwBoard .bw-tframe")).toHaveCount(6);
+  await expect(page.locator("#bwBoard .bw-tr.now")).toHaveCount(1);
   const order:string[]=[];
   const turns=2*3*2; // two balls per frame, no strike/spare (3 pins each)
   const atTurn=async()=>{
@@ -41,8 +47,19 @@ test("bowling, 2 players x 3 frames: hand -> aim -> ball, scorecard, history, ba
     if(k===0)await a11y(page,"bowling-turn",info);
     if(before.phase==="card")await page.evaluate(()=>(window as any).__bw.ready()); // no gate: skip the card delay
     await expect.poll(async()=>(await bw(page)).phase,{timeout:10_000}).toBe("hand");
-    await expect(page.locator("#bwPickL"),"left hand pick circle").toBeVisible();
-    await expect(page.locator("#bwPickR"),"right hand pick circle").toBeVisible();
+    await expect(page.locator("#bwPick"),"hand pick overlay").toBeVisible();
+    await expect(page.locator("#bwPickT"),"pick title").toContainText(/Iškelk metančią ranką/);
+    await expect(page.locator("#bwPickL"),"left hand pick bubble").toBeVisible();
+    await expect(page.locator("#bwPickR"),"right hand pick bubble").toBeVisible();
+    await expect(page.locator("#bwPctL")).toHaveText("0%");
+    if(k===0)await a11y(page,"bowling-pick",info);
+    await page.evaluate(()=>window.__bw.pick(0,0.5));
+    await expect(page.locator("#bwPctL"),"left ring percentage").toHaveText("50%");
+    await expect(page.locator("#bwPickL")).toHaveClass(/on/);
+    await page.evaluate(()=>window.__bw.pick(1,0.75));
+    await expect(page.locator("#bwPctR"),"right ring percentage").toHaveText("75%");
+    await expect(page.locator("#bwPickR")).toHaveClass(/on/);
+    await expect(page.locator("#bwPickL")).not.toHaveClass(/on/);
     await page.evaluate(()=>window.__bw.hand(1));
     await expect.poll(async()=>(await bw(page)).phase,{timeout:10_000}).toBe("aim");
     await expect(page.locator("#bwPickL"),"the pick circles hide after the choice").toBeHidden();
@@ -56,6 +73,10 @@ test("bowling, 2 players x 3 frames: hand -> aim -> ball, scorecard, history, ba
   expect(order).toEqual(["0:0","0:0","1:0","1:0","0:1","0:1","1:1","1:1","0:2","0:2","1:2","1:2"]);
 
   await screen(page,"bwEnd").toBeVisible({timeout:20_000});
+  // the frame table kept the running score: 3 + 3 in P1/P2's first frame, the total already on the right
+  await expect(page.locator("#bwP0 .bw-tframe").first().locator(".bw-tmarks i")).toHaveText(["3","3"]);
+  await expect(page.locator("#bwP0 .bw-tframe").first().locator(".bw-tcum")).toHaveText("6");
+  await expect(page.locator("#bwP1 .bw-tframe").first().locator(".bw-tcum")).toHaveText("6");
   const [g]=await savedGames(page);
   expect(g,"bowling stored in local history").toMatchObject({mode:"bowling",players:2,ex:["bowling"],score:[0,0],bwFrames:3});
   expect(g.bwTotals).toEqual([18,18]);

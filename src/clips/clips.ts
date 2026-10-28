@@ -15,7 +15,7 @@ const REC_EXT=REC_MIME.includes("mp4")?"mp4":"webm";
 let chunks:Blob[]=[];
 
 const clipsRoot=$("#clips"), previewBox=$("#preview"), previewVid=$<HTMLVideoElement>("#previewVid"), previewLoad=$("#previewLoad"), previewSpin=$("#previewSpin"), previewMsg=$("#previewMsg"), dlPrev=$<HTMLAnchorElement>("#dlPrev"), dlFull=$<HTMLAnchorElement>("#dlFull"), dlToggle=$("#dlToggle"), dlMenu=$("#dlMenu"), sharePrev=$("#sharePrev");
-dlPrev.download=`novacore-highlights.${REC_EXT}`;dlFull.download=`novacore-full.${REC_EXT}`;
+dlPrev.download=`moveclash-highlights.${REC_EXT}`;dlFull.download=`moveclash-full.${REC_EXT}`;
 let fullBlob:Blob|null=null, fullURL:string|null=null, previewBlob:Blob|null=null, previewURL:string|null=null, clipState="idle", highlightPlan:Segment[]=[], highlightTotal=0, clipPortrait=false;
 let clipProfile:ClipProfile|null=null;
 let gen=0; // bumped by resetClips(): late results of a previous game's recorder/highlight cut are ignored
@@ -48,7 +48,7 @@ export function startRec(){
     const rec=S.rec=makeRecorder(stream,clipProfile);
     rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
     rec.start(1000);
-    console.info(`NovaCore klipas: ${clipProfile.w}×${clipProfile.h} @ ${clipProfile.fps} fps, ${(clipProfile.bps/1e6).toFixed(1)} Mbps`);
+    console.info(`MoveClash klipas: ${clipProfile.w}×${clipProfile.h} @ ${clipProfile.fps} fps, ${(clipProfile.bps/1e6).toFixed(1)} Mbps`);
   }catch(e){
     stream?.getTracks().forEach(t=>t.stop());
     S.rec=null;
@@ -85,7 +85,7 @@ async function nativeShare(blob:Blob,name:string){
     await Filesystem.writeFile({path:name,directory:Directory.Cache,data:await b64(blob.slice(0,CH))});
     for(let i=CH;i<blob.size;i+=CH)await Filesystem.appendFile({path:name,directory:Directory.Cache,data:await b64(blob.slice(i,i+CH))});
     const {uri}=await Filesystem.getUri({path:name,directory:Directory.Cache});
-    await Share.share({title:"NovaCore",files:[uri]});
+    await Share.share({title:"MoveClash",files:[uri]});
   }catch(e){if(!/cancel/i.test(String(e)))toast(t("clip.shareFail"))}
 }
 if(native){
@@ -95,17 +95,17 @@ if(native){
 
 async function sharePreviewClip(){
   if(!previewBlob)return;
-  if(native)return nativeShare(previewBlob,`novacore-highlights.${REC_EXT}`);
+  if(native)return nativeShare(previewBlob,`moveclash-highlights.${REC_EXT}`);
   const type=(previewBlob.type||REC_MIME||"video/mp4").split(";")[0];
   const ext=type.includes("mp4")?"mp4":"webm";
-  const file=new File([previewBlob],`novacore-highlights.${ext}`,{type});
+  const file=new File([previewBlob],`moveclash-highlights.${ext}`,{type});
   try{
     if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
-      await navigator.share({files:[file],title:"NovaCore",text:t("clip.shareTxt")});
+      await navigator.share({files:[file],title:"MoveClash",text:t("clip.shareTxt")});
       return;
     }
   }catch(e){if((e as Error).name==="AbortError")return}
-  const a=document.createElement("a");a.href=previewURL!;a.download=`novacore-highlights.${ext}`;
+  const a=document.createElement("a");a.href=previewURL!;a.download=`moveclash-highlights.${ext}`;
   document.body.appendChild(a);a.click();a.remove();
 }
 sharePrev.onclick=sharePreviewClip;

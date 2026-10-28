@@ -1,4 +1,4 @@
-# NovaCore – komandos dokumentai
+# MoveClash – komandos dokumentai
 
 Rodyklė: kas kur guli ir ką skaityti pirmiausia. Atnaujinta 2026-10-23.
 
