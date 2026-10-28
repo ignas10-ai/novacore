@@ -1,5 +1,13 @@
 # Pakeitimų žurnalas
 
+## 2026-10-28 — UI: stiklinis stilius + nauji veikėjai + pavadinimas MoveClash (#38, #8, šaka `claude/38-ui-wii`)
+
+- **Pavadinimas:** visur, kur mato žmogus – MoveClash (app, žaidimų reklaminės lentos, manifestai, dokumentai). `localStorage` raktai, paketas `lt.novacore.app` ir domenas nekeisti.
+- **Stilius (Igno pasirinktas 10-28):** tamsiai mėlynas fonas, matinio stiklo kortelės, tikri žaidimų kadrai sulieti fone, gradientinis pagrindinis mygtukas rungties spalva. Viskas `src/styles/glass.css` (importuojama paskutinė iš `main.ts`), tokenai perrašomi tik app ekranams / rezultatams / lapams – kameros srautas ir žaidimų HUD nekeisti.
+- **Veikėjai (Claude Design v2):** 4 veikėjai + 9 sporto pozos + pergalė `public/chars/*.webp`. Pradžios „Šiandien“ kortelė (rungtis keičiasi kasdien), rungčių plytelės su sporto pozomis, nustatymų antraštės (sulietas kadras + poza), rezultatų antraštė su pergalės poza.
+- **Veikėjo pasirinkimas:** Profilis → Kometa / Banga / Saulė / Mėta (`src/ui/chars.ts`); galvutė Pradžioje ir Profilyje, veikėjas ant pakylos. Senas 2 personažų pasirinkimas nustatymuose pašalintas. Mokėjimai – atskiras issue (po SfT).
+- **Kadrai:** `npm run scenes` (`tools/scenes.mjs`) perfotografuoja `public/scenes/*.webp` gulsčiai su e2e kamera.
+
 ## 2026-10-28 — UI: Wii Sports stilius, raudonas akcentas (#38, šaka `claude/38-ui-wii`)
 
 - **Kryptis:** Igno pasirinktas Wii Sports viršelis – baltas fonas, ploni pilki kontūrai, minkšti šešėliai, Nunito 900 vietoj Titan One app'o tekstuose, vienas raudonas akcentas. Žaidimų scenos (canvas, Titan One ant lentų) nekeistos.

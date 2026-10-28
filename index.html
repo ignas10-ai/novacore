@@ -137,8 +137,8 @@
       </div>
       <span class="chal-art" data-mascot="r:vs" aria-hidden="true"></span>
     </section>
-    <!-- Wii Sports cover (#38): the live sprint stadium (homeScene.ts), the grey/red wordmark, one pictogram per game (home.ts fills #homePics) -->
-    <div class="cover" aria-hidden="true"><canvas id="homeScene"></canvas></div>
+    <!-- Glass home (#38, 10-28): today's game card (home.ts picks it by date), the grey/red wordmark, one pictogram per game (home.ts fills #homePics) -->
+    <a class="feat tap" id="homeFeat" href="#/sprintas"><span class="feat-bg" aria-hidden="true"></span><img class="feat-img" alt="" src="/chars/sprint.webp"><span class="feat-t"><span class="feat-badge">Šiandien</span><b class="feat-name">Sprintas 100 m</b><span class="feat-go"><span data-icon="play"></span>Žaisti</span></span></a>
     <div class="brand"><span class="brand-mark d" aria-hidden="true">Move<b>Clash</b></span><nav class="pics" id="homePics" aria-label="Rungtys"></nav></div>
     <button class="go home-go tap" id="homePlay" type="button" aria-label="Žaisti: raudonas prieš mėlyną, 1–2 žaidėjai, 3 min"><span data-icon="play"></span><span class="home-go-txt"><b>Žaisti</b><small>1–2 žaidėjai · 3 min</small></span></button>
     </div>
@@ -276,6 +276,13 @@
   <div class="wrap">
     <header class="nav"><div class="nav-in"><span class="nav-title" aria-hidden="true">Profilis</span></div></header>
     <h1 class="large-title" id="profTitle" tabindex="-1">Profilis</h1>
+    <div class="me-stage" aria-hidden="true"><i></i></div>
+    <div class="char-pick" role="group" aria-label="Personažas">
+      <button type="button" class="tap" data-char="r" aria-pressed="true"><i style="--s:url(/chars/sheetR.webp);--c:#E8273A"></i>Kometa</button>
+      <button type="button" class="tap" data-char="b" aria-pressed="false"><i style="--s:url(/chars/sheetB.webp);--c:#2A5BE8"></i>Banga</button>
+      <button type="button" class="tap" data-char="y" aria-pressed="false"><i style="--s:url(/chars/sheetY.webp);--c:#E09A00"></i>Saulė</button>
+      <button type="button" class="tap" data-char="g" aria-pressed="false"><i style="--s:url(/chars/sheetG.webp);--c:#12A35E"></i>Mėta</button>
+    </div>
     <div class="box me-card">
       <span class="avatar lg char" id="profAv" data-avatar></span>
       <div class="me-txt"><b id="profNick">Be vardo</b><small id="profSub">Saugoma šiame telefone</small></div>
@@ -307,7 +314,6 @@
     <section aria-labelledby="setLbl">
       <h2 class="sec-title" id="setLbl">Nustatymai</h2>
       <div class="box settings">
-        <div class="set-row"><span class="set-ic" data-icon="user"></span><div class="set-txt"><b>Personažas</b><small>Tavo veidas Pradžioje ir Profilyje</small></div><div class="char-pick" role="radiogroup" aria-label="Personažas"><button class="tap" type="button" role="radio" data-char="r" aria-checked="true" aria-label="Raudonas"><span data-head="r"></span></button><button class="tap" type="button" role="radio" data-char="b" aria-checked="false" aria-label="Mėlynas"><span data-head="b"></span></button></div></div>
         <div class="set-row"><span class="set-ic" data-icon="volume-2"></span><div class="set-txt"><b>Garsas</b><small>Už judesį, raundą ir finišą</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-snd aria-label="Garsas"><i></i></button></div>
         <div class="set-row"><span class="set-ic" data-icon="vibrate"></span><div class="set-txt"><b>Vibracija</b><small>Trumpas virptelėjimas už judesį</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-vibe aria-label="Vibracija"><i></i></button></div>
         <button class="set-row tap-row" type="button" data-tv aria-haspopup="dialog" aria-controls="screenSheet"><span class="set-ic" data-icon="tv"></span><div class="set-txt"><b>Rodyti per TV</b><small>TV lenta su kodu arba ekrano dubliavimas</small></div><span class="chev" data-icon="chevron-right"></span></button>

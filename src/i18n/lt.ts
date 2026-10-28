@@ -176,6 +176,7 @@ export const lt={
   "home.meta":"1–2 žaidėjai · 3 min",
   "home.games":"Visos rungtys",
   "home.gamesNav":"Rungtys",
+  "home.today":"Šiandien",
   "home.quick":"Greitas startas",
   "home.fast":"Greitas",
   "home.fastSolo":"1 min solo",
