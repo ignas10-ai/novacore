@@ -8,7 +8,7 @@
 export type Who="r"|"b"|"y"|"g"; // y / g = Geltonas, Žalias (Šuolis į tolį party mode, src/longjump)
 export type Mood="fierce"|"smirk"|"happy"|"sad";
 export type ExId="squat"|"jack"|"knees"|"squatjump"|"sidestep"|"lunge"|"crunch";
-export type Pose="idle"|"vs"|"win"|"lose"|"guard"|"punch"|"ski"|"badminton"|ExId; // guard / punch = Boksas, ski = Slidinėjimas, badminton = Badmintonas
+export type Pose="idle"|"vs"|"win"|"lose"|"guard"|"punch"|"ski"|"badminton"|"javelin"|ExId; // guard / punch = Boksas, ski = Slidinėjimas, badminton = Badmintonas, javelin = Iečio metimas
 
 const INK="#14183A";
 const C={r:{body:"#FF3B3B",band:"#FFC61A"},b:{body:"#2F6BFF",band:"#FFFFFF"},y:{body:"#FFC61A",band:"#FF3B3B"},g:{body:"#16B67A",band:"#FFC61A"}};
@@ -78,6 +78,7 @@ const POSES:Record<Pose,P>={
   punch:{gl:[58,138],gr:[186,98]}, // front glove jabs toward the side the mascot faces (mirrored for Mėlynas)
   ski:{gl:[48,132],gr:[152,132]}, // gloves hold the poles at chest height (Slidinėjimas)
   badminton:{gl:[46,152],gr:[148,62]}, // racket glove up, ready to serve (Badmintonas)
+  javelin:{gl:[44,154],gr:[156,96]}, // throwing glove above the shoulder, the other hand at the chest
 };
 export const EX_IDS:ExId[]=["squat","jack","knees","squatjump","sidestep","lunge","crunch"];
 
@@ -85,11 +86,13 @@ export const EX_IDS:ExId[]=["squat","jack","knees","squatjump","sidestep","lunge
 export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mood?:Mood;label?:string;cls?:string}={}){
   const f=o.face??(RIGHT(who)?1:-1), c=C[who];
   let p=POSES[pose];
-  if(pose==="punch"&&f<0)p={...p,gl:[200-p.gr[0],p.gr[1]],gr:[200-p.gl[0],p.gl[1]]};
+  if((pose==="punch"||pose==="javelin")&&f<0)p={...p,gl:[200-p.gr[0],p.gr[1]],gr:[200-p.gl[0],p.gl[1]]};
   const mood=o.mood||p.mood||(RIGHT(who)?"fierce":"smirk");
   const up=p.up?` transform="${p.up}"`:"";
   const a11y=o.label?`role="img" aria-label="${o.label}"`:`aria-hidden="true"`;
   const skis=pose==="ski"?`<g class="m-skis">${[66,134].map((x,k)=>`<g transform="translate(${x} 216) rotate(${k?-4:4})"><rect x="-26" y="-4" width="52" height="9" rx="4.5" fill="${c.body}" stroke="${INK}" stroke-width="4"/><rect x="-18" y="-1" width="36" height="3" rx="1.5" fill="#fff" opacity=".8"/></g>`).join("")}</g>`:"";
+  const javelin=pose==="javelin"?(()=>{const g=f>0?p.gr:p.gl,x=g[0],y=g[1],tx=x+f*54,ty=y-48;
+    return `<g class="m-spear"><line x1="${x}" y1="${y}" x2="${tx}" y2="${ty}" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><line x1="${x}" y1="${y}" x2="${tx}" y2="${ty}" stroke="${c.band}" stroke-width="4" stroke-linecap="round"/><path d="M${tx} ${ty}l${f*14} -9l-3 ${f*10}Z" fill="${INK}"/></g>`})():"";
   return `<svg class="mascot m-${who} mp-${pose}${o.anim?" anim":""}${o.cls?" "+o.cls:""}" viewBox="0 0 200 230" ${a11y} focusable="false">`
     +`<ellipse class="m-shadow" cx="100" cy="221" rx="54" ry="7" fill="${INK}" opacity=".14"/>`
     +skis
@@ -97,6 +100,7 @@ export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mo
     +`<g class="m-up"${up}><g class="m-ui"><rect class="m-body" x="66" y="126" width="68" height="66" rx="30" fill="${c.body}" stroke="${INK}" stroke-width="${SW}"/></g></g>`
     +`<g class="m-legs">${leg("l",76,p.ll)}${leg("r",100,p.lr)}</g>` // over the body: a lifted knee reads in front of it
     +`<g class="m-up"${up}><g class="m-ui">`
+    +javelin
     +head(who,mood,f)
     +(pose==="win"?crown(100,-14,58):"")
     +glove(c.body,"l",...p.gl,p.cuff)+glove(c.body,"r",...p.gr,p.cuff,pose==="badminton"?RACKET:"")
@@ -125,4 +129,4 @@ const ICON:Record<ExId,string>={
 export const exIcon=(id:string)=>`<svg class="ex-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${(ICON as Record<string,string>)[id]||ICON.squat}</svg>`.replace(/<circle /g,'<circle fill="currentColor" stroke="none" ');
 // exercise illustration: alternate red/blue like the picker order (squat red, jack blue, ...)
 export const exWho=(id:string):Who=>EX_IDS.indexOf(id as ExId)%2?"b":"r";
-export const exArt=(id:string,anim=true)=>mascot(exWho(id),(EX_IDS.includes(id as ExId)?id:id==="boxing"?"punch":id==="bowling"?"guard":id==="ski"?"ski":id==="badminton"?"badminton":id==="wall"?"sidestep":id==="sprint"||id==="hurdles"?"knees":"idle") as Pose,{anim});
+export const exArt=(id:string,anim=true)=>mascot(exWho(id),(EX_IDS.includes(id as ExId)?id:id==="boxing"?"punch":id==="bowling"?"guard":id==="ski"?"ski":id==="badminton"?"badminton":id==="javelin"?"javelin":id==="wall"?"sidestep":id==="sprint"||id==="hurdles"?"knees":"idle") as Pose,{anim});
