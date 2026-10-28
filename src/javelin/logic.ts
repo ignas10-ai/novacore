@@ -115,7 +115,7 @@ export function updateHandPick(p:HandPick,b:Body|null,now:number):0|1|null{
 export type AttemptState="run"|"fly"|"foul";
 export type FoulWhy=""|"line"|"none";
 export interface Throw{t:number;x:number;v:number;h:number;s:number;gap:number;dist:number;raw:number}
-export interface Swing{t:number;h:number;peak:number;z:number}
+export interface Swing{t:number;h:number;peak:number;z:number;x:number}
 export interface Arm{t:number;x:number;h:number;z:number} // wrist relative to its shoulder, torso units
 export interface Attempt{r:Runner;t:number;hist:number[];state:AttemptState;crossAt:number;take:Throw|null;why:FoulWhy;
   side:0|1;prev:Arm|null;hs:number[];swing:Swing|null;earlyAt:number;holdAt:number;cocked:boolean}
@@ -151,20 +151,21 @@ export function vBefore(a:Attempt,t:number){
 
 // ---------- swing detector ----------
 // A javelin throw is NOT any wrist movement. The player must first HOLD the javelin steady at/above the shoulder
-// (~0.18 s), and then make a real swing: a sudden forward/down motion with enough travel and peak speed. Merely
+// (~0.15 s), and then make a real swing: a sudden forward/down motion with enough travel and peak speed. Merely
 // running with the arm up (the reported bug), or a small bounce, never releases.
-export const HOLD_Y=-0.05;      // wrist at/above the shoulder
+export const HOLD_Y=-0.08;      // wrist at/above the shoulder
 export const HOLD_SPEED=1.2;    // torso/s: steady enough to be "holding the javelin"
 export const HOLD_S=0.15;       // s: a steady hold this long arms the throw
 export const BACK_Z=0.08;       // z behind the shoulder also arms it (when MediaPipe z is usable)
 export const BACK_H=0.50;       // fallback: wrist this high above the shoulder arms it
-export const SWING_START=2.0;   // torso/s: a real swing starts much faster than a run bounce
-export const SWING_MIN=3.2;     // torso/s: minimum peak for a release (a real throw is 5-10)
-export const RELEASE_Z=0.10;    // forward wrist travel from the swing start (torso)
-export const RELEASE_Y=0.25;    // or down travel; down-only needs an even faster peak
-export const RELEASE_MIN=0.10;  // s: the swing cannot release faster than this
-export const RELEASE_H0=-0.02;  // the swing must start at/above the shoulder (not a low running arm swing)
-export const RELEASE_LOW=-0.35; // the release itself cannot be at hip level (a running arm swing ends there)
+export const SWING_START=1.5;   // torso/s: a real swing starts faster than a run bounce
+export const SWING_MIN=2.2;     // torso/s: a half/natural swing still releases; a run bounce stays below
+export const RELEASE_Z=0.06;    // forward wrist travel from the swing start (torso)
+export const RELEASE_Y=0.14;    // or down travel; down-only needs an even faster peak
+export const RELEASE_MIN=0.08;  // s: the swing cannot release faster than this
+export const RELEASE_H0=-0.10;  // the swing must start near/above the shoulder (not a low running arm swing)
+export const RELEASE_LOW=-0.42; // the release itself cannot be at hip level (a running arm swing ends there)
+export const RELEASE_X=0.03;    // fallback (no usable z): the wrist must also move across/forward, not just bounce
 export const SWING_MAX=26;      // torso/s: above this it is a MediaPipe z glitch, not a human wrist
 export const Z_LIMIT=0.9;       // torso: the wrist cannot be this far in front/behind its own shoulder
 export const SWING_TIMEOUT=0.9; // s: no release by then = a practice swing, re-arm
@@ -201,7 +202,7 @@ export function throwArm(a:Attempt,arm:Arm|null):""|"ok"|"foul"|"early"{
   if(a.cocked&&!a.swing){
     if(speed>=SWING_START&&(fwd>=SWING_START*.45||down>=SWING_START*.45)){
       let peak=-1;for(let i=1;i<hs.length;i+=2)peak=Math.max(peak,hs[i]);
-      a.swing={t:prev.t,h:peak,z:prev.z,peak:speed};
+      a.swing={t:prev.t,h:peak,z:prev.z,x:prev.x,peak:speed};
     }else if(!holding&&arm.h<-0.15&&speed<SWING_START*.5){
       a.cocked=false;a.holdAt=0; // the arm was lowered without a throw: re-arm on the next hold
     }
@@ -213,9 +214,12 @@ export function throwArm(a:Attempt,arm:Arm|null):""|"ok"|"foul"|"early"{
   if(sw.peak<SWING_MIN||arm.t-sw.t<RELEASE_MIN)return "";
   const fwdTravel=sw.z-arm.z,downTravel=sw.h-arm.h;
   const zKnown=Math.abs(sw.z)>0.02||Math.abs(arm.z)>0.02;
-  // Forward depth is the best throw signal; a down-only swing needs a clearly faster peak (z is noisy/missing
-  // on some phones). A run bounce below SWING_MIN never gets here.
-  const release=sw.h>=RELEASE_H0&&arm.h>=RELEASE_LOW&&(fwdTravel>=RELEASE_Z||(downTravel>=RELEASE_Y&&sw.peak>=SWING_MIN*1.15&&(!zKnown||fwdTravel>=RELEASE_Z*.25)));
+  // Forward depth is the best throw signal. Without usable z, require a down + across swing; a vertical running
+  // bounce has no x travel and is rejected. A run bounce below SWING_MIN never gets here.
+  const xTravel=Math.abs(arm.x-sw.x);
+  const release=sw.h>=RELEASE_H0&&arm.h>=RELEASE_LOW&&(zKnown
+    ?fwdTravel>=RELEASE_Z
+    :(downTravel>=RELEASE_Y&&xTravel>=RELEASE_X&&sw.peak>=SWING_MIN));
   if(!release)return "";
   const x=xAt(a,sw.t),gap=LINE_M-x;
   if(gap<0){a.state="foul";a.why="line";a.take={t:sw.t,x,v:vBefore(a,sw.t),h:sw.h,s:sw.peak,gap,dist:0,raw:0};return "foul"}
