@@ -1350,7 +1350,7 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 #games .sp-tile-art .mascot{width:64px;margin:0 -6px -10px}
 #games .sp-tile>.pic{position:absolute;z-index:2;left:8px;top:76px;width:40px;height:40px;border-radius:10px;border:2.5px solid #fff}
 #games .sp-tile>.pic svg{width:24px;height:24px}
-#games .sp-tile-txt{padding:20px 10px 12px;gap:2px}
+#games .sp-tile-txt{padding:10px 10px 12px;gap:2px}
 #games .sp-tile-txt .eyebrow{display:none}
 #games .sp-tile-txt b{font-size:16px;line-height:1.15;color:var(--ink);text-shadow:none;-webkit-text-stroke:0}
 #games .sp-tile-txt small{font:700 12.5px/1.3 var(--body);color:var(--fg-mute);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -1438,3 +1438,9 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 .pic svg{color:var(--gc,var(--red-deep))!important}
 #games .sp-tile-art{border-bottom:4px solid var(--gc,var(--red))}
 #games .sp-tile-txt b{color:var(--gc-ink,var(--ink))}
+/* landscape frames (npm run scenes, 2:1): one wide stadium banner + two below, nothing cropped to a sliver */
+.cover{grid-template-columns:1fr 1fr;grid-template-rows:none}
+.cover i{aspect-ratio:2/1}
+.cover i:first-child{grid-row:auto;grid-column:1 / -1;background-position:50% 50%}
+#games .sp-tile-art{height:auto;aspect-ratio:2/1}
+#games .sp-tile>.pic{top:8px} /* badge on the frame corner (the frame height now follows the tile width) */
