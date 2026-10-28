@@ -1,5 +1,11 @@
 # Pakeitimų žurnalas
 
+## 2026-10-28 — Iečio metimas: pusinis mostas dabar aptinkamas (#51, šaka `martynas/51-ietis-mostas`)
+
+- **Priežastis:** po #47 metimo slenksčiai buvo per griežti (`SWING_MIN`=3,2, `RELEASE_Y`=0,25, `RELEASE_Z`=0,10), todėl natūralus / pusinis rankos mostas neaptikdavo.
+- **Pakeista:** `SWING_START` 2,0 → **1,2**, `SWING_MIN` 3,2 → **1,8**, `RELEASE_Z` 0,10 → **0,05**, `RELEASE_Y` 0,25 → **0,12**, `RELEASE_MIN` 0,10 → **0,08**, starto aukštis -0,02 → **-0,10**, paleidimo riba -0,35 → **-0,42**, `HOLD_Y` -0,05 → **-0,08**. Be patikimo MediaPipe z dabar reikia ir `RELEASE_X`=0,025 judesio į priekį / skersai, kad vertikalus bėgimo bounce'as vis tiek nebūtų metimas.
+- **Patikrinta:** `npm test` – **475 testai** (25 `test/unit/javelin.test.ts`: naujas pusinio mosto testas, esami `knees`/`knees2`/`knees3` abiem rankoms – 0 netikrų metimų), `npx tsc --noEmit`, `npm run build`, `PW_PORT=4280 npx playwright test test/e2e/javelin.spec.ts`. **Dar reikia tikro telefono:** ar 1,8 vieneto/s ir 0,12 judesio slenksčiai patogūs pusiniam mostui, o bėgimo bounce'as vis dar neaptinkamas.
+
 ## 2026-10-28 — Boulingas: rankos burbulai kaip iečio metime + rėmų rezultatų lentelė (#45, šaka `claude/45-bowling-pick-table`)
 
 - **Rankos pasirinkimas:** vietoje mažos apatinės kortelės su dviem mažais ratais dabar yra toks pat didelis pasirinkimo ekranas kaip „Iečio metime“ (`#bwPick`): kamera persikelia į centrą, kairėje ir dešinėje – dideli burbulai su 2 s pildomu žiedu, rankos pavadinimu ir procentais. Aktyvi pusė pakyla ir pasižymi, pilna pasidaro geltona; per 2 s galima persigalvoti ir pereiti į kitą ranką. Pasirinkus burbulas trumpai lieka pilnas, tada ekranas užsidaro ir grįžta taikymosi kortelė. HUD/rezultatų lentelė pasirinkimo metu paslepiama. (`#bwPickL/R`, `#bwRingL/R`, `#bwPctL/R`.)
