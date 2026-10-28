@@ -1420,3 +1420,21 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 .screen .bd-hero-sub{background:rgba(0,0,0,.55);color:#fff;border:0}
 #bdEnd{--res-scene:url(/scenes/bd.webp)}
 .screen .sp-res-head :is(h2,.wl,p,b,span:not(.rec-badge)){color:#fff}
+/* ---------- a colour per game (#38, 10-28 "per generic – daugiau spalvų"), like Switch Sports' sport colours ----------
+   --gc solid, --gc-hi gradient top, --gc-ink text-safe, --gc-tint background. Used by the pictograms, the tile bar and,
+   on each game's own setup screen, as that screen's accent (the --red* tokens are re-pointed there; --p1/--p2 are
+   resolved at :root, so player colours stay red / blue). */
+[data-g="sp"],#sprint{--gc:#E8273A;--gc-hi:#F04A55;--gc-ink:#B3121F;--gc-tint:#FDECEE}
+[data-g="hd"],#hurdles{--gc:#EE6A12;--gc-hi:#FF8C3A;--gc-ink:#A8470A;--gc-tint:#FFF0E5}
+[data-g="lj"],#longjump{--gc:#E09A00;--gc-hi:#FFBE1F;--gc-ink:#8A5F00;--gc-tint:#FFF5D9}
+[data-g="bx"],#boxing{--gc:#2A5BE8;--gc-hi:#4D7BFF;--gc-ink:#173A9E;--gc-tint:#E6EDFF}
+[data-g="bw"],#bowling{--gc:#6A4FF0;--gc-hi:#8E78FF;--gc-ink:#4329B0;--gc-tint:#EEEAFF}
+[data-g="sk"],#ski{--gc:#1590CF;--gc-hi:#3FB8EE;--gc-ink:#0B5E8A;--gc-tint:#E3F4FC}
+[data-g="wl"],#wall{--gc:#DB2E85;--gc-hi:#F45FA6;--gc-ink:#9E1A5D;--gc-tint:#FCE8F2}
+[data-g="bd"],#badminton{--gc:#12A35E;--gc-hi:#2BC47A;--gc-ink:#0B6B3D;--gc-tint:#E3F5EC}
+[data-g="jv"],#javelin{--gc:#0F9C9C;--gc-hi:#2EC4C4;--gc-ink:#0A6666;--gc-tint:#E0F6F6}
+:is(#sprint,#hurdles,#longjump,#boxing,#bowling,#ski,#wall,#badminton,#javelin){--red:var(--gc);--red-hi:var(--gc-hi);--red-deep:var(--gc);--red-ink:var(--gc-ink);--red-tint:var(--gc-tint)}
+.pic{background:linear-gradient(180deg,var(--gc-hi,var(--red-hi)),var(--gc,var(--red-deep)))}
+.pic svg{color:var(--gc,var(--red-deep))!important}
+#games .sp-tile-art{border-bottom:4px solid var(--gc,var(--red))}
+#games .sp-tile-txt b{color:var(--gc-ink,var(--ink))}

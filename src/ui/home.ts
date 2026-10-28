@@ -36,7 +36,7 @@ function games(){
     grid.append(a);
   });
   $("#homePics").innerHTML=[...grid.querySelectorAll<HTMLAnchorElement>(".sp-tile")].map(a=>
-    `<a class="pic tap" href="${a.getAttribute("href")}" aria-label="${a.querySelector(".sp-tile-txt b")?.textContent??""}">${picto(a.dataset.g!)}</a>`).join("");
+    `<a class="pic tap" data-g="${a.dataset.g}" href="${a.getAttribute("href")}" aria-label="${a.querySelector(".sp-tile-txt b")?.textContent??""}">${picto(a.dataset.g!)}</a>`).join("");
 }
 onView("home",render);
 $("#homePlay").onclick=()=>go("#/zaisti");
