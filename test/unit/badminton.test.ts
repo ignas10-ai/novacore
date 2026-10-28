@@ -5,7 +5,9 @@ import {
   COURT_LEN,COURT_W,NET_Z,NET_H,SHORT_SERVICE,HIT_MAX_H,HIT_COOL,SMASH_MIN_H,
   sideOfZ,inCourt,serveIn,newShuttle,serveShuttle,hitShuttle,canHit,stepShuttle,
   newMatch,addPoint,countStroke,bestRally,newChoice,tickChoice,newSwingState,readSwing,
-  newBot,botAct,control,CHOOSE_HOLD,SW_GAP,type Side,type Stroke,type Swing,type FlightEvent,
+  newBot,botAct,control,CHOOSE_HOLD,SW_GAP,predictContact,hitQuality,newJumpState,readJump,countJump,
+  CONTACT_H,HIT_EARLY,HIT_LATE,JUMP_UP,
+  type Side,type Stroke,type Swing,type FlightEvent,
 } from "../../src/badminton/logic.ts";
 import type {Lm} from "../../src/detect/classifier.ts";
 
@@ -255,6 +257,86 @@ describe("solo bot",()=>{
     botAct(s,1,b,.2,0);const shot=botAct(s,1,b,.2,0)!;
     expect(["clear","drop"]).toContain(shot.stroke);
     expect(shot.stroke).not.toBe("smash");
+  });
+});
+
+describe("third-person target + timing",()=>{
+  it("predicts the receiver's contact on their side for a serve, a clear and a drop",()=>{
+    const serve=newShuttle(0);serveShuttle(serve,0,1,0);
+    const c1=predictContact(serve,1)!;
+    expect(c1).not.toBeNull();expect(c1.z).toBeGreaterThan(NET_Z);expect(c1.z).toBeLessThan(COURT_LEN);
+    expect(c1.t).toBeGreaterThan(.5);expect(c1.y).toBeGreaterThan(.15);expect(c1.y).toBeLessThanOrEqual(CONTACT_H+.01);
+    expect(c1.x).toBeCloseTo(0,6);
+    const clear=newShuttle(0);clear.z=4;clear.y=2.5;clear.live=true;clear.t=1;clear.from=0;hitShuttle(clear,0,"clear",1,0);
+    const c2=predictContact(clear,1)!;
+    expect(c2).not.toBeNull();expect(c2.z).toBeGreaterThan(NET_Z);expect(c2.t).toBeGreaterThan(.5);
+    const drop=newShuttle(0);drop.z=4;drop.y=3;drop.live=true;drop.t=1;drop.from=0;hitShuttle(drop,0,"drop",1,0);
+    const c3=predictContact(drop,1)!;
+    expect(c3).not.toBeNull();expect(c3.z).toBeGreaterThan(NET_Z);expect(c3.z).toBeLessThan(NET_Z+4);
+    const p2=newShuttle(1);serveShuttle(p2,1,1,0);const c4=predictContact(p2,0)!;
+    expect(c4).not.toBeNull();expect(c4.z).toBeLessThan(NET_Z);expect(c4.z).toBeGreaterThan(0);
+  });
+  it("returns null for a net shot, a short serve and a shot that will land out",()=>{
+    const low=newShuttle(0);low.z=4;low.y=1.5;low.live=true;low.t=1;low.from=0;hitShuttle(low,0,"drop",1,0);
+    expect(predictContact(low,1)).toBeNull();
+    const short=newShuttle(0);serveShuttle(short,0,.8,0);
+    expect(predictContact(short,1)).toBeNull();
+    const out=newShuttle(0);out.z=4;out.y=2.5;out.live=true;out.t=1;out.from=0;hitShuttle(out,0,"clear",1.3,0);
+    expect(predictContact(out,1)).toBeNull();
+  });
+  it("the timing quality peaks at the contact and is zero outside the window",()=>{
+    expect(hitQuality(0.04)).toBe(1);
+    expect(hitQuality(0.3)).toBeGreaterThan(0);
+    expect(hitQuality(HIT_EARLY+.01)).toBe(0);
+    expect(hitQuality(-HIT_LATE-.01)).toBe(0);
+    expect(hitQuality(HIT_EARLY)).toBeGreaterThan(0);
+    expect(hitQuality(-HIT_LATE)).toBeGreaterThan(0);
+    expect(hitQuality(0.3)).toBeGreaterThan(hitQuality(HIT_EARLY));
+  });
+});
+
+describe("jump + jump smash",()=>{
+  const jumpPose=(raise:number)=>{
+    const lm=pose();
+    lm[11]={x:.6,y:.3-raise,visibility:1};lm[12]={x:.4,y:.3-raise,visibility:1};
+    lm[23]={x:.6,y:.62-raise,visibility:1};lm[24]={x:.4,y:.62-raise,visibility:1};
+    lm[27]={x:.6,y:.9-raise,visibility:1};lm[28]={x:.4,y:.9-raise,visibility:1};
+    return lm;
+  };
+  it("detects a standing jump after the hold, ignores a small bob and stays on cooldown",()=>{
+    const st=newJumpState();
+    expect(readJump(jumpPose(0),st,0)).toBe(false);
+    expect(readJump(jumpPose(.02),st,.05)).toBe(false); // a small bob: hip < JUMP_UP
+    let jumped=false;
+    for(const t of [.05,.1,.15,.2])jumped=readJump(jumpPose(.18),st,t)||jumped;
+    expect(jumped).toBe(true);
+    expect(readJump(jumpPose(0),st,.25)).toBe(false);
+    // a second jump within JUMP_COOL is ignored; after the cooldown it counts again
+    expect(readJump(jumpPose(.18),st,.3)).toBe(false);
+    readJump(jumpPose(0),st,.35);
+    jumped=false;
+    for(const t of [.8,.85,.9,.95])jumped=readJump(jumpPose(.18),st,t)||jumped;
+    expect(jumped).toBe(true);
+  });
+  it("a lost / NaN body never jumps",()=>{
+    const st=newJumpState();
+    readJump(jumpPose(0),st,0);
+    const bad=jumpPose(.18);bad[27]={x:.6,y:.72,visibility:.2};
+    expect(readJump(bad,st,.1)).toBe(false);
+    bad[27]={x:NaN,y:.72,visibility:1};
+    expect(readJump(bad,st,.2)).toBe(false);
+  });
+  it("a jump smash is steeper and faster than a standing smash; jumps are counted on the match",()=>{
+    const normal=newShuttle(0);normal.z=4;normal.y=3;normal.live=true;normal.t=1;normal.from=0;
+    hitShuttle(normal,0,"smash",1,0,false);
+    const jump=newShuttle(0);jump.z=4;jump.y=3;jump.live=true;jump.t=1;jump.from=0;
+    hitShuttle(jump,0,"smash",1,0,true);
+    expect(jump.vy).toBeLessThan(normal.vy); // more downward
+    expect(jump.vz).toBeGreaterThan(normal.vz); // faster forward
+    const m=newMatch(11);countJump(m,0);countJump(m,0);countJump(m,1);
+    expect(m.jumps).toEqual([2,1]);
+    expect(newMatch(11).jumps).toEqual([0,0]);
+    expect(JUMP_UP).toBeGreaterThan(0);
   });
 });
 
