@@ -1,4 +1,4 @@
-# Apklausa – NovaCore
+# Apklausa – MoveClash
 
 Devyni klausimai Google Forms, kaip juos sudėti, kur platinti ir kuris skaičius į kurią pateikimo vietą eina. Parengta 2026-10-23. Tikslas: **≥ 30 atsakymų iki Pn 10-24 vakaro**, iš bent 3 skirtingų grupių (ne tik klasė).
 
@@ -6,9 +6,9 @@ Kodėl be amžiaus: apklausa visiems, ne tik mokyklai. Pirmas klausimas parodo, 
 
 ## Forma
 
-**Pavadinimas:** NovaCore – judėjimas su draugais
+**Pavadinimas:** MoveClash – judėjimas su draugais
 
-**Aprašymas (viršuje):** Kuriame NovaCore – žaidimą, kuris judėjimą su draugais paverčia trumpomis varžybomis telefonu. Projektas dalyvauja Samsung „Solve for Tomorrow“ konkurse. Apie 2 minutės, anonimiška. Ačiū!
+**Aprašymas (viršuje):** Kuriame MoveClash – žaidimą, kuris judėjimą su draugais paverčia trumpomis varžybomis telefonu. Projektas dalyvauja Samsung „Solve for Tomorrow“ konkurse. Apie 2 minutės, anonimiška. Ačiū!
 
 | # | Klausimas | Tipas | Variantai |
 |---|---|---|---|
@@ -23,7 +23,7 @@ Kodėl be amžiaus: apklausa visiems, ne tik mokyklai. Pirmas klausimas parodo, 
 | 8 | Kas tave labiausiai atgrasytų? | Multiple choice | nenoriu būti filmuojamas(-a) · nepatogu prieš kitus · nuobodu · nėra laiko · nieko |
 | 9 | Ką pridėtum, kad žaistum dažniau? | Paragraph, **neprivalomas** | – |
 
-Nustatymai: 1–8 „Required". Max 2 – per ⋮ → *Response validation* → *Select at most* → 2. Pabaigos žinutė (Settings → Presentation): „Ačiū! Jūsų atsakymai padės mums kurti NovaCore." Settings → Responses → *Link to Sheets* iškart (reikės filtruoti pagal 1 kl.).
+Nustatymai: 1–8 „Required". Max 2 – per ⋮ → *Response validation* → *Select at most* → 2. Pabaigos žinutė (Settings → Presentation): „Ačiū! Jūsų atsakymai padės mums kurti MoveClash." Settings → Responses → *Link to Sheets* iškart (reikės filtruoti pagal 1 kl.).
 
 ## Kur platinti (kad būtų įvairių žmonių)
 

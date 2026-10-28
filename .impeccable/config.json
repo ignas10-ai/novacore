@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "_playthrough/mock/wii.html"
+        ],
+        "createdAt": "2026-10-27T19:40:27.890Z",
+        "reason": "Ignas picked the Wii Sports cover as reference (10-27); grey bevelled wordmark is the cloned logo"
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "_playthrough/mock/wii-setup.html"
+        ],
+        "createdAt": "2026-10-27T20:31:44.268Z",
+        "reason": "flag comes from shared wii.css wordmark (Wii Sports logo clone Ignas picked 10-27); setup page has no gradient text"
+      }
+    ]
+  }
+}

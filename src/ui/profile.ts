@@ -82,4 +82,4 @@ $("#delData").onclick=async()=>{
   alert(t("prof.delDone"));
   location.replace(location.pathname);
 };
-$("#appVer").textContent=`NovaCore ${APP_VERSION} · Samsung Solve for Tomorrow 2026`;
+$("#appVer").textContent=`MoveClash ${APP_VERSION} · Samsung Solve for Tomorrow 2026`;

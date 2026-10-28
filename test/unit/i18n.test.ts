@@ -11,7 +11,7 @@ const keys=Object.keys(lt) as (keyof typeof lt)[];
 const params=(s:string)=>[...new Set([...s.matchAll(/\{(\w+)\}/g)].map(m=>m[1]))].sort().join(",");
 const norm=(s:string)=>s.replace(/\s+/g," ").trim();
 // not copy: brand, player tags, codes, the TV host (cast.ts fills it), units without words
-const KEEP=/^(NovaCore|Nova|Core|Move|Clash|P1|P2|VS|REC|LT|EN|Android|iPhone|HDMI|AB12CD|ABC123|\S+\.\S+\/#\/\S+|[\d\s:×+·/.,–-]*)$/;
+const KEEP=/^(MoveClash|Nova|Core|Move|Clash|P1|P2|VS|REC|LT|EN|Android|iPhone|HDMI|AB12CD|ABC123|\S+\.\S+\/#\/\S+|[\d\s:×+·/.,–-]*)$/;
 
 describe("dictionaries",()=>{
   it("lt and en have identical key sets",()=>expect(Object.keys(en).sort()).toEqual([...keys].sort()));

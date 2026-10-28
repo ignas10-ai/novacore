@@ -20,17 +20,18 @@
 
 :root{
   /* ground + ink */
-  --bg:#fff;
+  --bg:#EEF1F5;          /* cool light grey: white cards stand out (10-28: "per daug balta") */
   --surface:#fff;
-  --surface-2:#F1F3F5;   /* sunken fills, separators */
+  --surface-2:#E3E8EE;   /* sunken fills, separators */
   --ink:#2F343B;         /* graphite: text, dark fills (never pure black) */
   --ink-2:#454B53;       /* raised navy (chips on navy) */
   --fg:var(--ink);
   --fg-mute:#585E66;     /* 6.4:1 on white */
-  --fg-faint:#6B7076;    /* 4.9:1 on white */
+  --fg-faint:#5F646B;    /* 4.9:1 on --bg */
   --line:color-mix(in srgb,var(--ink) 12%,transparent);
   --line-2:color-mix(in srgb,var(--ink) 20%,transparent);
   /* brand */
+  --red-hi:#F04A55;      /* top of the glossy red gradients */
   --red:#E8273A;         /* P1, main CTAs (white label >=18px bold) */
   --red-deep:#D21F32;    /* red surfaces with small white text (4.5:1) */
   --red-ink:#B3121F;     /* red as small text */
@@ -211,7 +212,7 @@ section>.sec-title,section>.sec-head{margin-bottom:12px}
 /* ---------- buttons ---------- */
 .cta{margin-top:auto;display:flex;flex-direction:column;gap:12px;padding-top:6px}
 .go{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:62px;padding:0 24px;border:var(--bw) solid var(--ol);border-radius:20px;text-decoration:none;--ic:26px;
-  background:linear-gradient(180deg,#F04A55,var(--red));color:var(--on-color);border-color:transparent;border-radius:var(--r-pill);
+  background:linear-gradient(180deg,var(--red-hi),var(--red));color:var(--on-color);border-color:transparent;border-radius:var(--r-pill);
   box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 4px 0 var(--red-ink),0 8px 16px color-mix(in srgb,var(--red) 28%,transparent);font:900 26px/1.1 var(--disp)}
 .go>svg,.go [data-icon] svg{stroke-width:2.8}
 .go.alt{background:var(--surface);color:var(--ink);box-shadow:var(--sh);min-height:54px;font:900 17px/1.15 var(--body);--ic:20px;border-radius:18px}
@@ -1330,9 +1331,9 @@ body[data-view="screen"] .tabbar,body[data-view="screen"] .fs{display:none}
 /* the grey bevelled "Wii" half + red half, after the Wii Sports box logo Ignas picked */
 .brand-mark{font-size:clamp(44px,14vw,60px);letter-spacing:-.03em;line-height:1;background:linear-gradient(180deg,#A9ADB1 10%,#767B80 60%,#9A9EA2);-webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(0 1px 0 #fff) drop-shadow(0 2px 1px rgba(0,0,0,.12))}
-.brand-mark b{font-weight:inherit;background:linear-gradient(180deg,#F04A55,var(--red-ink));-webkit-background-clip:text;background-clip:text}
+.brand-mark b{font-weight:inherit;background:linear-gradient(180deg,var(--red-hi),var(--red-ink));-webkit-background-clip:text;background-clip:text}
 .pics{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
-.pic{display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:linear-gradient(180deg,#F04A55,var(--red-deep));color:#fff;
+.pic{display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:linear-gradient(180deg,var(--red-hi),var(--red-deep));color:#fff;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -2px 0 rgba(0,0,0,.1)}
 .pic svg{width:28px;height:28px}
 a.pic{text-decoration:none}a.pic:active{scale:.94}
@@ -1363,7 +1364,7 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 .q-ic{background:color-mix(in srgb,var(--red) 9%,#fff);color:var(--red-deep)}
 .rank-card{background:var(--surface);color:var(--ink)}
 .rank-card .rank-txt small,.rank-card .goal-lbl{color:var(--fg-mute)}
-.rank-ic{background:linear-gradient(180deg,#F04A55,var(--red-deep));color:#fff;border-color:transparent}
+.rank-ic{background:linear-gradient(180deg,var(--red-hi),var(--red-deep));color:#fff;border-color:transparent}
 .streak-pill{background:var(--surface);color:var(--ink)}.streak-pill.hot [data-icon]{color:var(--red)}
 #games .sp-tile-art{align-self:stretch;width:100%}
 .goal-bar i{background:var(--surface-2);border-width:1.5px}.goal-bar i.on{background:var(--red)}
@@ -1377,7 +1378,7 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 .pl-card.on{border-color:var(--red);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 18%,transparent)}
 .pl-card.on .pl-foot{background:var(--red-tint);color:var(--red-ink)}
 .pl-check{background:var(--red);color:#fff;border-color:transparent}
-.screen .sp-pb-ic{background:linear-gradient(180deg,#F04A55,var(--red-deep));color:#fff;border-color:transparent;border-radius:12px}
+.screen .sp-pb-ic{background:linear-gradient(180deg,var(--red-hi),var(--red-deep));color:#fff;border-color:transparent;border-radius:12px}
 .screen .sp-how li>span:first-child{background:var(--red-tint);color:var(--red-deep);border-color:transparent}
 /* game setup heroes: the real game frame instead of the illustrated banner (boxing keeps its art, it plays over the camera) */
 .screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero){border:var(--bw) solid var(--ol);border-radius:14px;box-shadow:none}
@@ -1399,7 +1400,7 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 #sprintEnd{--res-scene:url(/scenes/sp.webp)}#hdEnd{--res-scene:url(/scenes/hd.webp)}#ljEnd{--res-scene:url(/scenes/lj.webp)}
 #bwEnd{--res-scene:url(/scenes/bw.webp)}#skEnd{--res-scene:url(/scenes/sk.webp)}#wlEnd{--res-scene:url(/scenes/wl.webp)}
 .screen .sp-res-head,.screen .sp-res-head:is([data-w="0"],[data-w="1"],[data-w="2"]){border:var(--bw) solid var(--ol);border-radius:14px;box-shadow:none;color:#fff;
-  background:linear-gradient(0deg,rgba(0,0,0,.62),rgba(0,0,0,.08) 75%),var(--res-scene,linear-gradient(180deg,#F04A55,var(--red-deep))) 50% 50%/cover no-repeat}
+  background:linear-gradient(0deg,rgba(0,0,0,.62),rgba(0,0,0,.08) 75%),var(--res-scene,linear-gradient(180deg,var(--red-hi),var(--red-deep))) 50% 50%/cover no-repeat}
 .screen .sp-res-head :is(.wl,p){color:#fff}
 .screen .sp-res-head h2{font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,.4)}
 .screen .sp-place{border:0;background:var(--surface-2);color:var(--fg-mute)}
@@ -1407,7 +1408,7 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 .screen .sp-row:first-child{border-color:var(--red);background:color-mix(in srgb,var(--red) 5%,#fff)}
 /* exercise game results (#end): flat red, no rays */
 .res-burst{display:none}
-.res-bg{background:linear-gradient(180deg,#F04A55,var(--red-deep))}
+.res-bg{background:linear-gradient(180deg,var(--red-hi),var(--red-deep))}
 #end[data-w="2"] .res-bg{background:linear-gradient(180deg,#4A80FF,var(--blue-ink))}
 #end[data-w="0"] .res-bg{background:linear-gradient(180deg,#5B6168,var(--ink))}
 #end[data-w="0"] .res-head,#end[data-w="0"] .res-head .wl,#end[data-w="0"] #endsub{color:#fff}
