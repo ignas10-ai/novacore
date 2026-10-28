@@ -1,6 +1,7 @@
 // Iečio metimas (src/javelin/logic.ts): distance model, hand-pick rings, swing / line rules, turn rotation and the
 // total-of-three ranking. Synthetic landmarks mirror the bowling camera-control tests (the e2e camera cannot throw).
 import {describe,it,expect} from "vitest";
+import {readFileSync} from "node:fs";
 import {
   LINE_M,D_MAX,EARLY_M,LIMIT_S,GRACE_S,MIN_T,H_MAX,
   throwDist,throwScore,readBody,activeHand,newHandPick,updateHandPick,HAND_FILL_S,
@@ -16,18 +17,14 @@ function runTo(cad:number,x:number,hz=60){
   while(a.state==="run"&&a.r.x<x&&t<30){t+=dt;while(t>=next){stepAt(a,next,leg);leg^=1;next+=1/cad}tick(a,t,dt)}
   return {a,t};
 }
-// one synthetic forward swing: hold high (h), then pull the wrist down/forward (z toward the camera) fast
-function swing(a:Attempt,h=.55,start?:number){
-  const t0=start??a.t+.02;
-  const frames:Arm[]=[
-    {t:t0,x:0,h,z:0},
-    {t:t0+.05,x:.02,h:h+.02,z:.03},
-    {t:t0+.10,x:.15,h:h-.05,z:-.05},
-    {t:t0+.15,x:.28,h:0,z:-.20},
-  ];
-  let ev:""|"ok"|"foul"|"early"="";
-  for(const f of frames){ev=throwArm(a,f);if(ev)break}
-  return ev;
+// one synthetic throw: a steady 0.35 s hold at h, then a fast forward/down swing (z toward the camera)
+function swing(a:Attempt,h=.55){
+  const t0=a.t+.02;
+  let ev="" as ""|"ok"|"foul"|"early";
+  for(let i=0;i<7;i++){ev=throwArm(a,{t:t0+i*.05,x:0,h,z:0});if(ev)return ev}
+  const t1=t0+.35;
+  ev=throwArm(a,{t:t1,x:.12,h:h-.10,z:-.05});if(ev)return ev;
+  return throwArm(a,{t:t1+.05,x:.30,h:h-.55,z:-.20});
 }
 
 describe("distance model",()=>{
@@ -138,7 +135,8 @@ describe("attempt: line rules and swing",()=>{
   });
   it("swings in the first 0.6 s are ignored",()=>{
     const {a}=runTo(3,LINE_M-1);
-    expect(swing(a,.55,MIN_T/2)).toBe("");
+    expect(throwArm(a,{t:MIN_T/2,x:0,h:.55,z:0})).toBe("");
+    expect(throwArm(a,{t:MIN_T/2+.05,x:.30,h:0,z:-.20})).toBe("");
   });
   it("a held wrist (no forward swing) never releases",()=>{
     const {a}=runTo(3,LINE_M-.5);
@@ -146,6 +144,66 @@ describe("attempt: line rules and swing",()=>{
     for(let i=0;i<10;i++)ev=throwArm(a,{t:a.t+.02+i*.05,x:0,h:.45,z:0});
     expect(ev).toBe("");
     expect(a.state).toBe("run");
+  });
+  it("running with the arm held above the shoulder never throws (the reported bug)",()=>{
+    const {a}=runTo(3,LINE_M-.5);
+    const t0=a.t+.02;
+    let ev="" as ""|"ok"|"foul"|"early";
+    for(let i=0;i<24;i++){
+      const h=.30+.06*Math.sin(i*1.7);
+      ev=throwArm(a,{t:t0+i*.05,x:.02*Math.sin(i),h,z:0});
+      if(ev)break;
+    }
+    expect(ev).toBe("");
+    expect(a.state).toBe("run");
+  });
+  it("a small fast running bounce cannot release the javelin",()=>{
+    const {a}=runTo(3,LINE_M-.5);
+    const t0=a.t+.02;
+    for(let i=0;i<7;i++)throwArm(a,{t:t0+i*.05,x:0,h:.30,z:0}); // steady hold
+    let ev="" as ""|"ok"|"foul"|"early";
+    for(let i=0;i<8;i++){
+      const h=i%2?.10:.30; // 0.2 torso bounce at ~4 torso/s
+      ev=throwArm(a,{t:t0+.35+i*.05,x:.02,h,z:0});
+      if(ev)break;
+    }
+    expect(ev).toBe("");
+    expect(a.state).toBe("run");
+  });
+  it("a real swing with no MediaPipe z releases on down travel",()=>{
+    const {a}=runTo(3,LINE_M-.5);
+    const t0=a.t+.02;
+    for(let i=0;i<7;i++)expect(throwArm(a,{t:t0+i*.05,x:0,h:.60,z:0})).toBe("");
+    expect(throwArm(a,{t:t0+.35,x:.12,h:.35,z:0})).toBe("");
+    expect(throwArm(a,{t:t0+.40,x:.25,h:.05,z:0})).toBe("ok");
+    expect(a.state).toBe("fly");
+    expect(a.take!.h).toBeGreaterThan(.5);
+  });
+  it("a slow lower of the javelin arm never releases",()=>{
+    const {a}=runTo(3,LINE_M-.5);
+    const t0=a.t+.02;
+    for(let i=0;i<7;i++)throwArm(a,{t:t0+i*.05,x:0,h:.30,z:0});
+    let ev="" as ""|"ok"|"foul"|"early";
+    for(let i=1;i<=4;i++){ev=throwArm(a,{t:t0+.35+i*.1,x:0,h:.30-i*.05,z:0});if(ev)break}
+    expect(ev).toBe("");
+  });
+  it("real running clips never throw, on either hand (the phone bug)",()=>{
+    const toLm=(p:number[][]):Lm[]=>p.map(([x,y,visibility,z=0])=>({x,y,z,visibility}));
+    for(const f of ["knees","knees2","knees3"]){
+      const d=JSON.parse(readFileSync(new URL(`../../tools/fixtures/${f}.json`,import.meta.url),"utf8"));
+      for(const side of [0,1] as const){
+        const a=newAttempt(side);a.r.x=LINE_M-1; // a throw release would score here, not "early"
+        let ev="" as ""|"ok"|"foul"|"early";
+        for(const fr of d.frames){
+          const lm=fr.p?.[0];if(!lm)continue;
+          const b=readBody(toLm(lm),1);if(!b)continue;
+          const w=b.wr[side];if(!w.ok)continue;
+          ev=throwArm(a,{t:fr.t,x:w.xr,h:w.h,z:w.z});
+          if(ev)break;
+        }
+        expect(ev,`${f} side ${side}`).toBe("");
+      }
+    }
   });
   it("approach speed is the best of the last 0.6 s before the swing",()=>{
     const {a,t}=runTo(3,LINE_M-1);
