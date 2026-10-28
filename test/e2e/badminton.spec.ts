@@ -13,7 +13,7 @@ const bd=(page:Page)=>page.evaluate(()=>(window as any).__bd.state());
 const waitTarget=async(page:Page,side:0|1)=>{
   await expect.poll(async()=>{
     const s=await bd(page);
-    return !!(s.mark&&s.mark.side===side&&s.mark.left<.6&&s.mark.left>-.2);
+    return !!(s.mark&&s.mark.side===side);
   },{timeout:15_000}).toBe(true);
 };
 

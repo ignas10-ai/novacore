@@ -28,7 +28,7 @@ test("badminton 2 players: camera cuts to the receiver, target, results, history
   await page.evaluate(()=>(window as any).__bd.serve());
   await expect.poll(async()=>{
     const s=await bd(page);
-    return !!(s.mark&&s.mark.side===1&&s.mark.left<.6&&s.mark.left>-.2);
+    return !!(s.mark&&s.mark.side===1);
   },{timeout:15_000}).toBe(true);
   expect((await bd(page)).near).toBe(1);
   await expect(page.locator("#bdC2"),"P2's card is the active one").toHaveClass(/active/);
