@@ -859,6 +859,7 @@ export const en:Record<Key,string>={
   "bw.standings":"Scores",
   "bw.results":"Results",
   "bw.left":"{n} left",
+  "bw.sum":"Total",
   "bw.total":"{n} pts",
   "bw.soloSub":"Your score over {n} frames",
   "bw.strikes":"strikes: {n}",

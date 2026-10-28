@@ -1,5 +1,12 @@
 # Pakeitimų žurnalas
 
+## 2026-10-28 — Boulingas: rankos burbulai kaip iečio metime + rėmų rezultatų lentelė (#45, šaka `claude/45-bowling-pick-table`)
+
+- **Rankos pasirinkimas:** vietoje mažos apatinės kortelės su dviem mažais ratais dabar yra toks pat didelis pasirinkimo ekranas kaip „Iečio metime“ (`#bwPick`): kamera persikelia į centrą, kairėje ir dešinėje – dideli burbulai su 2 s pildomu žiedu, rankos pavadinimu ir procentais. Aktyvi pusė pakyla ir pasižymi, pilna pasidaro geltona; per 2 s galima persigalvoti ir pereiti į kitą ranką. Pasirinkus burbulas trumpai lieka pilnas, tada ekranas užsidaro ir grįžta taikymosi kortelė. HUD/rezultatų lentelė pasirinkimo metu paslepiama. (`#bwPickL/R`, `#bwRingL/R`, `#bwPctL/R`.)
+- **Rėmų lentelė:** viršutinis HUD nebėra tik žaidėjų kortelės su eilute žymių – dabar rodoma tikra boulingo rezultatų lentelė (`#bwBoard`, `<table>`): stulpeliai 1..N raundų (3 arba 5), paskutiniame – 3 metimų vietos, dešinėje – suma. Kiekviename langelyje matomos metimų žymės (`X`, `/`, `–`, skaičiai) ir to raundo sukauptas rezultatas; dabartinis žaidėjas ir raundas paryškinami. Lentelė telpa 1–4 žaidėjams 360 px portretu ir telefonu gulsčiai; gulsčiai kameros peržiūra perkelta į apatinį dešinį kampą, kad neuždengtų lentelės ir kūgių.
+- **Patikrinta:** `npm test` – **474 testai** (46 boulingo; naujų logikos testų nereikėjo, nes keitėsi tik DOM/prezentacija), `npm run build`, `npx playwright test test/e2e/bowling.spec.ts` (2 žaidėjai × 3 raundai; papildomai tikrinami burbulai 0/50/75 %, aktyvi pusė, lentelės 5 antraštės / 2 eilutės / 6 langeliai, `3+3` žymės ir sukauptas 6), headless kadrai 390×844, 360×780, 844×390 ir 780×360 su 2 ir 4 žaidėjais / 5 raundais. **Dar reikia tikro telefono:** ar burbulai ir 2 s persijungimas patogūs realiai rankai, ar lentelė 360 px / 4 žaidėjų ekrane įskaitoma, ar gulsčiai kamera netrukdo.
+- **Pastaba:** rezultatų ekrane jau buvusios `.bw-fcell` dėžutės paliktos; viršutinė lentelė naudoja atskirus `.bw-tframe` langelius.
+
 ## 2026-10-28 — Iečio metimas: bėgimo aptikimas ir metimo gestas (#47, šaka `martynas/47-ietis-gestai`)
 
 - **Bėgimas:** javelin loop'as dabar `step(...,"knees")` kviečia **kiekvieną kameros kadrą**, kaip sprintas, o ne tik tada, kai MediaPipe grąžina naują pozų masyvą. `tick()`/`advance()` lieka kartą per ekrano kadrą; tai pašalina užstrigusį „bėgimo“ jausmą.
