@@ -20,6 +20,7 @@ export interface Game{
   skiRaw?:(number|null)[];skiPen?:number[];skiGates?:number[];skiMiss?:number[];skiHit?:number[]; // skiing (src/ski, times = final incl. penalties)
   bdScore?:number[];bdTarget?:number;bdRallies?:number;bdLongest?:number; // badminton (src/badminton, score stays [0,0])
   bdStrokes?:{serve:number;clear:number;drop:number;smash:number}[]; // badminton: serve/clear/drop/smash counts per player
+  bdJumps?:number[]; // badminton: jump smashes per player
 }
 export const WEEK_GOAL=5;
 

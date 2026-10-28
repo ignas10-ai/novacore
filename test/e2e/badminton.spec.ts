@@ -1,7 +1,8 @@
 // Badmintonas, solo against the bot: Pradžia tile -> setup (1 player, 11 points) -> ready gate (fake camera, arms up)
 // -> hand-pick overlay -> serve -> 11 points through the hooks -> results -> history row -> back to setup -> Pradžia.
-// The fake camera sees one mascot, so the e2e uses solo; the 2-player hand pick and the real gesture classifiers have
-// their own unit tests (test/unit/badminton.test.ts). The flight physics is deterministic and unit-tested too.
+// A second test checks the third-person target: the bot serves, the red bubble appears on P1's side, the character
+// auto-runs there, a return at the contact is accepted and a jump + smash counts as a jump shot. The fake camera sees
+// one mascot, so the 2-player camera cut has its own spec with CAM2 (badminton-2p.spec.ts).
 import {test,expect,tap,screen,state,savedGames,a11y} from "./fixtures.ts";
 import type {Page} from "@playwright/test";
 
@@ -9,6 +10,49 @@ test.setTimeout(6*60_000);
 test.use({trace:"off"}); // the trace competes with MediaPipe for the software GPU (same as sprint/duel/bowling)
 
 const bd=(page:Page)=>page.evaluate(()=>(window as any).__bd.state());
+const waitTarget=async(page:Page,side:0|1)=>{
+  await expect.poll(async()=>{
+    const s=await bd(page);
+    return !!(s.mark&&s.mark.side===side&&s.mark.left<.6&&s.mark.left>-.2);
+  },{timeout:15_000}).toBe(true);
+};
+
+test("badminton third person: target bubble, auto-run, return, jump smash",async({page})=>{
+  await page.goto("/#/");
+  await tap(page,".bd-tile","Badmintonas tile on Pradžia");
+  await tap(page,'[data-bd="1"]',"1 player (vs the bot)");
+  await tap(page,"#bdGo","Į aikštę");
+  await screen(page,"bdRun").toBeVisible({timeout:120_000});
+  await page.evaluate(()=>(window as any).__bd.script(true)); // the fake camera must not swing on its own
+  await page.evaluate(()=>(window as any).__bd.pick(0,1));
+  await expect.poll(async()=>(await bd(page)).phase,{timeout:10_000}).toBe("serve");
+
+  // the bot serves to P1: the view stays behind P1, the red bubble marks the contact and the character auto-runs
+  await page.evaluate(()=>(window as any).__bd.tossServe(1));
+  await waitTarget(page,0);
+  const s1=await bd(page);
+  expect(s1.near,"solo is always behind P1").toBe(0);
+  expect(s1.mark.y).toBeGreaterThan(0);
+  expect(s1.mark.x).toBeGreaterThanOrEqual(-2.59);
+  expect(s1.mark.x).toBeLessThanOrEqual(2.59);
+  expect(s1.hint,"the first target triggers the swing hint").toBe(true);
+  await expect.poll(async()=>(await bd(page)).run[0].z,{timeout:5_000}).toBeGreaterThan(2); // the character runs there
+  await page.screenshot({path:"test-results/badminton-target.png"});
+
+  // a return at the marked contact (the timing window itself is unit-tested); the bot is the next receiver
+  expect(await page.evaluate(()=>(window as any).__bd.hitNow(0,"clear"))).toBe(true);
+  await expect.poll(async()=>(await bd(page)).strokes[0].clear,{timeout:10_000}).toBeGreaterThanOrEqual(1);
+
+  // jump + smash = a counted jump shot (start a fresh serve so the rally cannot end under us)
+  await page.evaluate(()=>(window as any).__bd.point(0));
+  await expect.poll(async()=>(await bd(page)).phase,{timeout:15_000}).toBe("serve");
+  await page.evaluate(()=>(window as any).__bd.tossServe(1));
+  await waitTarget(page,0);
+  await page.evaluate(()=>(window as any).__bd.jump(0));
+  await page.evaluate(()=>(window as any).__bd.hitNow(0,"smash"));
+  await expect.poll(async()=>(await bd(page)).jumps[0],{timeout:10_000}).toBe(1);
+  expect((await bd(page)).jumpFx[0]).toBeGreaterThanOrEqual(0);
+});
 
 test("badminton solo to 11: hand pick, serve, points, results, history, back",async({page},info)=>{
   await page.goto("/#/");
@@ -29,6 +73,7 @@ test("badminton solo to 11: hand pick, serve, points, results, history, back",as
   expect((await bd(page)).phase).toBe("pick");
 
   await page.evaluate(()=>(window as any).__bd.pick(0,1)); // left hand, start the serve
+  await page.evaluate(()=>(window as any).__bd.script(true)); // deterministic: the fake camera must not swing
   await expect.poll(async()=>(await bd(page)).phase,{timeout:10_000}).toBe("serve");
   await expect(page.locator("#bdCall")).toHaveClass(/is-serve/);
   await expect(page.locator("#bdPick")).toBeHidden();

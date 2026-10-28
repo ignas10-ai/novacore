@@ -23,6 +23,19 @@ export const HIT_COOL=0.18;    // s: the same side cannot touch the shuttle twic
 export const SERVE_TIMEOUT=7;  // s: no serve swing -> auto serve (the game must not stall)
 export const SMASH_MIN_H=2.35; // m: a smash below this is a weak, net-bound chop
 
+// ---------- third-person target / swing timing / jump ----------
+export const CONTACT_H=2.6;    // m: the ideal height where the receiver meets the shuttle
+export const TARGET_S=1.35;    // s: the shrinking ring covers this much time before the contact
+export const HIT_EARLY=0.60;   // s: a swing earlier than this is ignored (the ring is not close yet)
+export const HIT_LATE=0.26;    // s: a swing this long after the contact is ignored
+export const HIT_IDEAL=0.04;   // s: the detection lands on the shuttle at the contact (the ring at the bubble)
+export const JUMP_POWER=1.12;  // jump smash/clear power multiplier
+export const JUMP_WINDOW=0.70; // s: a swing within this after a detected jump is a jump shot
+export const JUMP_UP=0.10;     // torso units the hip must rise above its slow baseline
+export const JUMP_FOOT=0.035;  // torso units both ankles must rise above their own floors
+export const JUMP_HOLD=0.07;   // s above the threshold before a jump counts
+export const JUMP_COOL=0.55;   // s between two jumps
+
 // ---------- flight model ----------
 export const G=9.81;           // m/s²
 export const DRAG_XZ=2.1;      // s: horizontal shuttle drag time constant (real shuttles slow down fast)
@@ -55,14 +68,15 @@ export type FlightEvent=
 
 const clamp=(v:number,a:number,b:number)=>Math.min(b,Math.max(a,v));
 // the vx/vz/vy of a shot from the current shuttle position; `high` = the shuttle is high enough for a real smash
-function shot(s:Shuttle,side:Side,stroke:Stroke,power:number,aim:number){
+// jump = a jump smash: steeper and faster (the character leaves the floor, the power comes from the body)
+function shot(s:Shuttle,side:Side,stroke:Stroke,power:number,aim:number,jump=false){
   const dir=side===0?1:-1, high=s.y>=SMASH_MIN_H, p=clamp(power,.8,1.3), a=clamp(aim,-1,1);
   let vy=0,vz=0,vx=0;
   switch(stroke){
     case "serve":  vy=8.6*p; vz=dir*7.3*p; vx=a*1.1; break;
     case "clear":  vy=(s.y<1.1?7.2:8.5)*p; vz=dir*6.2*p; vx=a*2.5; break;
     case "drop":   vy=(s.y>2?2.4:3.1)*p; vz=dir*4.6*p; vx=a*2.1; break;
-    case "smash":  vy=(high?-2.8:-1.0)*p; vz=dir*(high?11.8:7.0)*p; vx=a*3.0; break;
+    case "smash":  vy=(high?(jump?-3.6:-2.8):-1.0)*p; vz=dir*(high?(jump?12.4:11.8):7.0)*p; vx=a*3.0; break;
   }
   return {vx,vy,vz};
 }
@@ -76,9 +90,9 @@ export function serveShuttle(s:Shuttle,side:Side,power=1,aim=0){
   s.live=true;s.t=0;s.serve=true;s.from=side;
 }
 // a return; false when the shuttle is not on that side / too high / too soon
-export function hitShuttle(s:Shuttle,side:Side,stroke:Stroke,power=1,aim=0):boolean{
+export function hitShuttle(s:Shuttle,side:Side,stroke:Stroke,power=1,aim=0,jump=false):boolean{
   if(!canHit(s,side))return false;
-  const v=shot(s,side,stroke,power,aim);
+  const v=shot(s,side,stroke,power,aim,jump);
   s.vx=v.vx;s.vy=v.vy;s.vz=v.vz;
   s.t=0;s.serve=false;s.from=side;
   return true;
@@ -117,20 +131,48 @@ export function stepShuttle(s:Shuttle,dt:number):FlightEvent|null{
 // side that would win the rally if the shuttle landed now (used by the HUD / tests, not the physics)
 export const receiverOf=(s:Shuttle):Side=>sideOfZ(s.z);
 
+// ---------- the receiver's contact point (the red bubble) ----------
+export interface Contact{x:number;z:number;y:number;t:number}
+// Simulate the rest of the flight on a copy and return the point/time where the receiver can meet it (the first descent
+// through CONTACT_H on their half). A shot that will hit the net or land out returns null: there is nothing to chase.
+export function predictContact(s:Shuttle,side:Side,contactH=CONTACT_H,maxT=5):Contact|null{
+  if(!s.live)return null;
+  const c:Shuttle={...s};
+  let contact:Contact|null=null,t=0;
+  const n=Math.ceil(maxT*120);
+  for(let i=0;i<n;i++){
+    const ev=stepShuttle(c,1/120);t+=1/120;
+    if(!contact&&sideOfZ(c.z)===side&&c.vy<0&&c.y<=contactH&&c.y>0.15)contact={x:c.x,z:c.z,y:c.y,t};
+    if(ev){
+      if(ev.type==="net")return null; // a net shot is already lost
+      if(ev.fault||ev.side!==side||!ev.in)return null; // out / short / on the hitter's side: let it go
+      return contact??{x:ev.x,z:ev.z,y:0,t};
+    }
+  }
+  return contact;
+}
+// How good a swing is at tLeft seconds from the contact: 0 = outside the window, 1 = perfect timing
+// (the swing classifier fires a little after the movement starts, so the ideal is at/just before the contact).
+export function hitQuality(tLeft:number):number{
+  if(tLeft>HIT_EARLY||tLeft<-HIT_LATE)return 0;
+  return clamp(1-Math.abs(tLeft-HIT_IDEAL)/0.6,0.42,1);
+}
+
 // ---------- match ----------
 export interface StrokeCounts{serve:number;clear:number;drop:number;smash:number}
 export interface Match{
   target:number;score:[number,number];server:Side;
   rally:number;longest:number;rallies:number;lastRally:number;
-  strokes:[StrokeCounts,StrokeCounts];
+  strokes:[StrokeCounts,StrokeCounts];jumps:[number,number];
   done:boolean;winner:Side|-1;
 }
 const counts=():StrokeCounts=>({serve:0,clear:0,drop:0,smash:0});
 export const newMatch=(target=11):Match=>({
   target:target===21?21:11,score:[0,0],server:0,rally:0,longest:0,rallies:0,lastRally:0,
-  strokes:[counts(),counts()],done:false,winner:-1,
+  strokes:[counts(),counts()],jumps:[0,0],done:false,winner:-1,
 });
 export function countStroke(m:Match,side:Side,stroke:Stroke){m.strokes[side][stroke]++}
+export function countJump(m:Match,side:Side){m.jumps[side]++}
 // a point ends the rally; the winner serves next (as in the idea). Returns true when the match is over.
 export function addPoint(m:Match,winner:Side):boolean{
   if(m.done)return m.done;
@@ -162,6 +204,31 @@ export interface Body{cx:number;cy:number;sx:number;sy:number;lx:number;rx:numbe
 export interface Wrist{ok:boolean;x:number;y:number;out:number;up:boolean}
 export interface Ctrl{body:Body;wrists:[Wrist,Wrist]}
 const ok=(p:Lm|undefined)=>!!p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&(p.visibility??1)>VIS;
+
+// ---------- physical jump (a standing vertical jump in front of the fixed camera) ----------
+// The hip and both ankles rise above their slow baselines (the camera does not move). A slight bob never passes the
+// thresholds; the baselines follow the body slowly so a real jump is not absorbed. Re-arms after landing + JUMP_COOL.
+export interface JumpState{base:number;floors:[number,number];last:number;upAt:number;lastJump:number;seen:boolean}
+export const newJumpState=():JumpState=>({base:0,floors:[0,0],last:0,upAt:0,lastJump:-1,seen:false});
+export function readJump(lm:Lm[]|null|undefined,st:JumpState,now:number):boolean{
+  if(!lm)return false;
+  const s1=lm[11],s2=lm[12],h1=lm[23],h2=lm[24],a1=lm[27],a2=lm[28];
+  if(!ok(s1)||!ok(s2)||!ok(h1)||!ok(h2)||!ok(a1)||!ok(a2))return false;
+  const hip=(h1!.y+h2!.y)/2, u=Math.abs(hip-(s1!.y+s2!.y)/2)||.3;
+  const al=a1!.y,ar=a2!.y;
+  if(!st.seen){st.base=hip;st.floors=[al,ar];st.last=now;st.seen=true;return false}
+  const dt=Math.min(.25,Math.max(0,now-st.last));st.last=now;
+  const lift=(st.base-hip)/u;
+  const foot=Math.min((st.floors[0]-al)/u,(st.floors[1]-ar)/u);
+  // only move the baselines while the player is not clearly airborne
+  if(lift<JUMP_UP*.6)st.base+=(hip-st.base)*(1-Math.exp(-dt/.9));
+  if(foot<JUMP_FOOT*.5){st.floors[0]+=(al-st.floors[0])*.2;st.floors[1]+=(ar-st.floors[1])*.2}
+  const up=(lift>=JUMP_UP&&foot>=JUMP_FOOT)||lift>=JUMP_UP*1.5; // the hip fallback covers cropped feet
+  if(!up){st.upAt=0;return false}
+  if(!st.upAt)st.upAt=now;
+  if(now-st.upAt>=JUMP_HOLD&&now-st.lastJump>=JUMP_COOL){st.upAt=0;st.lastJump=now;return true}
+  return false;
+}
 
 // mirrored screen space in frame-height units (the same convention as boxing/bowling): X = (1-x)*ar, Y = y
 export function control(lm:Lm[]|null|undefined,ar:number):Ctrl|null{
