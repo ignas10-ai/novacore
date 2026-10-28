@@ -333,16 +333,19 @@ function frame(now:number){
   if(ps&&ps.length){
     lm=ps[0].lm;
     S.st[0].ar=detCv.width/detCv.height||1;
+    // Sprint-style running detection: call step() on EVERY camera frame (also when MediaPipe is throttled and
+    // sampleCamera() returns the previous pose array). The old "fresh pose only" gate made the run feel unresponsive.
+    const st=S.st[0],up0=st.leg?.[0];
+    if(step(st,lm,"knees",now))knee(now,st.leg[0]&&!up0?0:1);
     const fresh=ps!==lastPs;lastPs=ps;
     if(fresh){
       if(phase==="pick"){
         lastBody=readBody(lm,S.st[0].ar);lastPoseAt=now;
       }else if(phase==="run"){
-        const st=S.st[0],up0=st.leg?.[0];
-        if(step(st,lm,"knees",now))knee(now,st.leg[0]&&!up0?0:1);
+        // The throw gesture only needs fresh pose data (velocities); the arm is held, not re-sampled on stale frames.
         const body=readBody(lm,S.st[0].ar);
         const w=body?.wr[A.side];
-        const armMsg=!w||!w.ok?tr("jv.noHand"):w.h<-0.2?tr("jv.lowArm"):"";
+        const armMsg=!w||!w.ok?tr("jv.noHand"):w.h<-0.06?tr("jv.lowArm"):"";
         if(armEl.textContent!==armMsg){armEl.textContent=armMsg;armEl.hidden=!armMsg}
         if(!scripted){
           const arm=w&&w.ok?{t:(now-t0)/1000,x:w.xr,h:w.h,z:w.z}:null;

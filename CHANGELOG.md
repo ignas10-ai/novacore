@@ -1,5 +1,11 @@
 # Pakeitimų žurnalas
 
+## 2026-10-28 — Iečio metimas: bėgimo aptikimas ir metimo gestas (#47, šaka `martynas/47-ietis-gestai`)
+
+- **Bėgimas:** javelin loop'as dabar `step(...,"knees")` kviečia **kiekvieną kameros kadrą**, kaip sprintas, o ne tik tada, kai MediaPipe grąžina naują pozų masyvą. `tick()`/`advance()` lieka kartą per ekrano kadrą; tai pašalina užstrigusį „bėgimo“ jausmą.
+- **Metimas:** `throwArm()` nebepaleidžia metimo nuo bet kokio rankos judesio. Pirmiausia ranka turi būti **ramiai laikoma** prie peties / virš jo 0,15 s (arba aiškiai už galvos / nugaros), tada reikia tikro mosto: `SWING_MIN`=3,2 vieneto/s, forward/down judesys, minimalus `RELEASE_Z`=0,10 arba `RELEASE_Y`=0,25 judesys, startas virš peties ir paleidimas ne žemiau kaip -0,35. Bėgant su ranka virš peties, nuo bėgimo bounce'o ar lėto nuleidimo metimas nebeaptinkamas; `SWING_MAX`=26 / |z|>0,9 / |h|>1,5 kadrai laikomi MediaPipe glitch'u.
+- **Patikrinta:** `npm test` – **474 testai** (24 `test/unit/javelin.test.ts`, įskaitant tikrus `knees`/`knees2`/`knees3` įrašus abiem rankoms – jie nebeturi netikrų metimų), `npx tsc --noEmit`, `npm run build`, `PW_PORT=4280 npx playwright test test/e2e/javelin.spec.ts`. **Dar reikia tikro telefono:** ar 0,15 s laikymas ir 3,2 vieneto/s slenkstis patogūs realiam mostui 2–3 m atstumu.
+
 ## 2026-10-27 — naujas sporto mini žaidimas „Iečio metimas“ (#31, Martyno idėja iš #4, šaka `martynas/31-ietis`)
 
 - **Kaip žaidžiama:** Pradžioje po „Siena“ – raudonai geltona plytelė „Iečio metimas“ (`#/ietis`). 1–4 žaidėjai meta paeiliui, prieš kamerą stovi tik metėjas. Pirmiausia reikia pasirinkti metančią ranką: ištiesk ją į savo pusę ir laikyk – atitinkamas ratas pildosi 2 s, kitas tuo metu išsikrauna; per tą laiką galima persigalvoti. Tada trumpas (14 m) įsibėgėjimas vietoje, ietį laikant prie peties / šiek tiek aukščiau, ir prie linijos mostas ranka į priekį. Pavėluotas metimas po linijos anuliuojamas. 3 bandymai, laimi didžiausia trijų metimų suma.
