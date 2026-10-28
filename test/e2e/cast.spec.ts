@@ -23,6 +23,13 @@ test("phone room -> TV board: idle, hello back, live scores, winner, code entry,
   await expect(tv.locator("#bsWaitCode")).toHaveText(code);
   await expect(page.locator("#castLive"),"phone sees the TV hello").toHaveAttribute("data-on","1",{timeout:12_000});
   await a11y(tv,"tv-wait",info);
+  // The phone publishes idle every 2 s. Turn the room off before injecting fake states, otherwise a real idle
+  // message can land while the TV assertions poll and reset scores/verdict (a slow-runner CI flake).
+  await page.bringToFront();
+  await tap(page,"#castOffBtn","Išjungti didelį ekraną");
+  await expect(page.locator("#castOff")).toBeVisible();
+  await expect(page.locator("#castCode")).toHaveText("------");
+  await expect(page.locator("#homeCast")).toHaveAttribute("data-on","0");
 
   const state=(o:object)=>({v:1,code,players:2,duration:180,round:0,mult:1,sent:Date.now(),ex:null,score:[0,0],reps:0,winner:0,...o});
   const post=(s:object)=>tv.evaluate(({code,s})=>{const c=new BroadcastChannel("novacore-screen");c.postMessage({code,state:s});c.close()},{code,s});
@@ -48,11 +55,5 @@ test("phone room -> TV board: idle, hello back, live scores, winner, code entry,
   await tv.locator("#bsCodeIn").fill(code.toLowerCase());await tv.locator("#bsConnect .go").click();
   await expect(tv).toHaveURL(new RegExp(`#/ekranas/${code}$`));
   await expect(tv.locator("#screen")).toHaveAttribute("data-phase","idle");
-
-  await page.bringToFront();
-  await tap(page,"#castOffBtn","Išjungti didelį ekraną");
-  await expect(page.locator("#castOff")).toBeVisible();
-  await expect(page.locator("#castCode")).toHaveText("------");
-  await expect(page.locator("#homeCast")).toHaveAttribute("data-on","0");
   expect(tvErrors,"TV browser errors").toEqual([]);
 });
