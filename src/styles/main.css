@@ -1380,21 +1380,8 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 .pl-check{background:var(--red);color:#fff;border-color:transparent}
 .screen .sp-pb-ic{background:linear-gradient(180deg,var(--red-hi),var(--red-deep));color:#fff;border-color:transparent;border-radius:12px}
 .screen .sp-how li>span:first-child{background:var(--red-tint);color:var(--red-deep);border-color:transparent}
-/* game setup heroes: the real game frame instead of the illustrated banner (boxing keeps its art, it plays over the camera) */
-.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero){border:var(--bw) solid var(--ol);border-radius:14px;box-shadow:none}
-.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero){background:var(--surface-2) 50% 50%/cover no-repeat}
-.screen .sp-hero{background-image:url(/scenes/sp.webp)}.screen .hd-hero{background-image:url(/scenes/hd.webp)}.screen .lj-hero{background-image:url(/scenes/lj.webp)}
-.screen .bw-hero{background-image:url(/scenes/bw.webp)}.screen .sk-hero{background-image:url(/scenes/sk.webp)}.screen .wl-hero{background-image:url(/scenes/wl.webp)}
-.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero)::before,.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero)::after{display:none}
-.screen .sp-hero>:not(.sp-hero-big,.sp-hero-sub),.screen .hd-hero>:not(.hd-hero-big,.hd-hero-sub),.screen .lj-hero>:not(.lj-hero-big,.lj-hero-sub),
-.screen .bw-hero>:not(.bw-hero-big,.bw-hero-sub),.screen .sk-hero>:not(.sk-hero-big,.sk-hero-sub),.screen .wl-hero>:not(.wl-hero-big,.wl-hero-sub){display:none}
-.screen :is(.sp-hero-big,.hd-hero-big,.lj-hero-big,.bw-hero-big,.sk-hero-big,.wl-hero-big,.bx-hero-big){font-family:var(--disp);font-weight:900;color:#fff;-webkit-text-stroke:0;text-shadow:0 2px 10px rgba(0,0,0,.45)}
-.screen :is(.sp-hero-sub,.hd-hero-sub,.lj-hero-sub,.bw-hero-sub,.sk-hero-sub,.wl-hero-sub,.bx-hero-sub){background:rgba(0,0,0,.55);color:#fff;border:0}
-/* readable titles on bright frames (snow, sand): a soft dark wash under the text */
-.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero){background-image:linear-gradient(180deg,rgba(0,0,0,.42),rgba(0,0,0,0) 62%),var(--hero-scene)}
-.screen .sp-hero{--hero-scene:url(/scenes/sp.webp)}.screen .hd-hero{--hero-scene:url(/scenes/hd.webp)}.screen .lj-hero{--hero-scene:url(/scenes/lj.webp)}
-.screen .bw-hero{--hero-scene:url(/scenes/bw.webp)}.screen .sk-hero{--hero-scene:url(/scenes/sk.webp)}.screen .wl-hero{--hero-scene:url(/scenes/wl.webp)}
-.screen :is(.sp-hero-big,.hd-hero-big,.lj-hero-big,.bw-hero-big,.sk-hero-big,.wl-hero-big){font-size:clamp(40px,12vw,60px)}
+/* game setup heroes keep their animated art (10-28: "kodėl tik boksas juda") – only the sticker frame goes */
+.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero){border:var(--bw) solid var(--ol);border-radius:14px;box-shadow:var(--sh-sm)}
 .screen .sp-how li:nth-child(n)>span:first-child{background:var(--red-tint);color:var(--red-deep);border-color:transparent}
 /* results: the game's frame behind "Laimėjo …!" (Wii results banner) instead of the sunburst */
 #sprintEnd{--res-scene:url(/scenes/sp.webp)}#hdEnd{--res-scene:url(/scenes/hd.webp)}#ljEnd{--res-scene:url(/scenes/lj.webp)}
@@ -1412,12 +1399,6 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 #end[data-w="2"] .res-bg{background:linear-gradient(180deg,#4A80FF,var(--blue-ink))}
 #end[data-w="0"] .res-bg{background:linear-gradient(180deg,#5B6168,var(--ink))}
 #end[data-w="0"] .res-head,#end[data-w="0"] .res-head .wl,#end[data-w="0"] #endsub{color:#fff}
-/* Badmintonas (Martynas #32) – same frame treatment */
-.screen .bd-hero{border:var(--bw) solid var(--ol);border-radius:14px;box-shadow:none;background:linear-gradient(180deg,rgba(0,0,0,.42),rgba(0,0,0,0) 62%),url(/scenes/bd.webp) 50% 50%/cover no-repeat}
-.screen .bd-hero::before,.screen .bd-hero::after{display:none}
-.screen .bd-hero>:not(.bd-hero-big,.bd-hero-sub){display:none}
-.screen .bd-hero-big{font-family:var(--disp);font-weight:900;color:#fff;-webkit-text-stroke:0;text-shadow:0 2px 10px rgba(0,0,0,.45);font-size:clamp(40px,12vw,60px)}
-.screen .bd-hero-sub{background:rgba(0,0,0,.55);color:#fff;border:0}
 #bdEnd{--res-scene:url(/scenes/bd.webp)}
 .screen .sp-res-head :is(h2,.wl,p,b,span:not(.rec-badge)){color:#fff}
 /* ---------- a colour per game (#38, 10-28 "per generic – daugiau spalvų"), like Switch Sports' sport colours ----------
@@ -1444,3 +1425,5 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 .cover i:first-child{grid-row:auto;grid-column:1 / -1;background-position:50% 50%}
 #games .sp-tile-art{height:auto;aspect-ratio:2/1}
 #games .sp-tile>.pic{top:8px} /* badge on the frame corner (the frame height now follows the tile width) */
+.cover{display:block;margin:0 calc(12px - var(--gutter))}
+#homeScene{display:block;width:100%;height:auto;aspect-ratio:16/9;border-radius:14px;background:#A9D3FF}

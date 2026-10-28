@@ -10,6 +10,7 @@ import {t,tn} from "../i18n/i18n.ts";
 import {onView,go} from "./router.ts";
 import {renderHomeRank} from "./social.ts";
 import {picto} from "./pictos.ts";
+import {startHomeScene} from "./homeScene.ts";
 
 function render(){
   const now=Date.now(), h=loadHist(), nick=cachedNick();
@@ -25,6 +26,7 @@ function render(){
   $("#quickFast").textContent=t(S.players===1?"home.fastSolo":"u.min1");
   renderHomeRank();
   games();
+  requestAnimationFrame(startHomeScene); // after the screen is visible, so the canvas has a size
 }
 // game tiles are injected by each game module (anywhere in #home); collect them into the grid, badge each with its
 // pictogram and mirror them as the cover's icon row. Idempotent, so new tiles (Martynas' javelin, badminton) just appear.
