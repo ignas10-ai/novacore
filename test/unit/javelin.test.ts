@@ -170,6 +170,15 @@ describe("attempt: line rules and swing",()=>{
     expect(ev).toBe("");
     expect(a.state).toBe("run");
   });
+  it("a half-range natural swing still releases (the phone report)",()=>{
+    const {a}=runTo(3,LINE_M-.5);
+    const t0=a.t+.02;
+    for(let i=0;i<8;i++)expect(throwArm(a,{t:t0+i*.05,x:0,h:.15,z:0})).toBe("");
+    expect(throwArm(a,{t:t0+.40,x:.04,h:.08,z:-.04})).toBe("");
+    expect(throwArm(a,{t:t0+.45,x:.10,h:-.02,z:-.08})).toBe("ok");
+    expect(a.state).toBe("fly");
+    expect(a.take!.h).toBeCloseTo(.15,1);
+  });
   it("a real swing with no MediaPipe z releases on down travel",()=>{
     const {a}=runTo(3,LINE_M-.5);
     const t0=a.t+.02;
