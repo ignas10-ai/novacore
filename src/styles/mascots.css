@@ -127,3 +127,8 @@
 /* character heads (#55): sheet crop – the front view is the left third, the head the top quarter */
 span.m-avatar{position:relative;aspect-ratio:1;border-radius:50%;background:no-repeat 8% 6%/520% auto;background-color:transparent}
 span.m-avatar .m-crown{position:absolute;left:18%;top:-38%;width:64%;overflow:visible}
+/* #57 character art in place of the SVG mascot (non-exercise poses) */
+span.m-art{background:no-repeat 50% 100%/contain;filter:drop-shadow(0 8px 10px rgba(0,0,0,.3))}
+.m-art-anim{animation:m-art-bob 2.4s ease-in-out infinite}
+@keyframes m-art-bob{50%{translate:0 -3%}}
+@media (prefers-reduced-motion:reduce){.m-art-anim{animation:none}}

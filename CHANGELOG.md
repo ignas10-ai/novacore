@@ -1,5 +1,9 @@
 # Pakeitimų žurnalas
 
+## 2026-10-29 — Pilni veikėjai vietoj SVG maskotų (#57, šaka `claude/57-mascot-art`)
+
+- `mascot()` (`src/ui/mascots.ts`): visoms ne pratimų pozoms (idle, vs, win, lose, guard…) – Claude Design v2 veikėjo kūnas (`public/chars/full-{r,b,y,g}.webp`, Kometos pergalė – `win.webp`). Pasikeitė žaidėjų pasirinkimas, Kompanijos, ėjimo kortelės, rezultatai visuose žaidimuose. Pratimų pozos (pritūpimai, šuoliukai…) lieka SVG – jos rodo judesį.
+
 ## 2026-10-29 — Žaidėjų galvutės: nauji veikėjai visur (#55, šaka `claude/55-avatar-heads`)
 
 - `avatar()` (`src/ui/mascots.ts`) dabar grąžina Claude Design v2 veikėjo galvutę (`public/chars/sheet*.webp` iškarpa) vietoj seno SVG – viena vieta, todėl pasikeitė visų žaidimų vardų laukai, HUD kortelės ir rezultatų eilutės. `crown` paliktas (mažas SVG virš galvutės).
