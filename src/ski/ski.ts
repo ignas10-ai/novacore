@@ -7,6 +7,7 @@
 // #skRun (turn / split) -> #skEnd. Rules, course and physics are PURE in logic.ts (test/unit/ski.test.ts), the
 // downhill canvas is slope.ts.
 import "./ski.css";
+import {gallery} from "../ui/gallery.ts";
 import {S} from "../game/state.ts";
 import {startFlow,resetGame,type GameMode} from "../game/game.ts";
 import {armsUp} from "../detect/step.ts";
@@ -48,12 +49,7 @@ app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="ski" aria-labelledby="skTitle">
   <div class="wrap">
     <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="skTitle" tabindex="-1">${tr("sk.title")}</h1><button class="icon-btn tap" data-tv type="button" aria-label="${tr("home.cast")}" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
-    <div class="sk-hero" aria-hidden="true">
-      <span class="sk-hero-big">${tr("sk.heroBig")}</span><span class="sk-hero-sub">${tr("sk.hero")}</span>
-      <span class="sk-hero-slope"></span>
-      <span class="sk-hero-g" style="left:16%;top:66%"></span><span class="sk-hero-g" style="left:74%;top:58%"></span><span class="sk-hero-g" style="left:44%;top:74%"></span>
-      <span class="sk-hero-m">${mascot("r","ski",{anim:true})}</span><span class="sk-hero-m2">${mascot("b","ski",{anim:true})}</span>
-    </div>
+    ${gallery("sk",tr("sk.heroBig"),tr("sk.hero"))}
     <section class="pick" aria-label="${tr("sk.players")}">
       <div class="seg sp-seg sk-seg" role="group" aria-label="${tr("sk.players")}">
         ${[1,2,3,4].map(k=>`<button data-sk="${k}" aria-pressed="false"><span><b class="d">${k}</b><small>${k===1?tr("mode.solo"):k===2?tr("mode.duel"):tn("sk.pl",k)}</small></span></button>`).join("")}

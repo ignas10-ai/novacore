@@ -4,6 +4,7 @@
 // SPRINT.start(): #sprintRun countdown "Į starto pozicijas… Dėmesio… Marš!" -> race -> finish -> #sprintEnd results.
 // Integration points stay small: the GameMode hook in game.ts, the "sprint" route in router.ts, one import in main.ts.
 import "./sprint.css";
+import {gallery} from "../ui/gallery.ts";
 import {S} from "../game/state.ts";
 import {startFlow,resetGame,type GameMode} from "../game/game.ts";
 import {step} from "../detect/step.ts";
@@ -42,7 +43,7 @@ app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="sprint" aria-labelledby="spTitle">
   <div class="wrap">
     <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="spTitle" tabindex="-1">${tr("sp.title")}</h1><button class="icon-btn tap" data-tv type="button" aria-label="${tr("home.cast")}" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
-    <div class="sp-hero"><canvas id="spHeroCv" aria-hidden="true"></canvas><span class="sp-hero-big">100 M</span><span class="sp-hero-sub">${tr("sp.hero")}</span></div>
+    ${gallery("sp","100 M",tr("sp.hero"))}
     <section class="pick" aria-label="${tr("setup.players")}">
       <div class="seg sp-seg" role="group" aria-label="${tr("sp.runners")}">
         <button data-sp="2" aria-pressed="true"><span><b class="d">2</b><small>${tr("mode.duel")}</small></span></button>
@@ -120,29 +121,13 @@ function renderPb(){
   $("#spPb").textContent=b?`${fmt(b.t)} s`:"–";
   $("#spPbTxt").textContent=S.players===1?(b?tr("sp.pbGhost"):tr("sp.pbNoneSolo",{t:fmt(DEFAULT_GHOST[9])})):tr(b?"sp.pbBest":"sp.pbNone");
 }
-let heroRaf=0;
-const heroCv=$<HTMLCanvasElement>("#spHeroCv"), heroCtx=heroCv.getContext("2d")!, heroPose=newPose();
-function hero(now:number){
-  if(document.body.dataset.view!=="sprint"||document.body.classList.contains("ingame")){heroRaf=0;return}
-  heroRaf=requestAnimationFrame(hero);
-  const r=heroCv.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);
-  if(heroCv.width!==Math.round(r.width*dpr)){heroCv.width=Math.round(r.width*dpr);heroCv.height=Math.round(r.height*dpr)}
-  const W=r.width,H=r.height,t=now/1000;
-  heroCtx.setTransform(dpr,0,0,dpr,0,0);heroCtx.clearRect(0,0,W,H);
-  const h=H*.62;
-  for(let k=1;k>=0;k--){ // Mėlynas behind, Raudonas in front
-    runPose(heroPose,(t*1.55+k*.37)%1,.95);
-    const x=W*(k?.82:.62),g=H*(k?.8:.92);
-    heroCtx.fillStyle="rgba(20,24,58,.16)";heroCtx.beginPath();heroCtx.ellipse(x,g,h*.2,h*.035,0,0,Math.PI*2);heroCtx.fill();
-    drawRunner(heroCtx,LOOKS[k],heroPose,x,g,h*(k?.9:1));
-  }
-}
-onView("sprint",()=>{syncSeg();renderPb();if(!heroRaf)heroRaf=requestAnimationFrame(hero)});
+onView("sprint",()=>{syncSeg();renderPb()});
 $("#spGo").onclick=()=>startFlow(SPRINT);
 
 // ---------- race state ----------
 type Phase="off"|"pos"|"set"|"race"|"done";
 let phase:Phase="off", phaseAt=0, setDur=0, t0=0, raceT=0, falseStarts=0, raf=0, last=0, firstFin=-1, doneAt=0, brokeAt=-1, cam=0, hudAt=0, callTimer=0;
+let feedCad=0, feedAt=0, feedLeg=0; // test hook (tools/scenes.mjs): synthetic knee steps
 let L:Layout, ghost:number[]=[], solo=false;
 const R:Runner[]=[runner(),runner()];
 const G={x:0,v:0,fin:-1};
@@ -156,6 +141,8 @@ const CONF_COL=["#FF3B3B","#2F6BFF","#FFC61A","#FFFFFF","#12B886","#FF4F93"];
 const FT=new Float32Array(600), WT=new Float32Array(600), DT=new Float32Array(600); let fn=0;
 (window as any).__sprintPerf=()=>{const n=Math.min(fn,600);if(!n)return null;const a=[...FT.slice(0,n)].sort((x,y)=>x-y),w=[...WT.slice(0,n)].sort((x,y)=>x-y),avg=a.reduce((s,v)=>s+v,0)/n;
   return {frames:fn,fps:Math.round(1000/avg*10)/10,p95FrameMs:Math.round(a[Math.floor(n*.95)]*10)/10,workMsAvg:Math.round(w.reduce((s,v)=>s+v,0)/n*100)/100,workMsP95:Math.round(w[Math.floor(n*.95)]*100)/100,drawMsAvg:Math.round([...DT.slice(0,n)].reduce((s,v)=>s+v,0)/n*100)/100,drawMsP95:Math.round([...DT.slice(0,n)].sort((x,y)=>x-y)[Math.floor(n*.95)]*100)/100}};
+// state probe + synthetic knee steps for tools/scenes.mjs (the gallery frames need a moving runner)
+(window as any).__sp={feed:(cad:number)=>{feedCad=cad;feedAt=performance.now()},state:()=>({phase,t:raceT,x:R[0]?.x,fin:R[0]?.fin})};
 
 function call(t:string,s="",cls="",ms=0){
   clearTimeout(callTimer);
@@ -224,6 +211,8 @@ function frame(now:number){
     if(step(st,ps[i].lm,"knees",now))knee(i,now,st.leg[0]&&!up0?0:1);
     draw(ps[i].lm,i);
   }
+  // the scene tool feeds a steady cadence (a fake camera cannot always get both knees in frame in landscape)
+  if(feedCad>0&&(phase==="race"||phase==="done")&&now>=feedAt){feedLeg^=1;knee(0,now,feedLeg);feedAt=now+1000/feedCad}
   const tp=(now-phaseAt)/1000;
   if(phase==="pos"&&tp>POS_S)enter("set",now);
   else if(phase==="set"&&tp>setDur)enter("race",now);
@@ -430,7 +419,7 @@ $("#spHome").onclick=()=>{resetGame();document.body.classList.remove("ingame");h
 export const SPRINT:GameMode={
   start:begin,
   tv:true,
-  reset(){cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call";
+  reset(){cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call";feedCad=0;
     setScreenMode(null);screenPhase("idle");
     runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("sprinting")},
   shown:()=>!endRoot.classList.contains("hide"),

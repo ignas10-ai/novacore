@@ -7,6 +7,7 @@
 // Bėk!" (whistle) -> run -> jump/foul -> flight -> landing + tape -> next turn ... -> #ljEnd results.
 // Rules are PURE in logic.ts (unit tests), the take-off detector in src/detect/takeoff.ts, drawing in field.ts.
 import "./longjump.css";
+import {gallery} from "../ui/gallery.ts";
 import {S} from "../game/state.ts";
 import {startFlow,resetGame,type GameMode} from "../game/game.ts";
 import {step,armsUp} from "../detect/step.ts";
@@ -50,11 +51,7 @@ app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="longjump" aria-labelledby="ljTitle">
   <div class="wrap">
     <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="ljTitle" tabindex="-1">${tr("lj.title")}</h1><button class="icon-btn tap" data-tv type="button" aria-label="${tr("home.cast")}" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
-    <div class="lj-hero" aria-hidden="true">
-      <span class="lj-hero-big">${tr("lj.heroBig")}</span><span class="lj-hero-sub">${tr("lj.hero")}</span>
-      <span class="lj-hero-pit"><i>4</i><i>5</i><i>6</i><i>7</i></span><span class="lj-hero-board"></span>
-      <span class="lj-hero-m">${mascot("y","win",{anim:true})}</span>
-    </div>
+    ${gallery("lj",tr("lj.heroBig"),tr("lj.hero"))}
     <section class="pick" aria-label="${tr("lj.jumpers")}">
       <div class="seg sp-seg lj-seg" role="group" aria-label="${tr("lj.jumpers")}">
         ${[1,2,3,4].map(k=>`<button data-lj="${k}" aria-pressed="false"><span><b class="d">${k}</b><small>${k===1?tr("mode.solo"):tn("lj.pl",k)}</small></span></button>`).join("")}

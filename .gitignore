@@ -8,3 +8,4 @@ dist-e2e/
 test-results/
 playwright-report/
 test/e2e/.cache/
+public/scenes/_full-*.png

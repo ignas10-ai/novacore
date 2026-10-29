@@ -1,5 +1,13 @@
 # Pakeitimų žurnalas
 
+## 2026-10-29 — Rungčių galerijos: 3 realūs kadrai kiekvieno žaidimo nustatymuose (#41, šaka `martynas/41-game-gallery`)
+
+- **Galerija:** kiekvienos rungties nustatymų antraštė (buvę `.sp-hero` ir kt.) pakeista į 3 kadrų horizontalią `scroll-snap` juostą su taškais. Kadrai – tikri žaidimo momentai (startas / vidurys / finišas, įsibėgėjimas / atsispyrimas / nusileidimas, metimas / skrydis / žymė). Juosta – native `scroll-snap`, be bibliotekų; taškai seka paslinkimą, o paspaudus praslenka iki karto. Portretu rodomas vienas kadras + kito kraštas, telefonu gulsčiai – du kadrai ir vertikali taškų juosta.
+- **Kadrai:** `npm run scenes` dabar iš kiekvienos rungties įrašo 3 akimirkas (`public/scenes/<xx>-1..3.webp`, 780×390; boksui / sienai 1100×550). Boksui ir iečiui atsirado savi `bx.webp` / `jv.webp` – anksčiau jie naudojo sprinto kadrą; tais pačiais kadrais dabar puošiami ir `#boxEnd` / `#jvEnd` rezultatai. Scenarijus boksą žaidžia solo (viena poza), kad ready vartai praeitų su e2e kamera.
+- **Kodas:** `src/ui/gallery.ts` (`gallery()` + `initGalleries()`), 9 žaidimų setup failuose – viena `gallery(...)` eilutė vietoj senos iliustracijos; `src/styles/glass.css` – galerijos blokas. Sprintui pridėtas `window.__sp.feed()` / `.state()` testų kablys (scenų įrašymui; kamera gulsčiai ne visada parodo abu kelius).
+- **PWA:** `sw.js` v6 – `/scenes/` ir `/chars/` dabar network-first su podėliu, todėl galerija ir Pradžios plytelės veikia offline po pirmo apsilankymo.
+- **Patikrinta:** `npm test` (481), `npx tsc --noEmit`, `npm run build`, `PW_PORT=4192 npm run test:e2e` (27/27, įskaitant naują `gallery.spec.ts` – 9 ekranai × 3 kadrai + taškai + pirmo kadro įkėlimas), headless kadrai 390×844, 360×780 ir 844×390. **Dar reikia telefono:** ar galerija patogiai slenka ir ar 3 kadrai pakankamai parodo žaidimą.
+
 ## 2026-10-29 — UI: paskutiniai seno stiliaus ekranai pagal stiklinį dizainą (#42, šaka `martynas/42-ui-legacy-screens`)
 
 - **Pratimai (`#/pratimai`):** išskirtinė kortelė dabar stiklinė su raudonu akcentu – raudona „Iš viso“ dėžutė ir raudona „Ką tikrina kamera“ antraštė. Pašalinta balta juosta ir balti „BETA“ ženkliukai (juose buvo nematomas baltas tekstas); BETA – geltona pill. Pratimų detalės lapas – tamsus stiklas, raudonos statistikos dėžutės, įskaitoma užuomina. Parinktuvo pažymėti pratimai – raudonai tonuoti su baltu tekstu, žymės varnelė – tamsi ant geltono.
