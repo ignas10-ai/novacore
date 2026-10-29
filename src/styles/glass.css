@@ -12,7 +12,7 @@
   --sh:0 6px 18px rgba(0,0,0,.25);--sh-lg:0 10px 26px rgba(0,0,0,.3);--sh-sm:0 2px 8px rgba(0,0,0,.2);
   color:var(--fg)}
 :is(#sprint,#hurdles,#longjump,#boxing,#bowling,#ski,#wall,#badminton,#javelin){--red-ink:color-mix(in srgb,var(--gc) 45%,#fff);--red-tint:color-mix(in srgb,var(--gc) 30%,transparent)}
-[data-tone="yellow"]{--on-tone:#2A1E00}
+[data-tone="yellow"]{--on-tone:#fff}
 html,body{background:#141C33}
 .screen.app,.screen[id$="End"],#end{background:radial-gradient(120% 45% at 50% 0%,#2A3A7A 0%,rgba(42,58,122,0) 70%),#141C33}
 
@@ -112,3 +112,128 @@ html,body{background:#141C33}
 #profile .char-pick i{flex:none;display:block}
 .screen .sp-res-head,.screen .sp-res-head:is([data-w="0"],[data-w="1"],[data-w="2"]){background:linear-gradient(0deg,rgba(14,10,30,.8),rgba(14,10,30,.15) 70%)}
 .screen .sp-res-head::before{content:"";position:absolute;inset:-14px;z-index:-2;background:var(--res-scene) 50% 50%/cover;filter:blur(5px) saturate(1.1)}
+
+/* ============================================================================================================
+   #42 – the last old-sticker screens on the glass shell: Pratimai + exercise detail, #end results, the camera
+   flow (ready / loading / clips / HUD) and the TV board. Same language as the rest: frosted surfaces with a
+   hairline light outline + soft shadow, solid red only as the accent, yellow only for records / multipliers.
+   ============================================================================================================ */
+
+/* ---- Pratimai: a glass featured card with one red accent (the total), no white strip / invisible pills ---- */
+.screen.app .beta{background:var(--yellow);color:#2A1E00;border-radius:var(--r-pill);padding:5px 10px 4px}
+.screen.app .ex-feat{background:linear-gradient(135deg,color-mix(in srgb,var(--red) 24%,rgba(255,255,255,.05)),rgba(255,255,255,.06));border-color:var(--ol);box-shadow:var(--sh-lg)}
+.screen.app .feat-eye{color:#FF8A93}
+.screen.app .feat-name{color:#fff}
+.screen.app .feat-cue{color:rgba(255,255,255,.82)}
+.screen.app .fs-box{background:rgba(255,255,255,.08);border-color:var(--ol);color:#fff;box-shadow:none}
+.screen.app .fs-box small{color:rgba(255,255,255,.78)}
+.screen.app .fs-box b{color:#fff}
+.screen.app .fs-box.y{background:linear-gradient(180deg,var(--red-hi),var(--red-deep));border-color:transparent}
+.screen.app .feat-tip{background:rgba(255,255,255,.06);border-top:1px solid var(--ol);color:#fff}
+.screen.app .feat-tip-txt b{color:#FF8A93}
+.screen.app .feat-tip-ic{background:var(--red);color:#fff}
+.screen.app .ex-num.on{background:linear-gradient(180deg,var(--red-hi),var(--red-deep));color:#fff;border-color:transparent}
+.screen.app .ex-row .chev{color:rgba(255,255,255,.6)}
+/* setup: the picked exercise chips were dark text on the red tone; the duo card had a light pink art block */
+.screen.app .ex-chip{color:#fff}
+.screen.app .ex-chip.more{color:#fff}
+.screen.app .pl-card.duo .pl-art{background:linear-gradient(104deg,color-mix(in srgb,var(--p1) 24%,transparent) 0 50%,color-mix(in srgb,var(--p2) 24%,transparent) 50% 100%)}
+
+/* ---- exercise detail sheet (Pratimai → an exercise): dark glass header with red accents ---- */
+.ex-sheet .exd-top{background:linear-gradient(135deg,color-mix(in srgb,var(--red) 30%,transparent),rgba(255,255,255,.06));color:#fff;border-bottom-color:var(--ol)}
+.ex-sheet .exd-no{color:#FF8A93}
+.ex-sheet .exd-name{color:#fff}
+.ex-sheet .exd-cue{color:rgba(255,255,255,.82)}
+.ex-sheet .exd-stats>div{background:rgba(255,255,255,.08);border-color:var(--ol);box-shadow:none}
+.ex-sheet .exd-stats>div:first-child{background:linear-gradient(180deg,var(--red-hi),var(--red-deep));border-color:transparent}
+.ex-sheet .exd-stats dt{color:rgba(255,255,255,.78)}
+.ex-sheet .exd-stats dd{color:#fff}
+.ex-sheet .exd-tip{background:rgba(255,255,255,.08);border:1px solid var(--ol);color:#fff}
+.ex-sheet .exd-tip b{color:#FF8A93}
+/* exercise picker: the selected tile needs a visible state, the check a dark tick on yellow */
+.ex-sheet .ex-tile.on{background:color-mix(in srgb,var(--red) 26%,rgba(255,255,255,.08));border-color:color-mix(in srgb,var(--red) 62%,transparent);color:#fff}
+.ex-sheet .ex-tile.on :is(.ex-n,.ex-name,.ex-pose){color:#fff}
+.ex-sheet .ex-tile .ex-mark svg{stroke:#2A1E00}
+.ex-sheet .ex-tile .ex-beta{background:color-mix(in srgb,var(--yellow) 88%,transparent);color:#2A1E00;border-radius:var(--r-pill)}
+
+/* ---- results (#end): no blue diagonal / yellow diff pill; names + points in one glass card on the winner colour ---- */
+#end .res-bg{background:radial-gradient(120% 70% at 50% 0%,#FF5A64 0%,#C61D31 34%,rgba(198,29,49,0) 72%);border-bottom:0}
+#end[data-w="2"] .res-bg{background:radial-gradient(120% 70% at 50% 0%,#5B8CFF 0%,#1F49C7 34%,rgba(31,73,199,0) 72%)}
+#end[data-w="0"] .res-bg{background:radial-gradient(120% 70% at 50% 0%,#FFD45A 0%,#C98A00 34%,rgba(201,138,0,0) 72%)}
+#end .res-head .wl{color:rgba(255,255,255,.85)}
+#end #winner{color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.18)}
+#end #endsub{color:rgba(255,255,255,.9)}
+#end[data-w="0"] .res-head .wl,#end[data-w="0"] #winner,#end[data-w="0"] #endsub{color:#141C33;text-shadow:none}
+#end .res-bars,#end .bars{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 18px;padding:16px 18px;border:1px solid var(--ol);border-radius:22px;background:rgba(255,255,255,.09);box-shadow:var(--sh);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#end .diff{display:none}
+#end .bar .chip{color:rgba(255,255,255,.78)}
+#end .bar.p1 b{color:#FF8A93}
+#end .bar.p2 b{color:#9DB9FF}
+#end .bar .track{height:6px;background:rgba(255,255,255,.14)}
+#end .rec-badge{border:0;border-radius:var(--r-pill);box-shadow:0 8px 20px rgba(0,0,0,.3);rotate:-3deg;color:#2A1E00}
+#end .brk{border:1px solid var(--ol);border-radius:22px;background:rgba(255,255,255,.07);padding:12px 16px;box-shadow:var(--sh-sm)}
+#end .brk .sec-title{color:rgba(255,255,255,.8)}
+#end .brk-list li::before{border:0}
+#end .chal-res,#end .duel-res{border-color:var(--ol);background:rgba(255,255,255,.08);box-shadow:var(--sh-sm);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+#end .res-acts .go.alt{background:rgba(255,255,255,.1);border:1px solid var(--ol);box-shadow:none}
+#end .clip-btn{box-shadow:0 10px 26px color-mix(in srgb,var(--red) 35%,transparent)}
+#end .res-stage{filter:drop-shadow(0 12px 18px rgba(0,0,0,.28))}
+body.solo #end .bars{grid-template-columns:1fr}
+
+/* ---- camera flow: the same frosted look over the video (no 3–6 px black sticker borders/offset shadows) ---- */
+.cam .go.alt{background:rgba(30,35,80,.8);border:1px solid rgba(255,255,255,.22);border-radius:18px;box-shadow:0 8px 22px rgba(0,0,0,.32);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.cam .ready-head{border:1px solid rgba(255,255,255,.22);background:rgba(30,35,80,.82);box-shadow:0 10px 30px rgba(0,0,0,.36);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.cam .ready-dial{border:1px solid rgba(255,255,255,.22);background:rgba(20,24,58,.78);box-shadow:0 8px 24px rgba(0,0,0,.3);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.cam .ready-cast{border:1px solid rgba(255,255,255,.22);background:rgba(30,35,80,.8);box-shadow:none;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.cam .rpl{border:1px solid rgba(255,255,255,.22);background:rgba(20,24,58,.74);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.cam .rpl[data-ok="1"]{border-color:rgba(255,255,255,.6)}
+.cam .cue-label{border:0;border-radius:var(--r-pill);box-shadow:0 8px 20px rgba(0,0,0,.35)}
+.cam .round{border:0;border-radius:20px;box-shadow:0 12px 30px rgba(0,0,0,.42)}
+.cam .plus{border:0;border-radius:16px;box-shadow:0 8px 20px rgba(0,0,0,.38)}
+.cam .demo-card{border:1px solid rgba(255,255,255,.22);background:rgba(24,30,64,.9);color:#fff;box-shadow:0 12px 28px rgba(0,0,0,.4);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.cam .demo-copy b{color:#fff}
+.cam .demo-copy small{color:rgba(255,255,255,.78)}
+.cam .demo-art{border-color:rgba(255,255,255,.22);background:var(--yellow)}
+.cam .load-art{border:1px solid rgba(255,255,255,.22);box-shadow:0 12px 32px rgba(0,0,0,.42)}
+.cam .preview{border:1px solid rgba(255,255,255,.22);box-shadow:0 12px 32px rgba(0,0,0,.42)}
+.cam .dl-menu{background:#1B2442;color:#fff;border:1px solid rgba(255,255,255,.22);box-shadow:0 14px 34px rgba(0,0,0,.5)}
+.cam .dl-option{color:#fff}
+.cam .dl-option small{color:rgba(255,255,255,.72)}
+.cam .dl-option:hover,.cam .dl-option:focus-visible{background:rgba(255,255,255,.08)}
+.cam .rnd-chips li{border-width:1px;border-color:rgba(255,255,255,.18);border-radius:10px}
+.cam .rnd-chips li.now{border-color:transparent}
+.cam .hud-top,.cam .hud-bot{border-color:rgba(255,255,255,.12)}
+.cam .mid .x{box-shadow:0 6px 16px rgba(0,0,0,.3)}
+.cam .hint-cue .cue-label{font-size:15px}
+.cam .frame i{border-color:var(--p1)}
+.cam .frame i:nth-child(2),.cam .frame i:nth-child(4){border-color:var(--p2)}
+.cam #ready.done .frame i{border-color:var(--yellow)}
+
+/* ---- TV board (#/ekranas): same glass, readable at 844×390 ---- */
+#screen .bs-side{border:1px solid rgba(255,255,255,.2);border-top-width:8px;border-top-color:var(--p1);border-radius:26px;background:rgba(30,35,80,.72);box-shadow:0 12px 30px rgba(0,0,0,.36);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#screen .bs-side.p2{border-top-color:var(--p2)}
+#screen .bs-tag{border:0;box-shadow:0 0 0 1px rgba(255,255,255,.16)}
+#screen .icon-btn,#screen .pill{border:1px solid rgba(255,255,255,.2);background:rgba(30,35,80,.72);box-shadow:0 6px 16px rgba(0,0,0,.32);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+#screen .bs-cam[aria-pressed="true"]{background:var(--yellow);color:#2A1E00;border-color:transparent}
+#screen .bs-ex-name{border:0;border-radius:var(--r-pill);box-shadow:0 6px 16px rgba(0,0,0,.32)}
+#screen .bs-mult{border:0;border-radius:var(--r-pill);background:rgba(255,255,255,.92);color:#141C33;box-shadow:0 6px 16px rgba(0,0,0,.32)}
+#screen .bs-demo{border:1px solid rgba(255,255,255,.22);box-shadow:0 10px 26px rgba(0,0,0,.36)}
+#screen .bs-art{border:1px solid rgba(255,255,255,.22);box-shadow:0 12px 30px rgba(0,0,0,.38)}
+#screen .bs-connect input{border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.08);box-shadow:none}
+#screen .bs-connect input:focus{border-color:var(--yellow)}
+#screen .bs-bar{border:0;background:rgba(255,255,255,.14)}
+#screen .bs-bar i{background:linear-gradient(90deg,var(--yellow),#FFB020)}
+@media (orientation:landscape) and (max-height:560px){
+  /* Pratimai stays a one-screen glance in phone landscape: compact featured card */
+  .screen.app .ex-feat{grid-template-columns:128px minmax(0,1fr)}
+  .screen.app .feat-art{max-width:128px;padding:8px 0 4px 8px}
+  .screen.app .feat-txt{padding:10px 12px 10px 4px}
+  .screen.app .feat-eye{font-size:13px}
+  .screen.app .feat-name{font-size:26px}
+  .screen.app .feat-cue{font-size:13px}
+  .screen.app .feat-stats{margin-top:6px}
+  .screen.app .fs-box{padding:4px 8px}
+  .screen.app .fs-box b{font-size:22px}
+  .screen.app .feat-tip{padding:10px 14px}
+  .screen.app .feat-tip-txt{font-size:13px}
+}

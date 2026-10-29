@@ -1,5 +1,13 @@
 # Pakeitimų žurnalas
 
+## 2026-10-29 — UI: paskutiniai seno stiliaus ekranai pagal stiklinį dizainą (#42, šaka `martynas/42-ui-legacy-screens`)
+
+- **Pratimai (`#/pratimai`):** išskirtinė kortelė dabar stiklinė su raudonu akcentu – raudona „Iš viso“ dėžutė ir raudona „Ką tikrina kamera“ antraštė. Pašalinta balta juosta ir balti „BETA“ ženkliukai (juose buvo nematomas baltas tekstas); BETA – geltona pill. Pratimų detalės lapas – tamsus stiklas, raudonos statistikos dėžutės, įskaitoma užuomina. Parinktuvo pažymėti pratimai – raudonai tonuoti su baltu tekstu, žymės varnelė – tamsi ant geltono.
+- **Rezultatai (`#end`):** pašalintas mėlynas įstrižas blokas ir geltonas skirtumo pill (`.res-diag`, `.res-burst`, `.diff`). Nugalėtojo spalva dabar švelniai nuteka į tamsų foną, vardai + taškai – vienoje stiklinėje kortelėje, pakartojimų lentelė – stiklinė.
+- **Kameros srautas:** pasiruošimo kortelė, ratas, žaidėjų žetonai, „Didelis ekranas“, demo kortelė, raundo ženklas, +N, klipų meniu ir HUD – ploni šviesūs kontūrai + minkšti šešėliai vietoj 3–6 px juodų „lipduko“ rėmų.
+- **TV lenta (`#/ekranas`):** tos pačios taisyklės 844×390 – ploni rėmai, stiklinės kortelės, geltoni akcentai be juodų rėmų.
+- **Patikrinta:** `npm test` (481), `npx tsc --noEmit`, `npm run build`, `PW_PORT=4190 npm run test:e2e` (26/26), `screens.cjs --both` ir atskiri 360×780 / 844×390 kadrai (Pratimai, pratimo lapas, parinktuvas, rezultatai, pasiruošimas, HUD, TV lenta).
+
 ## 2026-10-29 — Boulingas: jokios taikymosi trajektorijos, tik 2D modelio rankos (#58, šaka `claude/58-bowling-no-aim-guides`)
 
 - **Pašalinta:** visas numatomas kamuolio kelias – kamuolio pėdsakas ir didelis taikinio kamuolys prie galvos kūgio (`drawAimPath()` dalis). Taip pat pašalintas apatinis `#bwAim` žetonas („Lenta N“ + kablio kryptis) ir ant takelio nupieštos 7 taikymosi rodyklės bei 5 privažiavimo taškai.

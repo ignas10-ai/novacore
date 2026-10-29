@@ -148,7 +148,7 @@ b,strong{font-weight:800}
 .chip-btn[aria-pressed="true"]{background:var(--ink);color:var(--on-color)}
 .chips{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:-4px calc(-1*var(--gutter)) -6px;padding:4px var(--gutter) 6px}
 .chips::-webkit-scrollbar{display:none}
-.beta{flex:none;padding:5px 11px 4px;border-radius:var(--r-in);background:var(--ink);color:var(--on-color);font:900 12px/1.2 var(--body);letter-spacing:.14em;text-transform:uppercase}
+.beta{flex:none;padding:5px 11px 4px;border-radius:var(--r-in);background:var(--fill);color:var(--on-fill);font:900 12px/1.2 var(--body);letter-spacing:.14em;text-transform:uppercase}
 
 #stage{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg)}
 video{display:none}
@@ -703,17 +703,11 @@ body.solo .edge.p2{display:none}
 .demo-copy b{display:block;font-size:24px;line-height:1.15;margin-top:2px;color:var(--ink)}
 .demo-copy small{display:block;font-size:14px;font-weight:700;line-height:1.35;color:#4A4F6E;margin-top:3px}
 
-/* ---------- results (sunburst, winner + loser mascots) ---------- */
-#end{--burst:var(--red);--burst-2:color-mix(in srgb,#fff 18%,var(--red));--other:var(--blue);padding-top:0}
-#end[data-w="2"]{--burst:var(--blue);--burst-2:color-mix(in srgb,#fff 16%,var(--blue));--other:var(--red)}
-#end[data-w="0"]{--burst:var(--yellow);--burst-2:color-mix(in srgb,#fff 30%,var(--yellow));--other:var(--yellow)}
+/* ---------- results (winner colour behind the name, winner + loser mascots) ---------- */
+#end{--burst:var(--red);padding-top:0}
+#end[data-w="2"]{--burst:var(--blue)}
+#end[data-w="0"]{--burst:var(--yellow)}
 .res-bg{position:absolute;left:0;right:0;top:0;height:calc(env(safe-area-inset-top) + 410px);overflow:hidden;background:var(--burst);border-bottom:var(--bw) solid var(--ol)}
-.res-burst{position:absolute;left:50%;top:44%;width:240%;aspect-ratio:1;translate:-50% -50%;background:repeating-conic-gradient(from 0deg,var(--burst) 0 7.5deg,var(--burst-2) 7.5deg 15deg);animation:burst-spin 60s linear infinite}
-@keyframes burst-spin{to{rotate:360deg}}
-.res-diag{position:absolute;right:0;bottom:0;width:36%;height:62%;background:var(--other);border-left:var(--bw) solid var(--ol);border-top:var(--bw) solid var(--ol);transform:skewX(-14deg);transform-origin:bottom right;translate:6% 0}
-body.solo #end .res-diag{display:none}
-body.duel #end .res-diag{display:block}
-#end[data-w="0"] .res-diag,body.duel #end[data-w="0"] .res-diag{display:none}
 #end .wrap{gap:16px;padding-top:calc(env(safe-area-inset-top) + 40px)}
 .res-head{position:relative;display:flex;flex-direction:column;align-items:flex-start;min-height:340px;color:var(--on-color)}
 #end[data-w="0"] .res-head{color:var(--ink)}
@@ -1393,8 +1387,7 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 .screen .sp-place{border:0;background:var(--surface-2);color:var(--fg-mute)}
 .screen .sp-row:first-child .sp-place{background:var(--red);color:#fff}
 .screen .sp-row:first-child{border-color:var(--red);background:color-mix(in srgb,var(--red) 5%,#fff)}
-/* exercise game results (#end): flat red, no rays */
-.res-burst{display:none}
+/* exercise game results (#end): flat winner colour, no rays (#42) */
 .res-bg{background:linear-gradient(180deg,var(--red-hi),var(--red-deep))}
 #end[data-w="2"] .res-bg{background:linear-gradient(180deg,#4A80FF,var(--blue-ink))}
 #end[data-w="0"] .res-bg{background:linear-gradient(180deg,#5B6168,var(--ink))}
