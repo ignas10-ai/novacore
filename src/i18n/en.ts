@@ -269,6 +269,7 @@ export const en:Record<Key,string>={
   "lib.total":"Total",
   "lib.best":"Best in one game",
   "lib.checks":"What the camera checks",
+  "gal.frame":"Frame {n}",
 
   // ---------- Profile ----------
   "prof.noName":"No name",

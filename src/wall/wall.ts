@@ -9,6 +9,7 @@
 // Rules + geometry are PURE in logic.ts (unit tests). The camera stays full screen like boxing; the walls are drawn on
 // #wlCv, laid over #cv inside #stage with the same aspect + object-fit, so frame coordinates map 1:1.
 import "./wall.css";
+import {gallery} from "../ui/gallery.ts";
 import {S} from "../game/state.ts";
 import {startFlow,resetGame,type GameMode} from "../game/game.ts";
 import {armsUp} from "../detect/step.ts";
@@ -50,10 +51,7 @@ app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="wall" aria-labelledby="wlTitle">
   <div class="wrap">
     <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="wlTitle" tabindex="-1">${tr("wl.title")}</h1><button class="icon-btn tap" data-tv type="button" aria-label="${tr("home.cast")}" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
-    <div class="wl-hero" aria-hidden="true">
-      <span class="wl-hero-big">${tr("wl.heroBig")}</span><span class="wl-hero-sub">${tr("wl.hero")}</span>
-      <span class="wl-hero-wall"><i></i></span><span class="wl-hero-m">${mascot("b","squat",{anim:true})}</span>
-    </div>
+    ${gallery("wl",tr("wl.heroBig"),tr("wl.hero"))}
     <section class="pick" aria-label="${tr("lj.jumpers")}">
       <div class="seg sp-seg lj-seg" role="group" aria-label="${tr("lj.jumpers")}">
         ${[1,2,3,4].map(k=>`<button data-wl="${k}" aria-pressed="false"><span><b class="d">${k}</b><small>${k===1?tr("mode.solo"):tn("lj.pl",k)}</small></span></button>`).join("")}

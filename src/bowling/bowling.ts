@@ -6,6 +6,7 @@
 // Flow: Pradžia tile -> #/boulingas (setup) -> startFlow(BOWLING) -> #loading -> #ready (arms-up gate, game.ts) ->
 // BOWLING.start(): turn card -> hand -> aim -> throw -> pins -> next ball / next player -> #bwEnd results.
 import "./bowling.css";
+import {gallery} from "../ui/gallery.ts";
 import {S} from "../game/state.ts";
 import {startFlow,resetGame,type GameMode} from "../game/game.ts";
 import {armsUp} from "../detect/step.ts";
@@ -51,11 +52,7 @@ app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="bowling" aria-labelledby="bwTitle">
   <div class="wrap">
     <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="bwTitle" tabindex="-1">${tr("bw.title")}</h1><button class="icon-btn tap" data-tv type="button" aria-label="${tr("home.cast")}" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
-    <div class="bw-hero" aria-hidden="true">
-      <span class="bw-hero-big">${tr("bw.heroBig")}</span><span class="bw-hero-sub">${tr("bw.hero")}</span>
-      <span class="bw-hero-lane"></span><span class="bw-hero-pins">${PIN_SVG}${PIN_SVG}${PIN_SVG}${PIN_SVG}${PIN_SVG}</span><span class="bw-hero-ball"></span>
-      <span class="bw-hero-m">${mascot("b","guard",{anim:true})}</span>
-    </div>
+    ${gallery("bw",tr("bw.heroBig"),tr("bw.hero"))}
     <section class="pick" aria-label="${tr("bw.players")}">
       <div class="seg sp-seg bw-seg" role="group" aria-label="${tr("bw.players")}">
         ${[1,2,3,4].map(k=>`<button data-bw="${k}" aria-pressed="false"><span><b class="d">${k}</b><small>${k===1?tr("mode.solo"):tn("bw.pl",k)}</small></span></button>`).join("")}

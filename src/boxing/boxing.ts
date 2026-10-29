@@ -6,6 +6,7 @@
 // are drawn on #bxCv, a canvas laid over the camera canvas #cv inside #stage with the same aspect + object-fit, so
 // frame coordinates map 1:1 without measuring the letterbox.
 import "./boxing.css";
+import {gallery} from "../ui/gallery.ts";
 import {S} from "../game/state.ts";
 import {startFlow,resetGame,type GameMode} from "../game/game.ts";
 import {sampleCamera,draw,detCv,cv,stopCamera} from "../camera/camera.ts";
@@ -54,11 +55,7 @@ app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="boxing" aria-labelledby="bxTitle">
   <div class="wrap">
     <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="bxTitle" tabindex="-1">${tr("bx.title")}</h1><button class="icon-btn tap" data-tv type="button" aria-label="${tr("home.cast")}" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
-    <div class="bx-hero" aria-hidden="true">
-      <span class="bx-hero-big">${tr("bx.title").toUpperCase()}</span><span class="bx-hero-sub">${tr("bx.hero")}</span>
-      <span class="bx-hero-pad a">${padSvg("hit")}</span><span class="bx-hero-pad b">${padSvg("hit",TONE[1])}</span><span class="bx-hero-pad c">${padSvg("gold")}</span><span class="bx-hero-pad d">${padSvg("bomb")}</span>
-      <span class="bx-hero-m r">${mascot("r","guard",{anim:true})}</span><span class="bx-hero-m b">${mascot("b","punch",{anim:true})}</span>
-    </div>
+    ${gallery("bx",tr("bx.title").toUpperCase(),tr("bx.hero"))}
     <section class="pick" aria-label="${tr("setup.players")}">
       <div class="seg sp-seg" role="group" aria-label="${tr("bx.boxers")}">
         <button data-bx="2" aria-pressed="true"><span><b class="d">2</b><small>${tr("mode.duel")}</small></span></button>

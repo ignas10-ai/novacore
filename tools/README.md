@@ -52,6 +52,15 @@ node tools/screens.cjs --no-game                                         # be ka
 
 Švarus naršyklės profilis → įvadas 1–3 → Pradžia (tuščia) → įdedama netikra istorija (9 žaidimai per 9 dienas) → Kompanijos (tuščia, sukurta, lentelė, sąrašas), Pradžia (su vieta ir iššūkiu), Pratimai, Profilis (+ ženkliukai, nustatymai), istorijos ir slapyvardžio lapai, nustatymai, „Didelis ekranas“ lapas (įjungtas kodas), pratimų lapas; su kameros failu – kraunama, pasiruošimas, žaidimas, rezultatai, klipai, Pradžia po žaidimo. Gale atidaromas antras langas su TV lenta: `tv-connect`, `tv-wait`, `tv-ready`, `tv-live`, `tv-live-solo`, `tv-done` (būsenos įterpiamos per BroadcastChannel, nes headless neturi Supabase sesijos). Supabase visada netikras (`mock-supabase.cjs`). Dviem žaidėjams reikia įrašo su dviem žmonėmis (`--players 1` – vienam). Kadrai sunumeruoti (`01-onboarding-1.png` …, landscape `…-landscape.png`) – peržiūrėti VISUS.
 
+## Rungčių kadrai (`scenes.mjs`, #41)
+
+```
+npm run scenes                         # visos 9 rungtys -> public/scenes/<xx>-1..3.webp
+npm run scenes -- sprint bowling       # tik nurodytos
+```
+
+Paleidžia kiekvieną žaidimą su e2e maskoto kamera gulsčiai (1100×620 css @1) ir įrašo 3 moments (startas / vidurys / finišas, įsibėgėjimas / atsispyrimas / nusileidimas…) į `public/scenes/<xx>-1..3.webp`. Pirmas kadras nukopijuojamas į `<xx>.webp`, jei tokio dar nėra (Pradžios kortelė / rezultatų antraštė). Kadrai naudojami nustatymų galerijose (`src/ui/gallery.ts`). Reikia Chrome ir `puppeteer-core` (`PUPPETEER_CORE` / `CHROME`). Boksas žaidžiamas solo – su viena poza ready vartai praeina su e2e kamera. Jei nori matyti pilną kadrą be iškirpimo, paleisk su `FULL=1` (rašo `_full-*.png`).
+
 ## Didelis ekranas (`cast-check.cjs`)
 
 ```

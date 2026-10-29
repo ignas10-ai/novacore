@@ -61,28 +61,31 @@ html,body{background:#141C33}
 #games .sp-tile-txt b{color:#fff;font-size:13px;line-height:1.15}
 #games .sp-tile-txt small{display:none}
 [data-g="sp"]{--pose:url(/chars/sprint.webp)}[data-g="hd"]{--pose:url(/chars/hurdles.webp)}[data-g="lj"]{--pose:url(/chars/longjump.webp)}
-[data-g="bx"]{--pose:url(/chars/boxing.webp);--scene:url(/scenes/sp.webp)}[data-g="bw"]{--pose:url(/chars/bowling.webp)}[data-g="sk"]{--pose:url(/chars/skiing.webp)}
-[data-g="wl"]{--pose:url(/chars/wall.webp)}[data-g="bd"]{--pose:url(/chars/badminton.webp)}[data-g="jv"]{--pose:url(/chars/javelin.webp);--scene:url(/scenes/sp.webp)}
+[data-g="bx"]{--pose:url(/chars/boxing.webp);--scene:url(/scenes/bx.webp)}[data-g="bw"]{--pose:url(/chars/bowling.webp)}[data-g="sk"]{--pose:url(/chars/skiing.webp)}
+[data-g="wl"]{--pose:url(/chars/wall.webp)}[data-g="bd"]{--pose:url(/chars/badminton.webp)}[data-g="jv"]{--pose:url(/chars/javelin.webp);--scene:url(/scenes/jv.webp)}
 .screen.app .q-ic{background:rgba(255,255,255,.08);color:#fff}
 .screen.app .rank-ic{border-color:transparent}
 .screen.app .goal-bar i{background:rgba(255,255,255,.14)}.screen.app .goal-bar i.on{background:linear-gradient(90deg,#FFC83D,#FF8A3D)}
 
-/* ---- game setup heroes: the game's frame blurred + the sport pose ---- */
-#sprint{--hero:url(/scenes/sp.webp);--hp:url(/chars/sprint.webp)}#hurdles{--hero:url(/scenes/hd.webp);--hp:url(/chars/hurdles.webp)}
-#longjump{--hero:url(/scenes/lj.webp);--hp:url(/chars/longjump.webp)}#boxing{--hero:url(/scenes/sp.webp);--hp:url(/chars/boxing.webp)}
-#bowling{--hero:url(/scenes/bw.webp);--hp:url(/chars/bowling.webp)}#ski{--hero:url(/scenes/sk.webp);--hp:url(/chars/skiing.webp)}
-#wall{--hero:url(/scenes/wl.webp);--hp:url(/chars/wall.webp)}#badminton{--hero:url(/scenes/bd.webp);--hp:url(/chars/badminton.webp)}
-#javelin{--hero:url(/scenes/sp.webp);--hp:url(/chars/javelin.webp)}
-.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero){position:relative;height:clamp(250px,70vw,320px);overflow:hidden;isolation:isolate;border:1px solid var(--ol);border-radius:26px;background:#1B2442;box-shadow:var(--sh-lg)}
-.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero)>:not([class$="-big"],[class$="-sub"]){display:none!important}
-.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero)::before{content:"";display:block;position:absolute;inset:-14px;z-index:-2;background:var(--hero) 50% 50%/cover;filter:blur(6px) saturate(1.15)}
-.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero)::after{content:"";display:block;position:absolute;inset:8% -4% -6% 34%;z-index:-1;background:var(--hp) 50% 100%/contain no-repeat;filter:drop-shadow(0 14px 18px rgba(0,0,0,.45))}
-.screen :is(.sp-hero-big,.hd-hero-big,.lj-hero-big,.bw-hero-big,.sk-hero-big,.wl-hero-big,.bx-hero-big,.bd-hero-big,.jv-hero-big){position:absolute;left:18px;top:16px;z-index:1;font:900 clamp(34px,10vw,48px)/1 var(--disp);color:#fff;-webkit-text-stroke:0;text-shadow:0 2px 14px rgba(0,0,0,.5);max-width:62%}
-.screen :is(.sp-hero-sub,.hd-hero-sub,.lj-hero-sub,.bw-hero-sub,.sk-hero-sub,.wl-hero-sub,.bx-hero-sub,.bd-hero-sub,.jv-hero-sub){position:absolute;left:18px;bottom:16px;top:auto;z-index:1;padding:6px 12px;border-radius:99px;border:0;background:var(--gc);color:#fff;font:800 12px Nunito;letter-spacing:.06em}
+/* ---- game setup: 3 real frames from the game in a scroll-snap strip (#41) ---- */
+.screen .gal-hero{position:relative;display:flex;flex-direction:column;gap:10px;padding:14px 0 12px;border:1px solid var(--ol);border-radius:26px;overflow:hidden;isolation:isolate;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--gc,var(--red)) 20%,rgba(255,255,255,.05)),rgba(255,255,255,.05));box-shadow:var(--sh-lg)}
+.gal-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;min-width:0;padding:0 16px}
+.gal-big{min-width:0;font:900 clamp(30px,8vw,42px)/1.05 var(--disp);color:#fff;overflow-wrap:normal}
+.gal-sub{flex:none;max-width:100%;margin-left:auto;padding:5px 11px;border-radius:99px;background:var(--gc-ink,var(--red-ink));color:#fff;font:800 11px/1.25 var(--body);letter-spacing:.06em;text-transform:uppercase;text-align:center;overflow-wrap:anywhere}
+.gal{display:flex;gap:10px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding:0 16px;scrollbar-width:none;padding:0 16px}
+.gal::-webkit-scrollbar{display:none}
+.gal:focus-visible{outline:2px solid var(--yellow);outline-offset:-2px;border-radius:18px}
+.gal-slide{position:relative;flex:0 0 86%;aspect-ratio:2/1;margin:0;border:1px solid rgba(255,255,255,.14);border-radius:18px;overflow:hidden;background:#1B2442;scroll-snap-align:center;box-shadow:0 8px 22px rgba(0,0,0,.32)}
+.gal-slide img{display:block;width:100%;height:100%;object-fit:cover}
+.gal-dots{display:flex;justify-content:center;align-items:center;gap:6px;min-height:10px;padding:0 16px}
+.gal-dot{width:9px;height:9px;padding:0;border:0;border-radius:99px;background:rgba(255,255,255,.28);transition:width var(--duration-fast) var(--ease-ui),background-color var(--duration-fast) var(--ease-ui),scale var(--duration-press) var(--ease-ui)}
+.gal-dot[aria-current="true"]{width:26px;background:var(--yellow)}
+.gal-dot:active{scale:.9}
 
 /* ---- results: the game's frame + the win pose ---- */
 #sprintEnd{--res-scene:url(/scenes/sp.webp)}#hdEnd{--res-scene:url(/scenes/hd.webp)}#ljEnd{--res-scene:url(/scenes/lj.webp)}#bwEnd{--res-scene:url(/scenes/bw.webp)}
-#skEnd{--res-scene:url(/scenes/sk.webp)}#wlEnd{--res-scene:url(/scenes/wl.webp)}#bdEnd{--res-scene:url(/scenes/bd.webp)}#boxEnd,#jvEnd{--res-scene:url(/scenes/sp.webp)}
+#skEnd{--res-scene:url(/scenes/sk.webp)}#wlEnd{--res-scene:url(/scenes/wl.webp)}#bdEnd{--res-scene:url(/scenes/bd.webp)}#boxEnd{--res-scene:url(/scenes/bx.webp)}#jvEnd{--res-scene:url(/scenes/jv.webp)}
 .screen .sp-res-head,.screen .sp-res-head:is([data-w="0"],[data-w="1"],[data-w="2"]){min-height:260px;padding-right:44%;border:1px solid var(--ol);border-radius:26px;isolation:isolate;overflow:hidden;color:#fff;
   background:linear-gradient(0deg,rgba(14,10,30,.78),rgba(14,10,30,.12) 70%),var(--res-scene) 50% 50%/cover}
 .screen .sp-res-head .sp-res-art{display:none}
@@ -104,7 +107,6 @@ html,body{background:#141C33}
 .char-pick button[aria-pressed="true"]{border-color:#fff;background:rgba(255,255,255,.2);box-shadow:0 0 0 2px rgba(255,255,255,.35)}
 #profAv{background:var(--me-color) var(--me-sheet) 0 7%/300% auto no-repeat}#profAv>*{display:none}
 #games .sp-tile[data-g] .sp-tile-art{background:var(--pose,none) 50% 100%/contain no-repeat}
-.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero)::after,.screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero)::before{width:auto;height:auto;border:0;border-radius:0;translate:none;rotate:none;opacity:1;animation:none}
 /* head crop from a character sheet: the front view is the left third, head ≈ top quarter */
 .char-pick i,#homeAv,#profAv{background-size:520% auto!important;background-position:8% 6%!important}
 #profile .char-pick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%}
@@ -236,4 +238,14 @@ body.solo #end .bars{grid-template-columns:1fr}
   .screen.app .fs-box b{font-size:22px}
   .screen.app .feat-tip{padding:10px 14px}
   .screen.app .feat-tip-txt{font-size:13px}
+}
+@media (orientation:landscape) and (max-height:560px){
+  /* phone landscape: a wide strip left, the dots in a column right, so the whole setup still fits on one screen */
+  .screen .gal-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;row-gap:8px;padding:10px 12px 8px}
+  .gal-head{grid-column:1 / -1;padding:0}
+  .gal-big{font-size:30px}
+  .gal{padding:0}
+  .gal-slide{flex-basis:46%}
+  .gal-dots{flex-direction:column;padding:0;min-height:0}
+  .gal-dot[aria-current="true"]{width:9px;height:26px}
 }

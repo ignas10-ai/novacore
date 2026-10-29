@@ -269,6 +269,7 @@ export const lt={
   "lib.total":"Iš viso",
   "lib.best":"Rekordas per žaidimą",
   "lib.checks":"Ką tikrina kamera",
+  "gal.frame":"Kadras {n}",
 
   // ---------- Profilis ----------
   "prof.noName":"Be vardo",

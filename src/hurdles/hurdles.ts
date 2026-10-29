@@ -6,6 +6,7 @@
 // start(): "Į starto pozicijas… Dėmesio… Marš!" -> race -> finish -> #hdEnd results.
 // Rules are PURE in logic.ts (test/unit/hurdles.test.ts), lane zones + hurdles in track.ts, the stadium = src/sprint.
 import "./hurdles.css";
+import {gallery} from "../ui/gallery.ts";
 import {S} from "../game/state.ts";
 import {startFlow,resetGame,type GameMode} from "../game/game.ts";
 import {step} from "../detect/step.ts";
@@ -47,11 +48,7 @@ app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="hurdles" aria-labelledby="hdTitle">
   <div class="wrap">
     <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="hdTitle" tabindex="-1">${tr("hd.short")}</h1><button class="icon-btn tap" data-tv type="button" aria-label="${tr("home.cast")}" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
-    <div class="hd-hero" aria-hidden="true">
-      <span class="hd-hero-big">${tr("hd.heroBig")}</span><span class="hd-hero-sub">${tr("hd.hero")}</span>
-      <span class="hd-hero-h" style="left:16%"></span><span class="hd-hero-h" style="left:48%"></span><span class="hd-hero-h" style="left:82%"></span>
-      <span class="hd-hero-m">${mascot("r","squatjump",{anim:true})}</span>
-    </div>
+    ${gallery("hd",tr("hd.heroBig"),tr("hd.hero"))}
     <section class="pick" aria-label="${tr("setup.players")}">
       <div class="seg sp-seg" role="group" aria-label="${tr("sp.runners")}">
         <button data-hd="2" aria-pressed="true"><span><b class="d">2</b><small>${tr("mode.duel")}</small></span></button>

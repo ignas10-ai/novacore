@@ -8,6 +8,7 @@
 // The court is the main canvas; the camera becomes a small corner preview (body.badminton #stage) so players see they
 // are tracked. Gestures + physics are PURE in logic.ts (unit tests); this file is screens, the frame loop and drawing.
 import "./badminton.css";
+import {gallery} from "../ui/gallery.ts";
 import {S} from "../game/state.ts";
 import {startFlow,resetGame,type GameMode} from "../game/game.ts";
 import {sampleCamera,draw,detCv,cv,stopCamera} from "../camera/camera.ts";
@@ -49,11 +50,7 @@ app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="badminton" aria-labelledby="bdTitle">
   <div class="wrap">
     <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="bdTitle" tabindex="-1">${tr("bd.title")}</h1><button class="icon-btn tap" data-tv type="button" aria-label="${tr("home.cast")}" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
-    <div class="bd-hero" aria-hidden="true">
-      <span class="bd-hero-big">${tr("bd.heroBig")}</span><span class="bd-hero-sub">${tr("bd.heroSub")}</span>
-      <span class="bd-hero-net"></span><span class="bd-hero-shuttle"></span>
-      <span class="bd-hero-m r">${mascot("r","badminton",{anim:true})}</span><span class="bd-hero-m b">${mascot("b","badminton",{anim:true})}</span>
-    </div>
+    ${gallery("bd",tr("bd.heroBig"),tr("bd.heroSub"))}
     <section class="pick" aria-label="${tr("bd.players")}">
       <div class="seg sp-seg" role="group" aria-label="${tr("bd.players")}">
         <button data-bd="2" aria-pressed="true"><span><b class="d">2</b><small>${tr("mode.duel")}</small></span></button>

@@ -6,6 +6,7 @@
 // run -> throw/foul -> flight -> landing + tape -> next turn ... -> #jvEnd.
 // Rules are PURE in logic.ts (unit tests), the field is in field.ts, the runner rig is src/sprint/runner.ts.
 import "./javelin.css";
+import {gallery} from "../ui/gallery.ts";
 import {S} from "../game/state.ts";
 import {startFlow,resetGame,type GameMode} from "../game/game.ts";
 import {step,armsUp} from "../detect/step.ts";
@@ -48,11 +49,7 @@ app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="javelin" aria-labelledby="jvTitle">
   <div class="wrap">
     <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="jvTitle" tabindex="-1">${tr("jv.title")}</h1><button class="icon-btn tap" data-tv type="button" aria-label="${tr("home.cast")}" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
-    <div class="jv-hero" aria-hidden="true">
-      <span class="jv-hero-big">${tr("jv.heroBig")}</span><span class="jv-hero-sub">${tr("jv.hero")}</span>
-      <span class="jv-hero-line"><i></i><i></i><i></i></span>
-      <span class="jv-hero-m">${mascot("r","javelin",{anim:true})}</span>
-    </div>
+    ${gallery("jv",tr("jv.heroBig"),tr("jv.hero"))}
     <section class="pick" aria-label="${tr("jv.players")}">
       <div class="seg sp-seg lj-seg" role="group" aria-label="${tr("jv.players")}">
         ${[1,2,3,4].map(k=>`<button data-jv="${k}" aria-pressed="false"><span><b class="d">${k}</b><small>${k===1?tr("mode.solo"):tn("jv.pl",k)}</small></span></button>`).join("")}
