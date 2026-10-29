@@ -1,5 +1,10 @@
 # Pakeitimų žurnalas
 
+## 2026-10-29 — Bėgikai žaidimuose: naujų veikėjų galvos ir apranga (#56, šaka `claude/56-runner-heads`)
+
+- `src/sprint/runner.ts` (sprintas, barjerai, šuolis į tolį, ietis): vietoj nupiešto maskoto galvos – Claude Design v2 veikėjo 3/4 galva (`public/chars/head-{r,b,y,g}.webp`, žiūri bėgimo kryptimi), rankos – plaštakos odos spalva vietoj bokso pirštinių, šlaunys – aprangos spalva, blauzdos – odos, batai balti. Pozų sistema (bėgimo ciklas pagal kadenciją) nepakeista; kol paveikslėlis neįkeltas – piešiama sena galva.
+- `public/scenes/sp.webp`, `hd.webp` perfotografuoti su naujais bėgikais.
+
 ## 2026-10-29 — Žaidėjų galvutės: nauji veikėjai visur (#55, šaka `claude/55-avatar-heads`)
 
 - `avatar()` (`src/ui/mascots.ts`) dabar grąžina Claude Design v2 veikėjo galvutę (`public/chars/sheet*.webp` iškarpa) vietoj seno SVG – viena vieta, todėl pasikeitė visų žaidimų vardų laukai, HUD kortelės ir rezultatų eilutės. `crown` paliktas (mažas SVG virš galvutės).

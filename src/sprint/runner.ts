@@ -93,17 +93,24 @@ function footDrop(th:number,kn:number,ft:number){
 function capsule(ctx:CanvasRenderingContext2D,len:number,w:number){
   const r=w/2;ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(-r,len);ctx.arc(0,len,r,Math.PI,0,true);ctx.lineTo(r,0);ctx.arc(0,0,r,0,Math.PI,true);ctx.closePath();
 }
-function leg(ctx:CanvasRenderingContext2D,j:number,o:Pose,far:boolean){
+// #55: the Claude Design v2 character's 3/4 head (public/chars/head-*.webp, looks +x like the runner) replaces the
+// drawn mascot head once it has loaded; until then (or offline without the asset) the old head is drawn.
+const HEADS:Record<string,HTMLImageElement>={};
+if(typeof Image!=="undefined")for(const [n,k] of [["raudonas","r"],["melynas","b"],["geltonas","y"],["zalias","g"]]){const i=new Image();i.src=`/chars/head-${k}.webp`;HEADS[n]=i}
+const SKIN:Record<string,string>={raudonas:"#F2BF9A",melynas:"#7A4A2E",geltonas:"#F4CBA8",zalias:"#F6C7A2"};
+function leg(ctx:CanvasRenderingContext2D,j:number,o:Pose,far:boolean,L?:Look){
+  const kit=L&&HEADS[L.name]?.naturalWidth?L:null; // #55: kit colour thigh (shorts) + skin shin, white sneaker
   ctx.save();
   ctx.rotate(-o.th[j]*D);
-  ctx.fillStyle=far?"#0B0E26":INK;
+  ctx.fillStyle=kit?(far?kit.dark:kit.body):(far?"#0B0E26":INK);
   capsule(ctx,THIGH,LW);ctx.fill();
   ctx.translate(0,THIGH);ctx.rotate(o.kn[j]*D);
+  ctx.fillStyle=kit?SKIN[kit.name]:ctx.fillStyle;
   capsule(ctx,SHIN,LW*.92);ctx.fill();
   // chunky sneaker, toe forward (+x): white sole + coloured upper
   ctx.translate(0,SHIN);ctx.rotate(-o.ft[j]*D);
-  ctx.beginPath();ctx.roundRect(-.06,-.035,.19,.085,.04);ctx.fillStyle=far?"#2A2F5A":INK;ctx.fill();
-  ctx.beginPath();ctx.roundRect(-.06,.025,.19,.03,.015);ctx.fillStyle=far?"#C9CCE3":"#fff";ctx.fill();
+  ctx.beginPath();ctx.roundRect(-.06,-.035,.19,.085,.04);ctx.fillStyle=kit?(far?"#D9DCE6":"#fff"):(far?"#2A2F5A":INK);ctx.fill();
+  ctx.beginPath();ctx.roundRect(-.06,.025,.19,.03,.015);ctx.fillStyle=kit?kit.body:(far?"#C9CCE3":"#fff");ctx.fill();
   ctx.lineWidth=OL*.8;ctx.strokeStyle=INK;ctx.beginPath();ctx.roundRect(-.06,-.035,.19,.09,.04);ctx.stroke();
   ctx.restore();
 }
@@ -111,12 +118,14 @@ function leg(ctx:CanvasRenderingContext2D,j:number,o:Pose,far:boolean){
 function glove(ctx:CanvasRenderingContext2D,L:Look,j:number,o:Pose,far:boolean){
   const a1=-o.sh[j]*D, a2=a1-o.el[j]*D;
   const x=Math.sin(-a1)*UARM+Math.sin(-a2)*FARM, y=Math.cos(a1)*UARM+Math.cos(a2)*FARM;
-  ctx.beginPath();ctx.arc(x,y,GLOVE,0,Math.PI*2);
-  ctx.fillStyle=far?L.dark:L.body;ctx.fill();ctx.lineWidth=OL;ctx.strokeStyle=INK;ctx.stroke();
-  if(!far){ctx.beginPath();ctx.arc(x-.012,y-.012,GLOVE*.6,Math.PI*1.05,Math.PI*1.55);ctx.lineWidth=OL*.8;ctx.strokeStyle="rgba(255,255,255,.85)";ctx.lineCap="round";ctx.stroke()}
+  const hand=HEADS[L.name]?.naturalWidth?SKIN[L.name]:null; // with the new heads: bare hands, not boxing gloves
+  ctx.beginPath();ctx.arc(x,y,hand?GLOVE*.7:GLOVE,0,Math.PI*2);
+  ctx.fillStyle=hand??(far?L.dark:L.body);ctx.fill();ctx.lineWidth=OL;ctx.strokeStyle=INK;ctx.stroke();
+  if(!far&&!hand){ctx.beginPath();ctx.arc(x-.012,y-.012,GLOVE*.6,Math.PI*1.05,Math.PI*1.55);ctx.lineWidth=OL*.8;ctx.strokeStyle="rgba(255,255,255,.85)";ctx.lineCap="round";ctx.stroke()}
 }
 function head(ctx:CanvasRenderingContext2D,L:Look,o:Pose,t:number){
-  const r=HEAD_R, cy=HEAD_Y;
+  const r=HEAD_R, cy=HEAD_Y, img=HEADS[L.name];
+  if(img?.complete&&img.naturalWidth){const s=r*2.75;ctx.drawImage(img,-s*.48,cy-s*.58,s,s);return}
   // knot tails fly behind (-x), flapping with the stride
   const fl=Math.sin(t*2)*.025;
   ctx.lineJoin="round";ctx.lineWidth=OL;ctx.strokeStyle=INK;ctx.fillStyle=L.band;
@@ -151,12 +160,12 @@ export function drawRunner(ctx:CanvasRenderingContext2D,L:Look,o:Pose,x:number,g
   ctx.lineJoin="round";ctx.lineCap="round";
   // far side first (j=1)
   ctx.save();ctx.rotate(o.lean*D);ctx.translate(-.02,SHOULDER_Y);glove(ctx,L,1,o,true);ctx.restore();
-  leg(ctx,1,o,true);
+  leg(ctx,1,o,true,L);
   ctx.save();ctx.rotate(o.lean*D);
   ctx.beginPath();ctx.roundRect(-BODY_W/2,-BODY_H,BODY_W,BODY_H+.06,.11);ctx.fillStyle=L.body;ctx.fill();ctx.lineWidth=OL;ctx.strokeStyle=INK;ctx.stroke();
   head(ctx,L,o,o.p*6.3);
   ctx.restore();
-  leg(ctx,0,o,false);
+  leg(ctx,0,o,false,L);
   ctx.save();ctx.rotate(o.lean*D);ctx.translate(.02,SHOULDER_Y);glove(ctx,L,0,o,false);ctx.restore();
   ctx.restore();
 }
