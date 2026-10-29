@@ -84,6 +84,11 @@ export const EX_IDS:ExId[]=["squat","jack","knees","squatjump","sidestep","lunge
 
 // full-body mascot. anim=true adds the looping exercise / idle animation (CSS, transform-only)
 export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mood?:Mood;label?:string;cls?:string}={}){
+  // #57: outside the exercise demos (they must show the movement) every full body is the Claude Design v2 character
+  if(!(EX_IDS as string[]).includes(pose)){
+    const src=pose==="win"&&who==="r"?"win":`full-${who}`;
+    return `<span class="mascot m-art m-${who}${o.anim?" m-art-anim":""}${o.cls?" "+o.cls:""}" ${o.label?`role="img" aria-label="${o.label}"`:'aria-hidden="true"'} style="background-image:url(/chars/${src}.webp)"></span>`;
+  }
   const f=o.face??(RIGHT(who)?1:-1), c=C[who];
   let p=POSES[pose];
   if((pose==="punch"||pose==="javelin")&&f<0)p={...p,gl:[200-p.gr[0],p.gr[1]],gr:[200-p.gl[0],p.gl[1]]};
