@@ -32,6 +32,7 @@ test("bowling, 2 players x 3 frames: hand -> aim -> ball, scorecard, history, ba
   await expect(page.locator("#bwBoard tbody tr")).toHaveCount(2);
   await expect(page.locator("#bwBoard .bw-tframe")).toHaveCount(6);
   await expect(page.locator("#bwBoard .bw-tr.now")).toHaveCount(1);
+  await expect(page.locator("#bwAim"),"no aim pill / board number").toHaveCount(0);
   const order:string[]=[];
   const turns=2*3*2; // two balls per frame, no strike/spare (3 pins each)
   const atTurn=async()=>{

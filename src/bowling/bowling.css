@@ -132,10 +132,6 @@ body.bowling .fs,body:has(#bwEnd:not(.hide)) .fs{display:none}
 .bw-hand-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--yellow));transform-origin:left;transform:scaleX(0);transition:transform 90ms linear}
 .bw-hand.ok .bw-hand-bar i{background:var(--green)}
 .bw-hand.ok{border-color:var(--ink);box-shadow:0 0 0 3px var(--green),0 5px 0 var(--ink)}
-.bw-aim{position:absolute;left:max(10px,env(safe-area-inset-left));bottom:max(14px,env(safe-area-inset-bottom));z-index:4;display:flex;align-items:center;gap:6px;padding:5px 10px 4px;border:2.5px solid var(--ink);border-radius:var(--r-pill);background:#fff;color:var(--ink);
-  box-shadow:0 2px 0 var(--ink);font:800 12px/1.2 var(--body);opacity:0;scale:.9;pointer-events:none;transition:opacity var(--duration-quick) var(--ease-ui),scale var(--duration-quick) var(--ease-ui)}
-.bw-aim-dot{width:13px;height:13px;border-radius:50%;border:2px solid var(--ink);background:radial-gradient(circle at 35% 30%,#fff 0 8%,#5B8CFF 28%,#2F6BFF 55%,#070A20);flex:none}
-.bw-aim.on{opacity:1;scale:1}
 .bw-call{top:34%}
 .bw-call b{font-size:clamp(36px,10vmin,74px)}
 .bw-call.is-aim{top:44%}
@@ -200,7 +196,6 @@ body.bowling .fs,body:has(#bwEnd:not(.hide)) .fs{display:none}
   .bw-ttot{font-size:16px}
   .bw-status{margin-top:4px}
   .bw-hand{bottom:max(10px,env(safe-area-inset-bottom));width:min(58vw,400px)}
-  .bw-aim{bottom:max(10px,env(safe-area-inset-bottom))}
   /* the frame table owns the top; keep the camera preview low over the approach, not over the scores/pins */
   body.bowling #stage{top:auto;bottom:max(10px,env(safe-area-inset-bottom));height:clamp(70px,18vh,110px)}
   .bw-call{top:22%}
@@ -220,7 +215,7 @@ body.bowling-picking #stage{inset:auto;left:50%;top:54%;translate:-50% -50%;righ
   border-radius:20px;border:var(--bw) solid var(--ink);box-shadow:0 5px 0 var(--ink)}
 body.bowling-picking #stage canvas{object-fit:cover}
 body.bowling-picking #bwCv{filter:brightness(.55) saturate(.8)}
-body.bowling-picking .bw-hud,body.bowling-picking .bw-hand,body.bowling-picking .bw-aim,body.bowling-picking .bw-call{opacity:0;pointer-events:none}
+body.bowling-picking .bw-hud,body.bowling-picking .bw-hand,body.bowling-picking .bw-call{opacity:0;pointer-events:none}
 
 /* ---------- results ---------- */
 #bwEnd{background:var(--bg)}

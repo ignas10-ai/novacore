@@ -25,7 +25,7 @@ import {screenPhase,setScreenMode} from "../cast/cast.ts";
 import type {ScreenState} from "../cast/room.ts";
 import {
   PINS, LANE_W, BALL_R, PIN_H, PIN_Z, MAX_Z, DEFAULT_FRAMES, SPEED_MIN, SPEED_MAX,
-  control, handChoice, aimOf, ballX, throwSpeed, simulateThrow, newSeries, turnOf, rackCount, maxRolls, addRoll,
+  control, handChoice, aimOf, throwSpeed, simulateThrow, newSeries, turnOf, rackCount, maxRolls, addRoll,
   isSplit, scoreCard, rank, rollMarks, bestTotal, pickStep, spinOf, swing, swingState, type Series, type Throw, type SwingState,
 } from "./logic.ts";
 
@@ -100,7 +100,6 @@ document.body.insertAdjacentHTML("beforeend",`
     <span class="bw-hand-txt"><b id="bwHandT"></b><small id="bwHandS"></small></span>
     <span class="bw-hand-bar"><i id="bwHBar"></i></span>
   </div>
-  <div class="bw-aim" id="bwAim"><span class="bw-aim-dot"></span><b id="bwAimT"></b></div>
   <div class="bw-pick" id="bwPick" hidden>
     <div class="bw-pick-top" aria-live="polite"><b class="d" id="bwPickT"></b><small id="bwPickS"></small></div>
     <div class="bw-pick-hand bw-pick-l" id="bwPickL" aria-hidden="true"><svg viewBox="0 0 36 36"><circle class="bw-pick-bg" cx="18" cy="18" r="15.9"/><circle class="bw-pick-fill" id="bwRingL" cx="18" cy="18" r="15.9" pathLength="100"/></svg><b>${tr("bw.sideLeft")}</b><span id="bwPctL">0%</span></div>
@@ -138,7 +137,7 @@ fillIcons(document);
 
 const runRoot=$("#bwRun"), endRoot=$("#bwEnd"), cvs=$<HTMLCanvasElement>("#bwCv"), ctx=cvs.getContext("2d",{alpha:false})!;
 const callRoot=$("#bwCall"), callT=$("#bwCallT"), callS=$("#bwCallS"), turnRoot=$("#bwTurn"), gateRoot=$("#bwGate"), ring=$("#bwRing"), gateT=$("#bwGateT");
-const boardEl=$("#bwBoard"), frameEl=$("#bwFrame"), leftEl=$("#bwLeft"), handEl=$("#bwHand"), handT=$("#bwHandT"), handS=$("#bwHandS"), hbar=$("#bwHBar"), aimEl=$("#bwAim"), aimT=$("#bwAimT");
+const boardEl=$("#bwBoard"), frameEl=$("#bwFrame"), leftEl=$("#bwLeft"), handEl=$("#bwHand"), handT=$("#bwHandT"), handS=$("#bwHandS"), hbar=$("#bwHBar");
 const pickRoot=$("#bwPick"), pickT=$("#bwPickT"), pickS=$("#bwPickS");
 const pickEls=[$("#bwPickL"),$("#bwPickR")], pickRings=[$("#bwRingL"),$("#bwRingR")], pickPcts=[$("#bwPctL"),$("#bwPctR")];
 
@@ -183,7 +182,7 @@ let chosen:0|1=1, aim=0, spin=0, aimLocked=false, prevWrist:{x:number;y:number;t
 let pickProg:[number,number]=[0,0], lastPickAt=0;
 let SW:SwingState=swingState();
 let lmKeep:Lm[]|null=null, scripted=false, forceHand:0|1|null=null, gateHold=0, gateLast=0;
-let L:LaneLayout, bg:HTMLCanvasElement|null=null, lastAimText="", lastFrameText="", lastLeftText="";
+let L:LaneLayout, bg:HTMLCanvasElement|null=null, lastFrameText="", lastLeftText="";
 const PN=90, part=new Float32Array(PN*6); let partN=0; // x,y,vx,vy,age,life (screen px)
 const PCOL=["#FF3B3B","#2F6BFF","#FFC61A","#16B67A","#FFFFFF","#5B8CFF"];
 
@@ -201,7 +200,7 @@ function begin(){
   names0=[...Array(n).keys()].map(nameAt);
   series=newSeries(n,frames);firstTurn=true;lastPlayer=-1;
   pb=bestTotal(loadHist(),frames);
-  sim=null;resultShown=false;part.fill(0);partN=0;lastAimText=lastFrameText=lastLeftText="";
+  sim=null;resultShown=false;part.fill(0);partN=0;lastFrameText=lastLeftText="";
   pickRoot.hidden=true;pickRoot.classList.remove("in","out");document.body.classList.remove("bowling-picking");
   runRoot.classList.remove("hide");endRoot.classList.add("hide");
   document.body.classList.add("sprinting","bowling"); // .sprinting = the corner camera preview (sprint.css)
@@ -218,7 +217,7 @@ function begin(){
 function showCard(now:number,needGate:boolean){
   phase="card";phaseAt=now;S.running=false;gateHold=0;gateLast=0;
   const t=cur(),p=t.p,roll=t.roll;
-  callRoot.className="sp-call bw-call";handEl.classList.remove("on");aimEl.classList.remove("on");
+  callRoot.className="sp-call bw-call";handEl.classList.remove("on");
   pickRoot.hidden=true;pickRoot.classList.remove("in","out");document.body.classList.remove("bowling-picking");
   const turnN=$("#bwTurnN");turnN.textContent=names0[p];turnN.style.setProperty("--tone",TONE[p]);
   $("#bwTurnArt").innerHTML=mascot(WHO[p],"guard",{anim:true});
@@ -274,7 +273,6 @@ function chooseHand(side:0|1,now:number){
   handEl.dataset.mode="aim";
   clearTimeout(callTimer);callRoot.classList.remove("on"); // the pick overlay hides, the aim card takes over
   setHand(tr("bw.raise"),tr("bw.aimSub"),0,true);
-  updateAimText();
   sfx.round();
 }
 function handStep(now:number,lm:Lm[]|null){
@@ -313,7 +311,6 @@ function aimStep(now:number,lm:Lm[]|null){
     if(aimLocked)aimLocked=false;
     setHand(tr("bw.aim"),tr("bw.swingHint"),0,true);
   }
-  updateAimText();
 }
 function launch(now:number,aimV:number,spinV:number,speed:number){
   if(phase!=="aim")return;
@@ -322,7 +319,7 @@ function launch(now:number,aimV:number,spinV:number,speed:number){
   phase="roll";phaseAt=now;throwAt=now;resultShown=false;
   resultAt=now+(PIN_Z/throwSpeedUsed)*1000+220;
   nextAt=now+Math.max(3300,(PIN_Z/throwSpeedUsed)*1000+RESULT_EXTRA+900);
-  handEl.classList.remove("on");aimEl.classList.remove("on");
+  handEl.classList.remove("on");
   callRoot.className="sp-call bw-call";
   sfx.leap();
   setTimeout(()=>{if(phase==="roll")sfx.punch(0)},Math.max(250,(PIN_Z/throwSpeedUsed)*1000-120));
@@ -488,14 +485,6 @@ function setHand(title:string,sub:string,pct:number,on:boolean){
   hbar.style.transform=`scaleX(${clamp(pct,0,1).toFixed(3)})`;
   handEl.classList.toggle("ok",pct>=1);
 }
-function updateAimText(){
-  const boards=Math.round((aim*0.5+0.5)*39);
-  const side=spin<-0.12?tr("bw.spinLeft"):spin>0.12?tr("bw.spinRight"):"";
-  const txt=`${tr("bw.aimBoard",{n:clamp(boards,1,39)})}${side}`;
-  if(txt!==lastAimText){lastAimText=txt;aimT.textContent=txt}
-  aimEl.classList.add("on");
-}
-
 // ---------- TV board (cast.ts merges this over the rep-game state) ----------
 function tvState():Partial<ScreenState>{
   const cardNow=scoreCard(series),t=cur(),done=series.done;
@@ -511,7 +500,7 @@ function fakeRoll(ids:number[]){
   if(phase!=="aim")return;
   sim={down:ids.slice(),frames:[],endT:0,speed:0,aim,hook:spin,standing:series.rack.slice(),gutter:false};
   phase="roll";phaseAt=performance.now();throwAt=phaseAt;resultAt=phaseAt+200;nextAt=phaseAt+2400;resultShown=false;
-  setHand("","",0,false);aimEl.classList.remove("on");
+  setHand("","",0,false);
 }
 (window as any).__bw={
   state:()=>({phase,p:series.p,f:series.f,roll:turnOf(series).roll,rack:rackCount(series),rackIds:series.rack.map((v,i)=>v?i:-1).filter(i=>i>=0),
@@ -520,7 +509,7 @@ function fakeRoll(ids:number[]){
   ready:()=>{if(phase==="card")startHand(performance.now())}, // skip the gate / card delay
   hand:(side:0|1)=>{forceHand=side;if(phase==="hand")chooseHand(side,performance.now())},
   pick:(side:0|1,p:number)=>{pickProg[side]=clamp(p,0,1);setPicks(pickProg,side)}, // visual/e2e ring check
-  aim:(a:number,s=0)=>{aim=clamp(a,-1,1);spin=clamp(s,-1,1);updateAimText();if(phase==="aim")setHand(tr("bw.aim"),tr("bw.aimSub"),1,true)},
+  aim:(a:number,s=0)=>{aim=clamp(a,-1,1);spin=clamp(s,-1,1);if(phase==="aim")setHand(tr("bw.aim"),tr("bw.aimSub"),1,true)},
   throw:(speed=11)=>{if(phase==="aim")launch(performance.now(),aim,spin,speed)},
   // deterministic scoring path for the e2e: knock these pin ids (or the first N standing pins) now
   pins:(ids:number[])=>fakeRoll(ids),
@@ -594,9 +583,6 @@ function buildLane(){
   // pin deck + spots
   x.fillStyle="rgba(90,45,20,.12)";x.fillRect(cx-farHalf*1.03,yAt(19.7)-(yNear-yFar)*.02,farHalf*2.06,(yNear-yFar)*.09);
   for(const [px,pz] of PINS){const X=sxAt(px,pz),Y=yAt(pz),r=Math.max(1.2,pinHAt(pz)*.045);x.fillStyle="rgba(40,24,10,.35)";x.beginPath();x.ellipse(X,Y,r*1.7,r*.45,0,0,Math.PI*2);x.fill()}
-  // aiming arrows at 4.5 m
-  for(let i=-3;i<=3;i++){const z=4.5,X=sxAt(i*.14,z),Y=yAt(z),s=Math.max(2,pinHAt(z)*.055);
-    x.fillStyle="#8A4E1E";x.beginPath();x.moveTo(X,Y-s*1.5);x.lineTo(X-s,Y+s*.7);x.lineTo(X+s,Y+s*.7);x.closePath();x.fill()}
   // foul line + approach
   const fy=yAt(.02),fh=Math.max(3,H*.006);
   x.fillStyle="#FF3B3B";x.fillRect(cx-nearHalf,fy-fh/2,nearHalf*2,fh);
@@ -604,8 +590,6 @@ function buildLane(){
   const ap=x.createLinearGradient(0,yNear,0,H);ap.addColorStop(0,"#1A1F45");ap.addColorStop(1,"#0C102B");x.fillStyle=ap;x.fillRect(0,yNear,W,H-yNear);
   x.strokeStyle="rgba(255,255,255,.08)";x.lineWidth=1;
   for(let i=-6;i<=6;i++){x.beginPath();x.moveTo(cx+i*W*.09,yNear);x.lineTo(cx+i*W*.11,H);x.stroke()}
-  // approach dots (a bowler's starting boards)
-  for(let i=-2;i<=2;i++){x.fillStyle="rgba(255,198,26,.55)";x.beginPath();x.arc(cx+i*W*.07,H*.975,2.4,0,Math.PI*2);x.fill()}
   bg=c;
 }
 function render(now:number,dt:number){
@@ -639,8 +623,8 @@ function render(now:number,dt:number){
     const a=frames[Math.floor(k)],b=frames[Math.min(frames.length-1,Math.floor(k)+1)],f=k-Math.floor(k);
     const bx=a.bx+(b.bx-a.bx)*f,bz=a.bz+(b.bz-a.bz)*f;
     if(bz<MAX_Z)drawBall(bx,bz,series.p);
-  }else if(phase==="hand"||phase==="aim"){
-    drawGhost(series.p,phase==="aim"?aim:0,phase==="aim",now);
+  }else if(phase==="aim"){
+    drawGhost(aim);
   }
   drawParts(dt);
 }
@@ -677,48 +661,28 @@ function drawBall(x:number,z:number,p:number){
   if(r>10){ctx.fillStyle="#070A20";for(const a of [-.45,0,.45]){ctx.beginPath();ctx.arc(X+a*r*.38,Y-r*.98,r*.13,0,Math.PI*2);ctx.fill()}}
   ctx.restore();
 }
-// Perspective aiming: no lines and no crosshairs. A trail of translucent balls follows the predicted curve and a
-// bigger ghost ball sits where the ball crosses the head pin (the hand's line). The near balls are large / faint,
-// the far ones small / clearer, so the lane depth reads on its own.
-function drawAimPath(gx:number,gy:number,gh:number,aimV:number,spinV:number,on:boolean){
-  // the ghost bowler: a translucent body + the throwing arm reaching toward the aim
+// 2D aim model: the model's hand is the only aim guide. No predicted ball trail and no target ball; the actual
+// ball is drawn by the physics simulation only after release.
+function drawAimPath(gx:number,gy:number,gh:number,aimV:number){
   const p=series.p,handX=gx+aimV*gh*.42,handY=gy-gh*.62;
   ctx.save();
-  ctx.globalAlpha=on?.5:.34;
-  ctx.fillStyle=TONE[p];ctx.strokeStyle=on?"rgba(255,255,255,.85)":"rgba(255,255,255,.5)";ctx.lineWidth=2;
+  ctx.globalAlpha=.5;
+  ctx.fillStyle=TONE[p];ctx.strokeStyle="rgba(255,255,255,.85)";ctx.lineWidth=2;
   const hr=gh*.115,hy=gy-gh*.83;
   ctx.beginPath();ctx.arc(gx,hy,hr,0,Math.PI*2);ctx.fill();ctx.stroke();
   ctx.beginPath();ctx.roundRect(gx-gh*.12,hy+hr*.7,gh*.24,gh*.3,gh*.1);ctx.fill();ctx.stroke();
   // legs
   ctx.lineWidth=Math.max(3,gh*.035);ctx.strokeStyle=TONE[p];
   ctx.beginPath();ctx.moveTo(gx-gh*.07,hy+hr*.7+gh*.29);ctx.lineTo(gx-gh*.11,gy);ctx.moveTo(gx+gh*.07,hy+hr*.7+gh*.29);ctx.lineTo(gx+gh*.11,gy);ctx.stroke();
-  // both arms (before the choice) / the chosen arm up (aiming)
-  if(on){
-    ctx.lineWidth=Math.max(4,gh*.045);ctx.strokeStyle="#fff";
-    ctx.beginPath();ctx.moveTo(gx+(chosen?1:-1)*gh*.08,hy+hr*.9);ctx.lineTo(handX,handY);ctx.stroke();
-    // the other arm hangs at the side
-    ctx.lineWidth=Math.max(3,gh*.035);ctx.strokeStyle=TONE[p];
-    ctx.beginPath();ctx.moveTo(gx+(chosen?-1:1)*gh*.08,hy+hr*.9);ctx.lineTo(gx+(chosen?-1:1)*gh*.16,hy+hr*.9+gh*.22);ctx.stroke();
-    ctx.fillStyle=TONE[p];ctx.beginPath();ctx.arc(handX,handY,gh*.045,0,Math.PI*2);ctx.fill();
-    // the ball in the hand (solid enough to see, still part of the hologram)
-    drawGhostBall(handX,handY-gh*.02,gh*.055,TONE[p],.95,true);
-  }else{
-    ctx.lineWidth=Math.max(3,gh*.035);
-    for(const s of [-1,1]){ctx.beginPath();ctx.moveTo(gx+s*gh*.08,hy+hr*.9);ctx.lineTo(gx+s*gh*.3,hy+hr*1.1);ctx.stroke()}
-  }
+  // chosen arm up + the other hanging
+  ctx.lineWidth=Math.max(4,gh*.045);ctx.strokeStyle="#fff";
+  ctx.beginPath();ctx.moveTo(gx+(chosen?1:-1)*gh*.08,hy+hr*.9);ctx.lineTo(handX,handY);ctx.stroke();
+  ctx.lineWidth=Math.max(3,gh*.035);ctx.strokeStyle=TONE[p];
+  ctx.beginPath();ctx.moveTo(gx+(chosen?-1:1)*gh*.08,hy+hr*.9);ctx.lineTo(gx+(chosen?-1:1)*gh*.16,hy+hr*.9+gh*.22);ctx.stroke();
+  ctx.fillStyle=TONE[p];ctx.beginPath();ctx.arc(handX,handY,gh*.045,0,Math.PI*2);ctx.fill();
+  // the ball in the model's hand (not a predicted path)
+  drawGhostBall(handX,handY-gh*.02,gh*.055,TONE[p],.95,true);
   ctx.restore();
-  if(!on)return;
-  // the projected ball path as a trail of perspective spheres (no line)
-  const inLane=Math.abs(ballX(PIN_Z,aimV,spinV))<LANE_W/2-BALL_R*.3;
-  const tone=inLane?TONE[p]:"#FF3B3B";
-  for(let i=1;i<=9;i++){
-    const z=PIN_Z*i/9,X=sxAt(ballX(z,aimV,spinV),z),r=Math.max(2.2,ballRAt(z)*.56),Y=yAt(z)-r*.55;
-    drawGhostBall(X,Y,r,tone,.10+.15*(i/9),false);
-  }
-  // the target: a bigger ghost ball at the head pin instead of a ring / crosshair
-  const tx=ballX(PIN_Z,aimV,spinV),X=sxAt(tx,PIN_Z),Y=yAt(PIN_Z),r=Math.max(7,ballRAt(PIN_Z)*1.15);
-  ctx.save();ctx.globalAlpha=.2;ctx.fillStyle="#070920";ctx.beginPath();ctx.ellipse(X,Y+r*.35,r*1.5,r*.36,0,0,Math.PI*2);ctx.fill();ctx.restore();
-  drawGhostBall(X,Y-r*.55,r,tone,.62,true);
 }
 function drawGhostBall(X:number,Y:number,r:number,tone:string,alpha:number,glow:boolean){
   ctx.save();ctx.globalAlpha=alpha;
@@ -729,10 +693,9 @@ function drawGhostBall(X:number,Y:number,r:number,tone:string,alpha:number,glow:
   ctx.shadowBlur=0;ctx.globalAlpha=alpha*.7;ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(X-r*.32,Y-r*.38,Math.max(1,r*.16),0,Math.PI*2);ctx.fill();
   ctx.restore();
 }
-function drawGhost(p:number,aimV:number,on:boolean,now:number){
+function drawGhost(aimV:number){
   const gx=L.cx,gy=L.yNear-L.H*.20,gh=Math.min(L.H*.25,198);
-  drawAimPath(gx,gy,gh,aimV,spin,on);
-  void p;void now;
+  drawAimPath(gx,gy,gh,aimV);
 }
 function burst(){
   if(reduced())return;
@@ -772,11 +735,11 @@ function frame(now:number){
 }
 function reset(){
   cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);
-  callRoot.className="sp-call bw-call";turnRoot.hidden=true;handEl.classList.remove("on");aimEl.classList.remove("on");
+  callRoot.className="sp-call bw-call";turnRoot.hidden=true;handEl.classList.remove("on");
   pickRoot.hidden=true;pickRoot.classList.remove("in","out");
   setScreenMode(null);sim=null;scripted=false;forceHand=null;lmKeep=null;lastPlayer=-1;firstTurn=true;
   pickProg=[0,0];lastPickAt=0;SW=swingState();aimLocked=false;handEl.dataset.mode="";
-  part.fill(0);partN=0;bg=null;totalCache.clear();lastFrameText=lastLeftText=lastAimText="";
+  part.fill(0);partN=0;bg=null;totalCache.clear();lastFrameText=lastLeftText="";
   runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("sprinting","bowling","bowling-picking");
 }
 export const BOWLING:GameMode={
