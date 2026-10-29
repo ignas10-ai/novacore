@@ -3,6 +3,10 @@
 ## 2026-10-29 — Pilni veikėjai vietoj SVG maskotų (#57, šaka `claude/57-mascot-art`)
 
 - `mascot()` (`src/ui/mascots.ts`): visoms ne pratimų pozoms (idle, vs, win, lose, guard…) – Claude Design v2 veikėjo kūnas (`public/chars/full-{r,b,y,g}.webp`, Kometos pergalė – `win.webp`). Pasikeitė žaidėjų pasirinkimas, Kompanijos, ėjimo kortelės, rezultatai visuose žaidimuose. Pratimų pozos (pritūpimai, šuoliukai…) lieka SVG – jos rodo judesį.
+## 2026-10-29 — Bėgikai žaidimuose: naujų veikėjų galvos ir apranga (#56, šaka `claude/56-runner-heads`)
+
+- `src/sprint/runner.ts` (sprintas, barjerai, šuolis į tolį, ietis): vietoj nupiešto maskoto galvos – Claude Design v2 veikėjo 3/4 galva (`public/chars/head-{r,b,y,g}.webp`, žiūri bėgimo kryptimi), rankos – plaštakos odos spalva vietoj bokso pirštinių, šlaunys – aprangos spalva, blauzdos – odos, batai balti. Pozų sistema (bėgimo ciklas pagal kadenciją) nepakeista; kol paveikslėlis neįkeltas – piešiama sena galva.
+- `public/scenes/sp.webp`, `hd.webp` perfotografuoti su naujais bėgikais.
 
 ## 2026-10-29 — Žaidėjų galvutės: nauji veikėjai visur (#55, šaka `claude/55-avatar-heads`)
 
