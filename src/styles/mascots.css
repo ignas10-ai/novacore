@@ -124,3 +124,6 @@
 /* Iečio metimas (src/javelin): the throwing glove pulls back, the body leans, then the arm comes through */
 .anim.mp-javelin .m-ui{animation:m-jav-lean 1.8s var(--ease-smooth-out,ease) infinite alternate}
 @keyframes m-jav-lean{from{transform:rotate(-3deg)}to{transform:rotate(4deg)}}
+/* character heads (#55): sheet crop – the front view is the left third, the head the top quarter */
+span.m-avatar{position:relative;aspect-ratio:1;border-radius:50%;background:no-repeat 8% 6%/520% auto;background-color:transparent}
+span.m-avatar .m-crown{position:absolute;left:18%;top:-38%;width:64%;overflow:visible}

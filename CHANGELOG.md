@@ -1,5 +1,9 @@
 # Pakeitimų žurnalas
 
+## 2026-10-29 — Žaidėjų galvutės: nauji veikėjai visur (#55, šaka `claude/55-avatar-heads`)
+
+- `avatar()` (`src/ui/mascots.ts`) dabar grąžina Claude Design v2 veikėjo galvutę (`public/chars/sheet*.webp` iškarpa) vietoj seno SVG – viena vieta, todėl pasikeitė visų žaidimų vardų laukai, HUD kortelės ir rezultatų eilutės. `crown` paliktas (mažas SVG virš galvutės).
+
 ## 2026-10-28 — Badmintonas: trečio asmens vaizdas, taikymo burbulas ir šuolio smūgis (#46, šaka `martynas/46-badminton-3rd-person`)
 
 - **Trečio asmens vaizdas:** kamera dabar stovi už **priimančio** žaidėjo. Priimantis žaidėjas – didelis, **permatomas** personažas pirmame plane, o varžovas – mažas priešais už tinklo. Personažas **pats nubėga** į numatomą smūgio tašką (`run` kiekvienoje pusėje, 9 m/s), todėl žaidėjas fiziškai nejuda – tik mosteli. Solo visada rodoma už P1; 2 žaidėjai – kamera persijungia priimančiam, o aktyvi HUD kortelė pažymima.
