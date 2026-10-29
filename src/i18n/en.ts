@@ -880,9 +880,6 @@ export const en:Record<Key,string>={
   "bw.gutterSub":"The ball went into the gutter",
   "bw.miss":"Miss!",
   "bw.missSub":"The ball missed every pin",
-  "bw.aimBoard":"Board {n}",
-  "bw.spinLeft":" · hook left",
-  "bw.spinRight":" · hook right",
   "hist.bowling":"Bowling · {n} frame|Bowling · {n} frames",
   // ---------- Javelin throw (src/javelin) ----------
   "jv.title":"Javelin throw",

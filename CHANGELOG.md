@@ -1,5 +1,12 @@
 # Pakeitimų žurnalas
 
+## 2026-10-29 — Boulingas: jokios taikymosi trajektorijos, tik 2D modelio rankos (#58, šaka `claude/58-bowling-no-aim-guides`)
+
+- **Pašalinta:** visas numatomas kamuolio kelias – kamuolio pėdsakas ir didelis taikinio kamuolys prie galvos kūgio (`drawAimPath()` dalis). Taip pat pašalintas apatinis `#bwAim` žetonas („Lenta N“ + kablio kryptis) ir ant takelio nupieštos 7 taikymosi rodyklės bei 5 privažiavimo taškai.
+- **Liko 2D modelio ranka:** permatomas 2D boulerio modelis su pasirinkta ranka ir kamuoliu rankoje – juo ir taikomasi, be jokio numatomo kelio. Taip pat liko tikrasis MediaPipe 2D skeletas, kurį `camera.ts` piešia kameros peržiūroje (portretu / gulsčiai – apatiniame dešiniajame kampe), ir tikrasis kamuolys, atsirandantis tik po metimo iš fizikos simuliacijos. Takelyje liko medžio lentų siūlės, pražangos linija ir kūgių taškai – jokių taikymosi linijų / rodyklių.
+- **Kodas:** `drawAimPath()` / `drawGhost()` / `drawGhostBall()` palikti tik modelio rankai ir kamuoliui rankoje; pašalintas `ballX` importas, `updateAimText()` ir `aimEl/aimT`; iš `bowling.css` – `.bw-aim`; iš `lt.ts`/`en.ts` – nebenaudojami `bw.aimBoard`, `bw.spinLeft`, `bw.spinRight`.
+- **Patikrinta:** `npm test`, `npm run build`, `npx playwright test test/e2e/bowling.spec.ts` (papildomai tikrinama, kad `#bwAim` nebėra), headless kadrai 390×844 ir 844×390 – takelis be pėdsako, taikinio kamuolio, rodyklių ir žetono; matomas 2D modelio hand/ball, kameros 2D skeletas ir apatinė instrukcijų kortelė. **Dar reikia tikro telefono:** ar taikytis pagal 2D modelio ranką be trajektorijos patogu.
+
 ## 2026-10-29 — Bėgikai žaidimuose: naujų veikėjų galvos ir apranga (#56, šaka `claude/56-runner-heads`)
 
 - `src/sprint/runner.ts` (sprintas, barjerai, šuolis į tolį, ietis): vietoj nupiešto maskoto galvos – Claude Design v2 veikėjo 3/4 galva (`public/chars/head-{r,b,y,g}.webp`, žiūri bėgimo kryptimi), rankos – plaštakos odos spalva vietoj bokso pirštinių, šlaunys – aprangos spalva, blauzdos – odos, batai balti. Pozų sistema (bėgimo ciklas pagal kadenciją) nepakeista; kol paveikslėlis neįkeltas – piešiama sena galva.

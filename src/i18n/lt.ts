@@ -880,9 +880,6 @@ export const lt={
   "bw.gutterSub":"Kamuolys į griovį",
   "bw.miss":"Nepataikei!",
   "bw.missSub":"Kamuolys nepataikė nė vieno kūgio",
-  "bw.aimBoard":"Lenta {n}",
-  "bw.spinLeft":" · kablys į kairę",
-  "bw.spinRight":" · kablys į dešinę",
   "hist.bowling":"Boulingas · {n} raundas|Boulingas · {n} raundai|Boulingas · {n} raundų",
   // ---------- Iečio metimas (src/javelin) ----------
   "jv.title":"Iečio metimas",
