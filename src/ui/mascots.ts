@@ -109,9 +109,12 @@ export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mo
     +`</svg>`;
 }
 // head-only avatar (HUD, profile, setup chips): the head fills the box, tails cropped
-export function avatar(who:Who,mood?:Mood,o:{crown?:boolean;label?:string}={}){
-  const m=mood||(RIGHT(who)?"fierce":"smirk");
-  return `<svg class="m-avatar m-${who}" viewBox="${o.crown?"34 -2 132 152":"34 18 132 132"}" ${o.label?`role="img" aria-label="${o.label}"`:'aria-hidden="true"'} focusable="false">${head(who,m,RIGHT(who)?1:-1)}${o.crown?crown(100,-12,50):""}</svg>`;
+// player head = the Claude Design v2 character for that colour (public/chars/sheet*.webp, front view, head crop; #55).
+// One place, so every game's name field / HUD / results row follows. mood is kept for the API; the art has one face.
+const SHEET:Record<Who,string>={r:"sheetR",b:"sheetB",y:"sheetY",g:"sheetG"};
+export function avatar(who:Who,_mood?:Mood,o:{crown?:boolean;label?:string}={}){
+  const a=o.label?`role="img" aria-label="${o.label}"`:'aria-hidden="true"';
+  return `<span class="m-avatar m-${who}" ${a} style="background-image:url(/chars/${SHEET[who]}.webp)">${o.crown?`<svg class="m-crown" viewBox="68 -2 64 50" aria-hidden="true" focusable="false">${crown(100,-12,50)}</svg>`:""}</span>`;
 }
 // VS face-off (home hero, onboarding): both mascots in guard + the yellow VS badge sits in the markup between them
 export const vsPair=()=>mascot("r","vs",{anim:true,cls:"m-vs-l"})+mascot("b","vs",{anim:true,cls:"m-vs-r"});
