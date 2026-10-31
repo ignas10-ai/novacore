@@ -2,13 +2,13 @@
 
 MoveClash is a Lithuanian-first mobile web app (PWA, Lithuanian + English UI, see **Languages / i18n**) built around a camera game: phone camera -> MediaPipe Pose -> squat, jumping-jack, high-knee, squat-jump, side-step, reverse-lunge, and standing cross-crunch counting for 1-2 players. Since 2026-10-25 (branch `app-v1`) it is a **Vite + TypeScript** project (vanilla, no UI framework). Dependencies: `vite`, `typescript`, `@mediapipe/tasks-vision` pinned to **0.10.14** (JS bundled from npm; the wasm and the pose model still load from CDNs at runtime; fonts are bundled in `public/fonts`), `@supabase/supabase-js` pinned to **2.118.0** (online layer: nickname, kompanijos, weekly leaderboard, challenges).
 
-## Team workflow (Ignas+Claude and Martynas+his AI) — READ FIRST
+## Team workflow (Ignas+Claude, Martynas+his AI, Stela+her AI) — READ FIRST
 
-Two people with two AI agents work on this repo. To never overwrite each other:
+Three people with their AI agents work on this repo (Stela = GitHub `stelabuja-16`, joined 2026-10-31). To never overwrite each other:
 
-1. **Tasks live in GitHub Issues** (`gh issue list`). Labels: `Martynas`, `Ignas+Claude`, `telefono testas`, `iki 11-06`. Work only on an issue labelled for you; to take a new one, comment "imu" and add your label first.
-2. **One issue = one branch** named `<who>/<issue#>-<short>` (e.g. `martynas/3-release-aab`, `claude/7-boxing-badge`). Never commit straight to `master`.
-3. **Owned areas** (the other side changes them only via a PR the owner reviews): Martynas – `src/cast/`, `.github/workflows/android.yml`, `android/`; Ignas+Claude – everything else. Shared files (`index.html`, `src/main.ts`, `src/ui/router.ts`, `src/i18n/*`, `CHANGELOG.md`, `AGENTS.md`) – keep edits small, append, don't reformat.
+1. **Tasks live in GitHub Issues** (`gh issue list`). Labels: `Martynas`, `Ignas+Claude`, `Stela`, `telefono testas`, `iki 11-06`. Work only on an issue labelled for you; to take a new one, comment "imu" and add your label first.
+2. **One issue = one branch** named `<who>/<issue#>-<short>` (e.g. `martynas/3-release-aab`, `claude/7-boxing-badge`, `stela/43-phone-test`). Never commit straight to `master`.
+3. **Owned areas** (the other side changes them only via a PR the owner reviews): Martynas – `src/cast/`, `.github/workflows/android.yml`, `android/`; Ignas+Claude – everything else; Stela – no owned area yet, works only via PRs on `Stela` issues (Ignas or Martynas reviews). Shared files (`index.html`, `src/main.ts`, `src/ui/router.ts`, `src/i18n/*`, `CHANGELOG.md`, `AGENTS.md`) – keep edits small, append, don't reformat.
 4. **Before you start:** `git pull` on master, branch from it. **Before you push:** `npm test` (+ `npx tsc --noEmit`), then merge the latest `origin/master` into your branch and re-run. Merge to master only when CI (Tests + Android) is green; never force-push master.
 5. **Close the issue** in the merge commit message (`closes #7`) and add a CHANGELOG line.
 
