@@ -13,7 +13,7 @@
   --bg:#F3FBF7;--surface:#fff;--surface-2:#E4F2EC;
   --ink:#0E2E26;--ink-2:#1F453B;--fg:var(--ink);--fg-mute:#4F6B62;--fg-faint:#5A766D;
   --mint:#3DD6A8;--mint-ink:#0F8A66;
-  --gc:#FF9F6B;                                                   /* context colour (light) */
+  --gc:#8DE8CA;                                                   /* context colour (light); default = mint */
   --yellow:#FFD66B;--yellow-tint:#FFF4D1;
   --ol:#DCEBE5;--line:#E2EEE9;
   --sh:0 2px 10px rgba(14,46,38,.06);--sh-lg:0 6px 20px rgba(14,46,38,.08);--sh-sm:0 1px 4px rgba(14,46,38,.06);
@@ -190,3 +190,22 @@ body{font-family:var(--body)}
 
 /* game setup screens are a step inside Rungtys: no tab bar over their start slider (back = the top-left arrow) */
 body:is([data-view="setup"],[data-view="sprint"],[data-view="boxing"],[data-view="longjump"],[data-view="hurdles"],[data-view="bowling"],[data-view="ski"],[data-view="wall"],[data-view="badminton"],[data-view="javelin"]) .tabbar{display:none}
+
+/* chibi kids in the old mascot slots (src/ui/mascots.ts) */
+img.mascot.kid{object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 6px 8px rgba(14,46,38,.14))}
+img.mascot.m-vs-r{transform:scaleX(-1)}
+
+/* ---------- onboarding: mint / sky / sun steps, ink text ---------- */
+#onb{--onb:#8DE8CA;--onb-fg:var(--ink);--onb-em:#0B6E52;--onb-btn:var(--ink);--onb-btn-fg:#fff}
+#onb[data-step="1"]{--onb:#8FD8FF;--onb-em:#155E8C}
+#onb[data-step="2"]{--onb:#FFD66B;--onb-em:#8A5A00;--onb-btn:var(--ink);--onb-btn-fg:#fff}
+.onb-title{font-weight:700;letter-spacing:-.02em}
+.onb-title em,#onb[data-step="2"] .onb-title em{color:var(--onb-em)}
+.onb-copy{font-weight:500}
+.onb-art{border:0;box-shadow:0 10px 30px rgba(14,46,38,.12)}
+.onb-dots i{border:0;background:rgba(255,255,255,.7)}
+.onb-dots[aria-valuenow="1"] i:nth-child(1),.onb-dots[aria-valuenow="2"] i:nth-child(2),.onb-dots[aria-valuenow="3"] i:nth-child(3),#onb[data-step="2"] .onb-dots i:nth-child(3){background:var(--ink)}
+.onb-nav .go.alt{border:0}
+.vs-art{background:linear-gradient(104deg,#FF9C9C 0 50%,#8FD8FF 50% 100%)}
+.vs-badge{background:#fff;color:var(--ink);border:0;box-shadow:0 6px 16px rgba(14,46,38,.18)}
+#onb .box.perm{border:0}

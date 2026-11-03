@@ -83,7 +83,15 @@ const POSES:Record<Pose,P>={
 export const EX_IDS:ExId[]=["squat","jack","knees","squatjump","sidestep","lunge","crunch"];
 
 // full-body mascot. anim=true adds the looping exercise / idle animation (CSS, transform-only)
+// 11-03 mint: the non-exercise poses (idle / vs / win / lose / guard / punch) are the chibi kids (public/chars/mini);
+// exercise poses stay SVG, they show HOW the move goes. Same .mascot class + box, so every placement keeps its size.
+const KID:Record<Who,string>={r:"sp",b:"lj",y:"bd",g:"hd"};
+const KID_POSES=new Set<Pose>(["idle","vs","win","lose","guard","punch"]);
 export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mood?:Mood;label?:string;cls?:string}={}){
+  if(KID_POSES.has(pose)){
+    const a=o.label?`alt="${o.label}"`:`alt="" aria-hidden="true"`;
+    return `<img class="mascot kid m-${who} mp-${pose}${o.cls?" "+o.cls:""}" src="/chars/mini/${pose==="win"&&who==="r"?"rrh":KID[who]}.webp" ${a}>`;
+  }
   const f=o.face??(RIGHT(who)?1:-1), c=C[who];
   let p=POSES[pose];
   if((pose==="punch"||pose==="javelin")&&f<0)p={...p,gl:[200-p.gr[0],p.gr[1]],gr:[200-p.gl[0],p.gl[1]]};
@@ -109,12 +117,11 @@ export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mo
     +`</svg>`;
 }
 // head-only avatar (HUD, profile, setup chips): the head fills the box, tails cropped
-// player head = the Claude Design v2 character for that colour (public/chars/sheet*.webp, front view, head crop; #55).
+// player head = the chibi kid for that colour (public/chars/mini, head crop; 11-03, was the Claude Design v2 sheets).
 // One place, so every game's name field / HUD / results row follows. mood is kept for the API; the art has one face.
-const SHEET:Record<Who,string>={r:"sheetR",b:"sheetB",y:"sheetY",g:"sheetG"};
 export function avatar(who:Who,_mood?:Mood,o:{crown?:boolean;label?:string}={}){
   const a=o.label?`role="img" aria-label="${o.label}"`:'aria-hidden="true"';
-  return `<span class="m-avatar m-${who}" ${a} style="background-image:url(/chars/${SHEET[who]}.webp)">${o.crown?`<svg class="m-crown" viewBox="68 -2 64 50" aria-hidden="true" focusable="false">${crown(100,-12,50)}</svg>`:""}</span>`;
+  return `<span class="m-avatar m-${who}" ${a} style="background:url(/chars/mini/${KID[who]}.webp) 50% 6%/175% auto no-repeat #fff">${o.crown?`<svg class="m-crown" viewBox="68 -2 64 50" aria-hidden="true" focusable="false">${crown(100,-12,50)}</svg>`:""}</span>`;
 }
 // VS face-off (home hero, onboarding): both mascots in guard + the yellow VS badge sits in the markup between them
 export const vsPair=()=>mascot("r","vs",{anim:true,cls:"m-vs-l"})+mascot("b","vs",{anim:true,cls:"m-vs-r"});
