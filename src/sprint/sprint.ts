@@ -126,7 +126,7 @@ $("#spGo").onclick=()=>startFlow(SPRINT);
 
 // ---------- race state ----------
 type Phase="off"|"pos"|"set"|"race"|"done";
-let phase:Phase="off", phaseAt=0, setDur=0, t0=0, raceT=0, falseStarts=0, raf=0, last=0, firstFin=-1, doneAt=0, brokeAt=-1, cam=0, hudAt=0, callTimer=0;
+let phase:Phase="off", phaseAt=0, setDur=0, t0=0, raceT=0, falseStarts=0, raf=0, last=0, firstFin=-1, doneAt=0, brokeAt=-1, cam=0, cam2=0, hudAt=0, callTimer=0;
 let feedCad=0, feedAt=0, feedLeg=0; // test hook (tools/scenes.mjs): synthetic knee steps
 let L:Layout, ghost:number[]=[], solo=false;
 const R:Runner[]=[runner(),runner()];
@@ -142,7 +142,7 @@ const FT=new Float32Array(600), WT=new Float32Array(600), DT=new Float32Array(60
 (window as any).__sprintPerf=()=>{const n=Math.min(fn,600);if(!n)return null;const a=[...FT.slice(0,n)].sort((x,y)=>x-y),w=[...WT.slice(0,n)].sort((x,y)=>x-y),avg=a.reduce((s,v)=>s+v,0)/n;
   return {frames:fn,fps:Math.round(1000/avg*10)/10,p95FrameMs:Math.round(a[Math.floor(n*.95)]*10)/10,workMsAvg:Math.round(w.reduce((s,v)=>s+v,0)/n*100)/100,workMsP95:Math.round(w[Math.floor(n*.95)]*100)/100,drawMsAvg:Math.round([...DT.slice(0,n)].reduce((s,v)=>s+v,0)/n*100)/100,drawMsP95:Math.round([...DT.slice(0,n)].sort((x,y)=>x-y)[Math.floor(n*.95)]*100)/100}};
 // state probe + synthetic knee steps for tools/scenes.mjs (the gallery frames need a moving runner)
-(window as any).__sp={feed:(cad:number)=>{feedCad=cad;feedAt=performance.now()},state:()=>({phase,t:raceT,x:R[0]?.x,fin:R[0]?.fin})};
+(window as any).__sp={feed:(cad:number)=>{feedCad=cad;feedAt=performance.now()},state:()=>({phase,t:raceT,x:R[0]?.x,fin:R[0]?.fin,runs:R.slice(0,S.players).map(r=>({x:r.x,v:r.v,fin:r.fin}))})};
 
 function call(t:string,s="",cls="",ms=0){
   clearTimeout(callTimer);
@@ -171,7 +171,7 @@ function resize(){
   const W=innerWidth,H=innerHeight,dpr=Math.min(2,devicePixelRatio||1);
   cvs.width=Math.round(W*dpr);cvs.height=Math.round(H*dpr);
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  L=layout(W,H,dpr);build(ctx,L);
+  L=layout(S.players===2?W/2:W,H,dpr);build(ctx,L);
   if(cv.width)document.body.style.setProperty("--sp-cam-ar",String(cv.width/cv.height));
 }
 addEventListener("resize",()=>{if(phase!=="off")resize()});
@@ -188,7 +188,7 @@ function begin(){
   cardEl[1].classList.toggle("ghost",solo);
   document.body.classList.add("sprinting");
   resize();
-  cam=-(L.W/L.ppm)*.3;
+  cam=cam2=-(L.W/L.ppm)*.3;
   document.fonts?.load("400 40px \"Titan One\"",`${tr("sp.finishLine")} 0123456789`).then(()=>{if(phase!=="off")build(ctx,L)}).catch(()=>{});
   S.running=true; // game.ts swallows Android back while running
   last=performance.now();fn=0;
@@ -212,7 +212,7 @@ function frame(now:number){
     draw(ps[i].lm,i);
   }
   // the scene tool feeds a steady cadence (a fake camera cannot always get both knees in frame in landscape)
-  if(feedCad>0&&(phase==="race"||phase==="done")&&now>=feedAt){feedLeg^=1;knee(0,now,feedLeg);feedAt=now+1000/feedCad}
+  if(feedCad>0&&(phase==="race"||phase==="done")&&now>=feedAt){feedLeg^=1;for(let i=0;i<S.players;i++)knee(i,now,feedLeg);feedAt=now+1000/feedCad}
   const tp=(now-phaseAt)/1000;
   if(phase==="pos"&&tp>POS_S)enter("set",now);
   else if(phase==="set"&&tp>setDur)enter("race",now);
@@ -296,7 +296,37 @@ function edge(k:number,look:number,left:boolean,x:number,label:string){
   ctx.fillStyle="#fff";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(txt,X+(left?24:12),y+.5);
   ctx.beginPath();const ax=left?X+12:X+w-12;ctx.moveTo(ax+(left?-5:5),y);ctx.lineTo(ax+(left?3:-3),y-6);ctx.lineTo(ax+(left?3:-3),y+6);ctx.fill();
 }
+function renderSplit(now:number,dt:number){
+  const t=now/1000, viewM=L.W/L.ppm;
+  const target=(k:number)=>{
+    const r=R[k];
+    let x=r.x-viewM*(L.portrait?.35:.42);
+    return Math.min(Math.max(x,-viewM*.3),RACE_M+2-viewM*.5);
+  };
+  if(phase==="race"||phase==="done"){
+    cam=target(0);
+    cam2=target(1);
+  }
+  const saved=cam;
+  for(const k of [0,1]){
+    const off=k?L.W:0;
+    ctx.save();ctx.beginPath();ctx.rect(off,0,L.W,L.H);ctx.clip();ctx.translate(off,0);
+    cam=k?cam2:cam;
+    drawBack(ctx,cam);drawFinishBack(ctx,cam);
+    const v=solo?G.v:R[k].v, fin=solo&&k===1?G.fin>=0:R[k].fin!=null;
+    animate(k,v,fin,order[0]===k,dt,t);
+    body(k,k,R[k].x,v,1,k?"" : "");
+    drawFinishFront(ctx,cam,brokeAt<0?-1:raceT-brokeAt);
+    drawFront(ctx,cam);
+    ctx.restore();
+  }
+  cam=saved;
+  // split rail: red on the left, blue on the right
+  ctx.fillStyle="#0E2E26";ctx.fillRect(L.W-2,0,4,L.H);
+  ctx.fillStyle="#FF3B3B";ctx.fillRect(L.W-4,0,2,L.H);ctx.fillStyle="#2F6BFF";ctx.fillRect(L.W+2,0,2,L.H);
+}
 function render(now:number,dt:number){
+  if(S.players===2&&!solo){renderSplit(now,dt);return}
   const t=now/1000, viewM=L.W/L.ppm;
   // camera: frame both humans when close, otherwise follow the leader; hold just past the finish
   let target=-viewM*.3,leadV=0;

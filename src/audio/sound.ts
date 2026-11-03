@@ -25,7 +25,8 @@ function noise(dur:number,gain:number){
   for(let k=0;k<n;k++)d[k]=(Math.random()*2-1)*(1-k/n)**3;
   const s=ac.createBufferSource(),g=ac.createGain();g.gain.value=gain;s.buffer=b;s.connect(g).connect(ac.destination);s.start();
 }
-const buzz=(ms:number)=>{if(vibeOn)try{navigator.vibrate?.(ms)}catch(e){}};
+const buzz=(ms:number|number[])=>{if(vibeOn)try{navigator.vibrate?.(ms)}catch(e){}};
+export const haptic=(ms:number|number[])=>buzz(ms);
 export const sfx={
   rep:(i:number)=>{tone(i?1046:784,.07,.16);buzz(30)},
   round:()=>{tone(659,.12,.2,"triangle");tone(988,.2,.2,"triangle",.12)},

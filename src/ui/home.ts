@@ -10,7 +10,9 @@ import {$} from "./dom.ts";
 import {t,tn} from "../i18n/i18n.ts";
 import {onView,go} from "./router.ts";
 import {renderHomeRank} from "./social.ts";
-import {POSE,GAME,applyChar} from "./chars.ts";
+import {GAME,HOME_ICON,applyChar} from "./chars.ts";
+import {sportArt} from "./sport.ts";
+import {icon} from "./icons.ts";
 import {slide} from "./slide.ts";
 
 function render(){
@@ -34,16 +36,27 @@ function render(){
 export function games(){
   const grid=$("#games");
   document.querySelectorAll<HTMLAnchorElement>("#home .sp-tile").forEach(a=>grid.append(a));
-  grid.querySelectorAll<HTMLAnchorElement>(".sp-tile:not([data-g])").forEach(a=>{
+  const tiles=[...grid.querySelectorAll<HTMLAnchorElement>(".sp-tile")];
+  for(const a of tiles){
     const g=[...a.classList].find(c=>c!=="sp-tile"&&c.endsWith("-tile"))?.slice(0,-5)??"sp", m=GAME[g];
-    a.dataset.g=g;if(!m)return;
-    a.style.setProperty("--gc",m.color);a.dataset.duo=String(m.duo);
-    if(m.beta)a.insertAdjacentHTML("afterbegin",`<span class="sp-beta">${t("u.betaTag")}</span>`);
-    a.querySelector(".sp-tile-art")?.insertAdjacentHTML("afterbegin",`<img class="sp-tile-img" alt="" src="/chars/${POSE[g]}.webp">`);
-  });
-  grid.querySelectorAll<HTMLElement>(".sp-tile").forEach((a,i)=>a.style.setProperty("--i",String(i)));
-  // The category view is a shelf: no one-line description under the title (the title is the star).
-  grid.querySelectorAll<HTMLElement>(".sp-tile-txt small").forEach(s=>{s.hidden=true});
+    a.dataset.g=g;if(!m)continue;
+    a.dataset.duo=String(m.duo);a.dataset.beta=String(!!m.beta);
+    const name=a.querySelector(".sp-tile-txt b")?.textContent??"", sub=a.querySelector(".sp-tile-txt small")?.textContent??"";
+    a.style.setProperty("--gc",m.color);
+    a.classList.add("game-row");
+    a.innerHTML=`<span class="game-idx d" aria-hidden="true"></span>
+      <span class="game-art" aria-hidden="true">${sportArt(g)}<i class="game-halo"></i><i class="game-spark"></i></span>
+      <span class="sp-tile-txt"><b class="d"></b>${m.beta?`<span class="sp-beta"><span class="sp-beta-ic">${icon("sparkle")}</span>${t("u.betaTag")}</span>`:""}<small></small></span>
+      <span class="game-arrow" aria-hidden="true">${icon("arrow-up-right")}</span>`;
+    a.querySelector(".sp-tile-txt b")!.textContent=name;
+    a.querySelector(".sp-tile-txt small")!.textContent=sub;
+    a.querySelector(".game-idx")!.textContent="";
+  }
+  // BETA games always live at the back of the shelf; the rest keep their order.
+  tiles.sort((a,b)=>Number(a.dataset.beta==="true")-Number(b.dataset.beta==="true"));
+  grid.replaceChildren(...tiles);
+  tiles.forEach((a,i)=>a.style.setProperty("--i",String(i)));
+  grid.querySelectorAll<HTMLElement>(".game-idx").forEach((n,i)=>{n.textContent=String(i+1).padStart(2,"0")});
 }
 onView("games",games);
 // Rungtys filter: all / one player / two at the same time
@@ -65,10 +78,10 @@ document.querySelectorAll<HTMLElement>("[data-quick]").forEach(b=>b.onclick=()=>
 function feature(){
   const tiles=[...document.querySelectorAll<HTMLAnchorElement>("#games .sp-tile")].filter(a=>GAME[a.dataset.g!]);
   const a=tiles[Math.floor(Date.now()/864e5)%Math.max(1,tiles.length)];if(!a)return;
-  const g=a.dataset.g!, name=a.querySelector(".sp-tile-txt b")?.textContent??"";
+  const g=a.dataset.g!, name=a.querySelector(".sp-tile-txt b")?.textContent??"", m=GAME[g];
   $<HTMLAnchorElement>("#homeFeat").href=a.getAttribute("href")!;
-  $("#home").style.setProperty("--gc",GAME[g].color);
-  $("#home").querySelector<HTMLImageElement>(".today-img")!.src=`/chars/${POSE[g]}.webp`;
+  $("#home").style.setProperty("--gc",m.color);
+  $("#home").querySelector<HTMLElement>(".today-art")!.innerHTML=`<span class="today-symbol">${icon(HOME_ICON[g]||"sparkle")}</span><i class="today-spark"></i><i class="today-spark"></i>`;
   $("#todayName").textContent=$("#todayBig").textContent=name;
   $("#todaySub").textContent=a.querySelector(".sp-tile-txt small")?.textContent??"";
 }

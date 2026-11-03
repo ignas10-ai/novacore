@@ -87,7 +87,7 @@ try{
   ok("atgal iš rezultatų → sienos nustatymai",await q(()=>location.hash==="#/siena"&&!document.getElementById("wall").classList.contains("hide")));
   await p.goto(`http://localhost:${port}/${lang==="en"?"?lang=en":""}#/nustatymai`,{waitUntil:"networkidle0"});
   await sleep(600);await p.$eval("#histOpen",el=>el.click());await shot("history",700);
-  ok("istorijos eilutė „Siena“",await q(()=>/Siena|The Wall/.test(document.querySelector("#histList .what")?.textContent||"")));
+  ok("istorijos eilutė „Hole in the Wall“",await q(()=>/Hole in the Wall/.test(document.querySelector("#histList .what")?.textContent||"")));
   ok("naršyklės klaidų nėra",!errs.length);
   if(errs.length)console.log("KLAIDOS:\n  "+errs.join("\n  "));
   console.log("→",out);

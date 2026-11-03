@@ -129,7 +129,7 @@ $("#hdGo").onclick=()=>startFlow(HURDLES_MODE);
 
 // ---------- race state ----------
 type Phase="off"|"pos"|"set"|"race"|"done";
-let phase:Phase="off", phaseAt=0, setDur=0, t0=0, raceT=0, raf=0, last=0, firstFin=-1, doneAt=0, brokeAt=-1, cam=0, hudAt=0, callTimer=0, pb=1e9;
+let phase:Phase="off", phaseAt=0, setDur=0, t0=0, raceT=0, raf=0, last=0, firstFin=-1, doneAt=0, brokeAt=-1, cam=0, cam2=0, hudAt=0, callTimer=0, pb=1e9;
 let L:Layout, solo=false, feedCad=0, feedAt=0, feedLeg=0;
 const autoD=[-1,-1];
 const R:Run[]=[newRun(),newRun()], TK:TakeoffState[]=[takeoffState(),takeoffState()];
@@ -165,7 +165,7 @@ function resize(){
   const W=innerWidth,H=innerHeight,dpr=Math.min(2,devicePixelRatio||1);
   cvs.width=Math.round(W*dpr);cvs.height=Math.round(H*dpr);
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  L=layout(W,H,dpr);
+  L=layout(S.players===2?W/2:W,H,dpr);
   if(L.W/L.ppm<VIEW_M){L.ppm=L.W/VIEW_M;L.charH=[L.ppm*1.9*.9,L.ppm*1.9]}
   build(ctx,L,[tr("hd.board"),tr("sp.boardRun")]);
   if(cv.width)document.body.style.setProperty("--sp-cam-ar",String(cv.width/cv.height));
@@ -182,7 +182,7 @@ function begin(){
   $("#hdPbD").textContent=pb<1e9?`${fmt(pb)} s`:"–";
   for(const el of kEl)for(const d of el.children)d.className="";
   resize();
-  cam=-(L.W/L.ppm)*.3;
+  cam=cam2=-(L.W/L.ppm)*.3;
   document.fonts?.load("400 40px \"Titan One\"",`${tr("sp.finishLine")} ${tr("hd.board")} 0123456789`).then(()=>{if(phase!=="off")build(ctx,L,[tr("hd.board"),tr("sp.boardRun")])}).catch(()=>{});
   S.running=true; // game.ts swallows Android back while running
   last=performance.now();
@@ -270,7 +270,36 @@ function edge(i:number,k:number,left:boolean){
 // the clip is decided GRACE_S after the runner reached the bar (a late take-off may still clear it): while it is open the
 // hurdle already tips as the runner goes through, then falls from about half down at the call
 const tip=(a:Run,j:number)=>a.res[j]===false?Math.min(1,(raceT-a.at[j]+GRACE_S)/.5):a.res[j]==null&&a.r.x>HURDLES[j]?Math.min(.45,(a.r.x-HURDLES[j])*.4):0;
+function renderSplit(now:number,dt:number){
+  const t=now/1000, viewM=L.W/L.ppm;
+  const target=(k:number)=>{
+    const a=R[k];
+    return Math.min(Math.max(a.r.x-viewM*(L.portrait?.3:.36),-viewM*.3),RACE_M+2-viewM*.5);
+  };
+  if(phase==="race"||phase==="done"){
+    cam=target(0);
+    cam2=target(1);
+  }
+  const saved=cam;
+  for(const k of [0,1]){
+    const off=k?L.W:0;
+    ctx.save();ctx.beginPath();ctx.rect(off,0,L.W,L.H);ctx.clip();ctx.translate(off,0);
+    cam=k?cam2:cam;
+    drawBack(ctx,cam);drawFinishBack(ctx,cam);
+    const i=k;
+    drawZones(ctx,L,cam,k,cue(R[i])==="go"?.5+.5*Math.sin(t*12):0);
+    for(let j=0;j<N_HURDLES;j++)drawHurdle(ctx,L,cam,k,j,tip(R[i],j));
+    animate(i,dt,t);body(i,k);
+    drawFinishFront(ctx,cam,brokeAt<0?-1:raceT-brokeAt);
+    drawFront(ctx,cam);
+    ctx.restore();
+  }
+  cam=saved;
+  ctx.fillStyle="#0E2E26";ctx.fillRect(L.W-2,0,4,L.H);
+  ctx.fillStyle="#FF3B3B";ctx.fillRect(L.W-4,0,2,L.H);ctx.fillStyle="#2F6BFF";ctx.fillRect(L.W+2,0,2,L.H);
+}
 function render(now:number,dt:number){
+  if(S.players===2&&!solo){renderSplit(now,dt);return}
   const t=now/1000, viewM=L.W/L.ppm;
   // camera: the runner(s) left of centre so the next hurdle is in view; both humans while close, else the leader
   let target=-viewM*.3,leadV=0;

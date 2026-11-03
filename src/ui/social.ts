@@ -99,18 +99,23 @@ export function renderHomeRank(){
   tx.textContent=!api.sb?t("grp.league"):!nick()||!groups.length?t("home.create"):best?where!.name:t("grp.notPlayed");
 }
 function groupItem(g:api.Group){
-  const rows=boards[g.id], r=rankOf(rows);
+  const rows=boards[g.id], r=rankOf(rows), top=rows?rows.reduce((m,x)=>Math.max(m,x.best??0),0):0;
   const li=document.createElement("li");
-  const a=document.createElement("a");a.className="box grp-item tap";a.href=`#/kompanijos/${encodeURIComponent(g.id)}`;
+  const a=document.createElement("a");a.className="box grp-item tap";a.href=`#/kompanijos/${encodeURIComponent(g.id)}`;a.dataset.tone=toneFor(g.name);
+  a.style.setProperty("--i",String(groups.indexOf(g)));
+  a.style.setProperty("--p",String(Math.min(1,top/500)));
   const av=document.createElement("span");av.className="grp-av d";av.textContent=[...g.name][0].toUpperCase();
   av.dataset.tone=toneFor(g.name);
   const tx=document.createElement("span");tx.className="grp-txt";
   const b=document.createElement("b");b.textContent=g.name;
-  const sm=document.createElement("small");sm.textContent=rows?tn("u.members",rows.length):t("app.loading");
+  const sm=document.createElement("small");sm.textContent=rows?`${tn("u.members",rows.length)} · ${t("grp.weekLeague")}`:t("app.loading");
   tx.append(b,sm);
-  const rk=document.createElement("span");rk.className="grp-rank d";rk.textContent=r?`#${r}`:"–";rk.setAttribute("aria-label",r?t("grp.yourPlace",{n:r}):t("grp.notPlayed"));
+  const side=document.createElement("span");side.className="grp-side";
+  const best=document.createElement("b");best.className="grp-best d";best.textContent=top?String(top):"—";best.setAttribute("aria-label",`${t("grp.weekBest")}: ${top}`);
+  const rk=document.createElement("span");rk.className="grp-rank";rk.textContent=r?`#${r}`:"–";rk.setAttribute("aria-label",r?t("grp.yourPlace",{n:r}):t("grp.notPlayed"));
+  side.append(best,rk);
   const ch=document.createElement("span");ch.className="chev";ch.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>';
-  a.append(av,tx,rk,ch);li.append(a);
+  a.append(av,tx,side,ch);li.append(a);
   return li;
 }
 function renderGroups(){

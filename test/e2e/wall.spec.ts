@@ -1,4 +1,4 @@
-// Siena, 2 players on one phone: Pradžia tile -> setup (players + names) -> ready gate (fake camera, arms up) ->
+// Hole in the Wall, 2 players on one phone: Pradžia tile -> setup (players + names) -> ready gate (fake camera, arms up) ->
 // P1's run (real detection on the 1st wall: the mascot stands still inside it) -> walls -> caught -> P2's turn card ->
 // caught on the 1st wall -> results -> stored history row -> back to the setup -> Pradžia.
 // The fake camera cannot dodge, so verdicts go through the test hook (__wl.force); the inside test, the pause when the
@@ -13,7 +13,7 @@ const force=(page:import("@playwright/test").Page,v:string)=>page.evaluate(v=>(w
 
 test("wall, 2 players: turns, walls survived, caught, ranking, history",async({page},info)=>{
   await page.goto("/#/rungtys");
-  await tap(page,".wl-tile","Siena tile on Pradžia");
+  await tap(page,".wl-tile","Hole in the Wall tile on Pradžia");
   await screen(page,"wall").toBeVisible();
   expect((await state(page)).hash).toBe("#/siena");
   await tap(page,'[data-wl="2"]',"2 players");

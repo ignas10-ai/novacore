@@ -89,6 +89,7 @@ test("Profilis: XP, trophies, settings, history and nickname",async({page},info)
   await screen(page,"profile").toBeVisible();
   await tap(page,"#profEdit","edit profile button");
   await screen(page,"profileEdit").toBeVisible();
+  await expect(page.locator("#charGrid button"),"8 characters (4 chibi + 4 3D)").toHaveCount(8);
   await a11y(page,"profile-edit",info);
   await tap(page,"#nickOpen","nickname button");
   await expect(page.locator("#nickSheet")).toHaveAttribute("open","");
@@ -100,6 +101,15 @@ test("Profilis: XP, trophies, settings, history and nickname",async({page},info)
   await expect(page.locator("#profNick")).toContainText("Rūta");
 });
 
+test("Rungtys: unique sport rows, BETA games at the back",async({page})=>{
+  await page.goto("/#/rungtys");
+  await screen(page,"rungtys").toBeVisible();
+  const rows=await page.locator("#games .sp-tile").evaluateAll(nodes=>nodes.map(n=>({g:(n as HTMLElement).dataset.g,beta:(n as HTMLElement).dataset.beta,idx:n.querySelector(".game-idx")?.textContent,icon:!!n.querySelector(".game-art svg")})));
+  expect(rows).toHaveLength(10);
+  expect(rows.every(r=>r.icon&&/^\d{2}$/.test(r.idx||""))).toBe(true);
+  expect(rows.map(r=>r.beta)).toEqual(["false","false","false","false","false","false","true","true","true","true"]);
+  expect(rows.slice(6).map(r=>r.g)).toEqual(["hd","bw","bd","jv"]);
+});
 test("setup: exercise picker keeps at least one exercise",async({page},info)=>{
   await page.goto("/#/");
   await tap(page,'#tabbar [data-tab="games"]',"Rungtys tab");await tap(page,"#rrTile","Rep Maratonas tile");

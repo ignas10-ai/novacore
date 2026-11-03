@@ -1,14 +1,13 @@
-// Game setup galleries (#41): every mini-game setup screen shows 3-4 real frames from its own run (start / middle /
-// finish, take-off / landing …) in a horizontal scroll-snap strip with dots, instead of one static illustration.
-// The frames come from tools/scenes.mjs -> public/scenes/<code>-1..3.webp; CSS lives in styles/glass.css.
+// Game setup hero: a 3-panel animated sport emblem instead of the old realistic scene screenshots. The strip keeps
+// the native scroll-snap / dots interaction (#41) but every panel is our own minimal icon art and moves.
 import {t} from "../i18n/i18n.ts";
+import {sportArt} from "./sport.ts";
 
 const FRAMES = 3;
-const BETA = new Set(["bw", "hd", "bd", "jv"]); // the games whose detection/feel still needs real-phone tuning
+const BETA = new Set(["bw", "hd", "bd", "jv"]);
 const slide = (code: string, n: number) =>
-  `<figure class="gal-slide"><img src="/scenes/${code}-${n}.webp" alt="" width="780" height="390"${n > 1 ? ' loading="lazy"' : ""}></figure>`;
+  `<figure class="gal-slide gal-art-${n}" role="img" aria-label="${t("gal.frame", {n})}">${sportArt(code)}<span class="gal-art-dot"></span></figure>`;
 
-// Markup for one game setup hero. big/sub are the same copy the old single illustration used.
 export function gallery(code: string, big: string, sub: string) {
   const slides = Array.from({length: FRAMES}, (_, i) => slide(code, i + 1)).join("");
   const dots = Array.from({length: FRAMES}, (_, i) => `<button class="gal-dot" type="button" aria-label="${t("gal.frame", {n: i + 1})}"></button>`).join("");
