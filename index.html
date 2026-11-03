@@ -24,6 +24,8 @@
 <link rel="stylesheet" href="/src/styles/main.css">
 </head>
 <body data-view="home">
+<div class="zen-bg" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<div class="charge" id="charge" aria-hidden="true"></div>
 <a class="skip" href="#app">Pereiti prie turinio</a>
 <button class="fs cam" id="fs" type="button" aria-label="Visas ekranas" title="Visas ekranas" aria-pressed="false">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
@@ -139,7 +141,7 @@
     </section>
     <!-- Glass home (#38, 10-28): today's game card (home.ts picks it by date), the grey/red wordmark, one pictogram per game (home.ts fills #homePics) -->
     <!-- 11-03 (mint): today's game on its own colour block (home.ts picks it by date, sets --gc), slide to play -->
-    <a class="today-hero tap" id="homeFeat" href="#/zaisti" aria-labelledby="todayName"><span class="today-big" id="todayBig" aria-hidden="true">Rep Maratonas</span><img class="today-img" alt="" src="/chars/mini/rr.webp"></a>
+    <a class="today-hero tap" id="homeFeat" href="#/zaisti" aria-labelledby="todayName"><span class="today-big" id="todayBig" aria-hidden="true">Rep Maratonas</span><span class="today-art" aria-hidden="true"></span></a>
     <div class="today-info">
       <p class="today-lbl"><span>Šiandienos rungtis</span><a href="#/rungtys" data-tab="games">Visos rungtys<span data-icon="chevron-right"></span></a></p>
       <h2 class="today-name" id="todayName">Rep Maratonas</h2>
@@ -231,9 +233,18 @@
     <header class="nav"><div class="nav-in"><span class="nav-title" aria-hidden="true">Kompanijos</span></div></header>
     <h1 class="large-title" id="groupsTitle" tabindex="-1">Kompanijos</h1>
     <p class="lead">Savaitės lyga su draugais: geriausias 3 min solo rezultatas nuo pirmadienio.</p>
+    <section class="grp-hero" aria-labelledby="grpHeroTitle">
+      <div class="grp-hero-art" aria-hidden="true"><span class="grp-orbit"></span><span class="grp-trophy" data-icon="trophy"></span><span class="grp-hero-spark" data-icon="sparkle"></span></div>
+      <div class="grp-hero-txt">
+        <span class="eyebrow">Savaitės lyga</span>
+        <h2 class="d" id="grpHeroTitle">Žaisk su savo kompanija</h2>
+        <p>Sukurk kompaniją arba prisijunk su kodu. Kas savaitę – nauja lentelė.</p>
+        <div class="grp-hero-tags"><span><span data-icon="timer"></span>3 min solo</span><span><span data-icon="calendar-days"></span>Kas savaitę</span><span><span data-icon="users-three"></span>Su draugais</span></div>
+      </div>
+    </section>
     <ul class="grp-list" id="grpList" aria-label="Tavo kompanijos" hidden></ul>
     <div class="empty" id="grpEmpty" hidden>
-      <span class="empty-art" aria-hidden="true"><span data-mascot="r:vs"></span><span data-mascot="b:vs"></span></span>
+      <span class="empty-art grp-empty-art" aria-hidden="true"><i></i><span data-icon="trophy"></span><i></i></span>
       <b>Dar neturi kompanijos</b>
       <p>Sukurk kompaniją klasei, komandai ar draugams, pasidalink kodu ir kas savaitę varžykitės, kas surinks daugiau.</p>
     </div>
@@ -253,6 +264,14 @@
       </form>
     </div>
     <p class="note" id="grpNote" aria-live="polite"></p>
+    <section class="grp-how" aria-labelledby="grpHowTitle">
+      <h2 class="sec-title" id="grpHowTitle">Kaip tai veikia</h2>
+      <ol class="grp-steps">
+        <li data-tone="red"><span class="grp-step-n d">1</span><span class="grp-step-ic" data-icon="users-three"></span><div><b>Sukurk arba prisijunk</b><p>Viena kompanija – viena lentelė. Pakviesk draugus kodu.</p></div></li>
+        <li data-tone="blue"><span class="grp-step-n d">2</span><span class="grp-step-ic" data-icon="play"></span><div><b>Žaisk 3 min solo</b><p>Nuo pirmadienio skaičiuojamas tavo geriausias rezultatas.</p></div></li>
+        <li data-tone="yellow"><span class="grp-step-n d">3</span><span class="grp-step-ic" data-icon="trophy"></span><div><b>Kas savaitę – naujas lyderis</b><p>Pirmadienį lentelė apsivalo. Nauja savaitė, nauja galimybė.</p></div></li>
+      </ol>
+    </section>
   </div>
 </section>
 
@@ -274,7 +293,7 @@
     </section>
     <div class="code-card">
       <div><div class="lbl">Kvietimo kodas</div><b class="d grp-code" id="grpCode">––––––</b></div>
-      <span class="code-art" aria-hidden="true" data-mascot="b:win"></span>
+      <span class="code-art code-ic" aria-hidden="true" data-icon="trophy"></span>
     </div>
     <p class="note" id="grpNote2" aria-live="polite"></p>
     <button class="danger-link tap" id="grpLeave" type="button"><span data-icon="log-out"></span><span id="grpLeaveTxt">Išeiti iš kompanijos</span></button>

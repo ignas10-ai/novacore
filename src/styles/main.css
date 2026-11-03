@@ -1102,7 +1102,7 @@ body.duel .bars{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
   #exDetail .sheet-body{width:54%;flex:none;padding-top:20px}
   #exDetail .ex-sheet-foot{width:100%}
 }
-@media (max-width:370px){
+@media (max-width:380px){
   .quick-tile b{font-size:16px}
   .pl-foot b{font-size:18px}
   .seg button .d{font-size:26px}.seg button small{font-size:14px}
@@ -1318,8 +1318,8 @@ body[data-view="screen"] .tabbar,body[data-view="screen"] .fs{display:none}
 .cover{display:grid;grid-template-columns:1.25fr 1fr;grid-template-rows:repeat(2,clamp(96px,30vw,140px));gap:4px;margin:0 calc(12px - var(--gutter))}
 .cover i{border-radius:8px;background:var(--surface-2) 50% 50%/cover no-repeat}
 .cover i:first-child{grid-row:span 2}
-[data-g="sp"]{--scene:url(/scenes/sp.webp)}[data-g="hd"]{--scene:url(/scenes/hd.webp)}[data-g="lj"]{--scene:url(/scenes/lj.webp)}
-[data-g="bw"]{--scene:url(/scenes/bw.webp)}[data-g="sk"]{--scene:url(/scenes/sk.webp)}[data-g="wl"]{--scene:url(/scenes/wl.webp)}[data-g="bd"]{--scene:url(/scenes/bd.webp)}
+[data-g="sp"],[data-g="hd"],[data-g="lj"]{--scene:none}
+[data-g="bw"],[data-g="sk"],[data-g="wl"],[data-g="bd"]{--scene:none}
 .cover i{background-image:var(--scene)}
 .brand{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:-4px}
 /* the grey bevelled "Wii" half + red half, after the Wii Sports box logo Ignas picked */
@@ -1378,8 +1378,8 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 .screen :is(.sp-hero,.hd-hero,.lj-hero,.bw-hero,.sk-hero,.wl-hero,.bx-hero,.bd-hero,.jv-hero){border:var(--bw) solid var(--ol);border-radius:14px;box-shadow:var(--sh-sm)}
 .screen .sp-how li:nth-child(n)>span:first-child{background:var(--red-tint);color:var(--red-deep);border-color:transparent}
 /* results: the game's frame behind "Laimėjo …!" (Wii results banner) instead of the sunburst */
-#sprintEnd{--res-scene:url(/scenes/sp.webp)}#hdEnd{--res-scene:url(/scenes/hd.webp)}#ljEnd{--res-scene:url(/scenes/lj.webp)}
-#bwEnd{--res-scene:url(/scenes/bw.webp)}#skEnd{--res-scene:url(/scenes/sk.webp)}#wlEnd{--res-scene:url(/scenes/wl.webp)}
+#sprintEnd,#hdEnd,#ljEnd{--res-scene:none}
+#bwEnd,#skEnd,#wlEnd{--res-scene:none}
 .screen .sp-res-head,.screen .sp-res-head:is([data-w="0"],[data-w="1"],[data-w="2"]){border:var(--bw) solid var(--ol);border-radius:14px;box-shadow:none;color:#fff;
   background:linear-gradient(0deg,rgba(0,0,0,.62),rgba(0,0,0,.08) 75%),var(--res-scene,linear-gradient(180deg,var(--red-hi),var(--red-deep))) 50% 50%/cover no-repeat}
 .screen .sp-res-head :is(.wl,p){color:#fff}
@@ -1392,7 +1392,7 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 #end[data-w="2"] .res-bg{background:linear-gradient(180deg,#4A80FF,var(--blue-ink))}
 #end[data-w="0"] .res-bg{background:linear-gradient(180deg,#5B6168,var(--ink))}
 #end[data-w="0"] .res-head,#end[data-w="0"] .res-head .wl,#end[data-w="0"] #endsub{color:#fff}
-#bdEnd{--res-scene:url(/scenes/bd.webp)}
+#bdEnd{--res-scene:none}
 .screen .sp-res-head :is(h2,.wl,p,b,span:not(.rec-badge)){color:#fff}
 /* ---------- a colour per game (#38, 10-28 "per generic – daugiau spalvų"), like Switch Sports' sport colours ----------
    --gc solid, --gc-hi gradient top, --gc-ink text-safe, --gc-tint background. Used by the pictograms, the tile bar and,

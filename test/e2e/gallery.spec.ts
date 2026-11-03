@@ -9,7 +9,7 @@ const GAMES:[string,string,string][]=[
   ["#/boksas","bx","Boksas"],
   ["#/boulingas","bw","Boulingas"],
   ["#/slidinejimas","sk","Slidinėjimas"],
-  ["#/siena","wl","Siena"],
+  ["#/siena","wl","Hole in the Wall"],
   ["#/badmintonas","bd","Badmintonas"],
   ["#/ietis","jv","Ietis"],
 ];
@@ -19,12 +19,11 @@ test("every game setup header is a 3-frame gallery",async({page})=>{
     await page.goto("/"+hash);
     const hero=page.locator(`.gal-hero[data-gal="${code}"]`);
     await expect(hero,`${name}: gallery`).toBeVisible();
-    await expect(hero.locator(".gal-slide"),`${name}: 3 frames`).toHaveCount(3);
+    await expect(hero.locator(".gal-slide"),`${name}: 3 panels`).toHaveCount(3);
     await expect(hero.locator(".gal-dot"),`${name}: 3 dots`).toHaveCount(3);
     await expect(hero.locator(".gal-big"),`${name}: title`).not.toBeEmpty();
     await expect(hero.locator(".gal-sub"),`${name}: tagline`).not.toBeEmpty();
-    const first=hero.locator(".gal-slide img").first();
-    await expect.poll(()=>first.evaluate((i:HTMLImageElement)=>i.naturalWidth),{message:`${name}: ${code}-1.webp must load`}).toBeGreaterThan(0);
+    await expect(hero.locator(".gal-slide .sa svg"),`${name}: animated emblem`).toHaveCount(3);
     await expect(hero.locator(".gal-dot").first()).toHaveAttribute("aria-current","true");
     await hero.locator(".gal-dot").nth(2).click();
     await expect(hero.locator(".gal-dot").nth(2),`${name}: last dot follows the scroll`).toHaveAttribute("aria-current","true");

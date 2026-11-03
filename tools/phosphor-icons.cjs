@@ -8,7 +8,10 @@ const MAP={house:"house",users:"users",dumbbell:"barbell",user:"user",play:"play
   "rotate-ccw":"arrow-counter-clockwise",download:"download-simple","calendar-days":"calendar-dots",maximize:"corners-out",minimize:"corners-in","arrow-right":"arrow-right",
   sparkles:"sparkle",footprints:"sneaker-move",tv:"television-simple",cast:"screencast",airplay:"airplay",laptop:"laptop",clock:"clock","chevron-down":"caret-down","chevron-up":"caret-up",
   "scan-face":"scan","arrow-up":"arrow-up","arrow-down":"arrow-down",copy:"copy","external-link":"arrow-square-out",globe:"globe-simple",power:"power","layout-grid":"squares-four",
-  hand:"hand","users-three":"users-three","person":"person-simple","gear-six":"gear-six","pencil-simple":"pencil-simple","arrows-clockwise":"arrows-clockwise","image":"image","upload-simple":"upload-simple","trash":"trash","diamond":"diamond:fill"};
+  hand:"hand","users-three":"users-three","person":"person-simple","gear-six":"gear-six","pencil-simple":"pencil-simple","arrows-clockwise":"arrows-clockwise","image":"image","upload-simple":"upload-simple","trash":"trash","diamond":"diamond:fill",
+  "sport-rr":"barbell:fill","sport-sp":"person-simple-run:fill","sport-bx":"hand-fist:fill","sport-lj":"sneaker-move:fill","sport-hd":"flag-checkered:fill",
+  "sport-bw":"bowling-ball:fill","sport-sk":"person-simple-ski:fill","sport-wl":"wall:fill","sport-bd":"feather:fill","sport-jv":"person-simple-throw:fill",
+  "arrow-up-right":"arrow-up-right","sparkle":"sparkle:fill","snowflake":"snowflake:fill","door-open":"door-open:fill","wind":"wind:fill","person-arms-spread":"person-arms-spread:fill","shield":"shield:fill"};
 (async()=>{
   const out=[];
   for(const [k,v] of Object.entries(MAP)){

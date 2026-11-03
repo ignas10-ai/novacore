@@ -200,6 +200,7 @@ $("#profCoin").onclick=()=>{
 $("#profEdit").onclick=()=>go("#/profilis/redaguoti");
 $("#profSettings").onclick=()=>go("#/nustatymai");
 document.querySelectorAll<HTMLElement>(".char-grid [data-char]").forEach(b=>b.onclick=()=>setChar(b.dataset.char as CharId));
+document.querySelectorAll<HTMLElement>(".char-grid [data-char]").forEach(b=>b.style.setProperty("--i",String([...b.parentElement!.children].indexOf(b))));
 document.querySelectorAll<HTMLElement>("[data-bg]").forEach(b=>b.onclick=()=>{
   const id=b.dataset.bg!;if(!BG[id])return;
   set(BG_KEY,id);applyProfile();render(); // render() updates the labels/progress; applyProfile is idempotent

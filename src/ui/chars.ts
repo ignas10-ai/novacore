@@ -26,3 +26,13 @@ export function applyChar(){
   s.setProperty("--me-img",`url(/chars/mini/${c.img}.webp)`);s.setProperty("--me-color",c.color);
   document.querySelectorAll<HTMLElement>(".char-pick [data-char],.char-grid [data-char]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.char===c.id)));
 }
+// one Phosphor sport glyph per game for the Rungtys shelf (src/ui/sport.ts composes it with moving pieces);
+// Home uses its own abstract HOME_ICON badge instead, so the two screens never show the same art.
+export const SPORT:Record<string,string>={
+  rr:"sport-rr",sp:"sport-sp",bx:"sport-bx",lj:"sport-lj",hd:"sport-hd",
+  bw:"sport-bw",sk:"sport-sk",wl:"sport-wl",bd:"sport-bd",jv:"sport-jv",
+};
+export const HOME_ICON:Record<string,string>={
+  rr:"arrows-clockwise",sp:"zap",bx:"shield",lj:"arrow-up-right",hd:"timer",
+  bw:"target",sk:"snowflake",wl:"door-open",bd:"wind",jv:"arrow-up",
+};

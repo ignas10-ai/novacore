@@ -93,24 +93,18 @@ function footDrop(th:number,kn:number,ft:number){
 function capsule(ctx:CanvasRenderingContext2D,len:number,w:number){
   const r=w/2;ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(-r,len);ctx.arc(0,len,r,Math.PI,0,true);ctx.lineTo(r,0);ctx.arc(0,0,r,0,Math.PI,true);ctx.closePath();
 }
-// #55: the Claude Design v2 character's 3/4 head (public/chars/head-*.webp, looks +x like the runner) replaces the
-// drawn mascot head once it has loaded; until then (or offline without the asset) the old head is drawn.
-const HEADS:Record<string,HTMLImageElement>={};
-if(typeof Image!=="undefined")for(const [n,k] of [["raudonas","r"],["melynas","b"],["geltonas","y"],["zalias","g"]]){const i=new Image();i.src=`/chars/head-${k}.webp`;HEADS[n]=i}
-const SKIN:Record<string,string>={raudonas:"#F2BF9A",melynas:"#7A4A2E",geltonas:"#F4CBA8",zalias:"#F6C7A2"};
 function leg(ctx:CanvasRenderingContext2D,j:number,o:Pose,far:boolean,L?:Look){
-  const kit=L&&HEADS[L.name]?.naturalWidth?L:null; // #55: kit colour thigh (shorts) + skin shin, white sneaker
   ctx.save();
   ctx.rotate(-o.th[j]*D);
-  ctx.fillStyle=kit?(far?kit.dark:kit.body):(far?"#0B0E26":INK);
+  ctx.fillStyle=far?"#0B0E26":INK;
   capsule(ctx,THIGH,LW);ctx.fill();
   ctx.translate(0,THIGH);ctx.rotate(o.kn[j]*D);
-  ctx.fillStyle=kit?SKIN[kit.name]:ctx.fillStyle;
+  ctx.fillStyle=far?"#0B0E26":INK;
   capsule(ctx,SHIN,LW*.92);ctx.fill();
   // chunky sneaker, toe forward (+x): white sole + coloured upper
   ctx.translate(0,SHIN);ctx.rotate(-o.ft[j]*D);
-  ctx.beginPath();ctx.roundRect(-.06,-.035,.19,.085,.04);ctx.fillStyle=kit?(far?"#D9DCE6":"#fff"):(far?"#2A2F5A":INK);ctx.fill();
-  ctx.beginPath();ctx.roundRect(-.06,.025,.19,.03,.015);ctx.fillStyle=kit?kit.body:(far?"#C9CCE3":"#fff");ctx.fill();
+  ctx.beginPath();ctx.roundRect(-.06,-.035,.19,.085,.04);ctx.fillStyle=far?"#D9DCE6":"#fff";ctx.fill();
+  ctx.beginPath();ctx.roundRect(-.06,.025,.19,.03,.015);ctx.fillStyle=far?"#C9CCE3":(L?.body??"#fff");ctx.fill();
   ctx.lineWidth=OL*.8;ctx.strokeStyle=INK;ctx.beginPath();ctx.roundRect(-.06,-.035,.19,.09,.04);ctx.stroke();
   ctx.restore();
 }
@@ -118,37 +112,23 @@ function leg(ctx:CanvasRenderingContext2D,j:number,o:Pose,far:boolean,L?:Look){
 function glove(ctx:CanvasRenderingContext2D,L:Look,j:number,o:Pose,far:boolean){
   const a1=-o.sh[j]*D, a2=a1-o.el[j]*D;
   const x=Math.sin(-a1)*UARM+Math.sin(-a2)*FARM, y=Math.cos(a1)*UARM+Math.cos(a2)*FARM;
-  const hand=HEADS[L.name]?.naturalWidth?SKIN[L.name]:null; // with the new heads: bare hands, not boxing gloves
-  ctx.beginPath();ctx.arc(x,y,hand?GLOVE*.7:GLOVE,0,Math.PI*2);
-  ctx.fillStyle=hand??(far?L.dark:L.body);ctx.fill();ctx.lineWidth=OL;ctx.strokeStyle=INK;ctx.stroke();
-  if(!far&&!hand){ctx.beginPath();ctx.arc(x-.012,y-.012,GLOVE*.6,Math.PI*1.05,Math.PI*1.55);ctx.lineWidth=OL*.8;ctx.strokeStyle="rgba(255,255,255,.85)";ctx.lineCap="round";ctx.stroke()}
+  ctx.beginPath();ctx.arc(x,y,GLOVE,0,Math.PI*2);
+  ctx.fillStyle=far?L.dark:L.body;ctx.fill();ctx.lineWidth=OL;ctx.strokeStyle=INK;ctx.stroke();
+  if(!far){ctx.beginPath();ctx.arc(x-.012,y-.012,GLOVE*.6,Math.PI*1.05,Math.PI*1.55);ctx.lineWidth=OL*.8;ctx.strokeStyle="rgba(255,255,255,.85)";ctx.lineCap="round";ctx.stroke()}
 }
 function head(ctx:CanvasRenderingContext2D,L:Look,o:Pose,t:number){
-  const r=HEAD_R, cy=HEAD_Y, img=HEADS[L.name];
-  if(img?.complete&&img.naturalWidth){const s=r*2.75;ctx.drawImage(img,-s*.48,cy-s*.58,s,s);return}
-  // knot tails fly behind (-x), flapping with the stride
-  const fl=Math.sin(t*2)*.025;
+  // Minimal racer helmet: a colour disc, a band and a visor; deliberately no face/old character art.
+  const r=HEAD_R, cy=HEAD_Y;
+  const fl=Math.sin(t*2)*.02;
   ctx.lineJoin="round";ctx.lineWidth=OL;ctx.strokeStyle=INK;ctx.fillStyle=L.band;
-  ctx.beginPath();ctx.moveTo(-r*.8,cy-.06);ctx.lineTo(-r-.17,cy-.12+fl);ctx.lineTo(-r-.12,cy+.0+fl*.6);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.beginPath();ctx.moveTo(-r*.8,cy-.02);ctx.lineTo(-r-.13,cy+.06-fl);ctx.lineTo(-r-.04,cy+.09-fl*.5);ctx.closePath();ctx.fill();ctx.stroke();
-  // head
-  ctx.beginPath();ctx.arc(0,cy,r,0,Math.PI*2);ctx.fillStyle=L.body;ctx.fill();
-  // headband: the slice of the circle between two curved edges (wraps around the head)
+  ctx.beginPath();ctx.moveTo(-r*.78,cy-.02);ctx.lineTo(-r-.16,cy-.08+fl);ctx.lineTo(-r-.1,cy+.03+fl*.5);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-r*.78,cy+.02);ctx.lineTo(-r-.12,cy+.09-fl);ctx.lineTo(-r-.04,cy+.02-fl*.5);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.arc(0,cy,r,0,Math.PI*2);ctx.fillStyle=L.body;ctx.fill();ctx.lineWidth=OL;ctx.strokeStyle=INK;ctx.stroke();
   ctx.save();ctx.beginPath();ctx.arc(0,cy,r,0,Math.PI*2);ctx.clip();
-  ctx.beginPath();ctx.moveTo(-r,cy-.1);ctx.quadraticCurveTo(0,cy-.13,r,cy-.07);ctx.lineTo(r,cy+.01);ctx.quadraticCurveTo(0,cy-.04,-r,cy-.01);ctx.closePath();
-  ctx.fillStyle=L.band;ctx.fill();ctx.lineWidth=OL*.85;ctx.stroke();
-  ctx.beginPath();ctx.ellipse(-r*.38,cy-r*.68,r*.26,r*.12,-.5,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,.4)";ctx.fill(); // shine
+  ctx.beginPath();ctx.ellipse(r*.18,cy-.01,r*.72,r*.3,.05,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,.86)";ctx.fill();ctx.lineWidth=OL*.7;ctx.strokeStyle=INK;ctx.stroke();
+  ctx.beginPath();ctx.ellipse(-r*.36,cy-r*.66,r*.24,r*.11,-.5,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,.45)";ctx.fill();
   ctx.restore();
-  // face in profile, looking ahead (+x): brow, eye with a highlight, open "go!" mouth
-  const ex=r*.5, ey=cy+.06;
-  ctx.lineCap="round";ctx.strokeStyle=INK;ctx.lineWidth=OL*1.25;
-  ctx.beginPath();ctx.moveTo(ex-.06,ey-.07);ctx.lineTo(ex+.05,ey-.05);ctx.stroke();
-  ctx.beginPath();ctx.ellipse(ex,ey+.005,.032,.042,0,0,Math.PI*2);ctx.fillStyle=INK;ctx.fill();
-  ctx.beginPath();ctx.arc(ex+.01,ey-.012,.012,0,Math.PI*2);ctx.fillStyle="#fff";ctx.fill();
-  ctx.beginPath();ctx.moveTo(r*.42,cy+.13);ctx.quadraticCurveTo(r*.72,cy+.17,r*.9,cy+.1);ctx.quadraticCurveTo(r*.7,cy+.11,r*.42,cy+.13);ctx.closePath();
-  ctx.fillStyle=INK;ctx.fill();ctx.lineWidth=OL*.7;ctx.stroke();
-  // outline last, over the band edges
-  ctx.beginPath();ctx.arc(0,cy,r,0,Math.PI*2);ctx.lineWidth=OL;ctx.stroke();
+  ctx.beginPath();ctx.arc(0,cy,r,0,Math.PI*2);ctx.lineWidth=OL;ctx.strokeStyle=INK;ctx.stroke();
 }
 
 // draw standing on (x, groundY); h = character height in px; squash < 1 flattens (landing), > 1 stretches (flight)
