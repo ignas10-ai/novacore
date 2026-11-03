@@ -14,7 +14,7 @@ test("onboarding -> setup -> ready gate -> game -> results -> clips -> home",asy
   await tap(page,"#onbNext","onboarding finish");
   await screen(page,"home").toBeVisible();
 
-  await tap(page,"#homePlay","Pradžia play button");
+  await tap(page,'#tabbar [data-tab="games"]',"Rungtys tab");await tap(page,"#rrTile","Rep Maratonas tile");
   await screen(page,"start").toBeVisible();
   await tap(page,'[data-p="1"]',"1 player");await tap(page,'[data-d="60"]',"1 minute");
   await tap(page,"#go","Start");

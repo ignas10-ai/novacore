@@ -11,7 +11,7 @@ test.use({trace:"off"}); // MediaPipe + the 2D slope share the software GPU (sam
 const sk=(page:import("@playwright/test").Page)=>page.evaluate(()=>(window as any).__sk.state());
 
 test("solo skiing: tile -> setup -> gate -> run -> results -> history",async({page})=>{
-  await page.goto("/#/");
+  await page.goto("/#/rungtys");
   await tap(page,".sk-tile","Slidinėjimas tile on Pradžia");
   await screen(page,"ski").toBeVisible();
   expect((await state(page)).hash).toBe("#/slidinejimas");
@@ -39,5 +39,5 @@ test("solo skiing: tile -> setup -> gate -> run -> results -> history",async({pa
   await screen(page,"ski").toBeVisible();
   expect((await state(page)).ingame).toBe(false);
   await page.goBack();
-  await screen(page,"home").toBeVisible();
+  await screen(page,"rungtys").toBeVisible(); // games open from the Rungtys tab
 });

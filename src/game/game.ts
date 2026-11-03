@@ -1,6 +1,7 @@
 // Game flow: startFlow() → #loading → #ready (arm-hold gate, readyLoop) → loop() with rounds/scoring → finish() → #end → #clips.
 // Not routed: entering #ready pushes one history entry (#/zaidimas, state.game) so Android back = "Atgal į nustatymus";
 // back mid-game is swallowed, back on results/clips returns to the app. resetGame() makes "Žaisti dar kartą" reload-free.
+import {slide} from "../ui/slide.ts";
 import {ROUND_SECS,type Exercise} from "../detect/exercises.ts";
 import {step,armsUp,sideCue} from "../detect/step.ts";
 import type {Lm} from "../detect/classifier.ts";
@@ -96,6 +97,7 @@ export async function startFlow(mode:GameMode|null=null){
   }
 }
 $("#go").onclick=()=>startFlow();
+slide($<HTMLButtonElement>("#go"));slide($<HTMLButtonElement>("#end [data-again]"),"rotate-ccw"); // 11-03: slide to start, no accidental taps
 // back into the app (router shows the screen of the current URL)
 function exitGame(){
   S.duel?.end();

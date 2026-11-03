@@ -11,7 +11,7 @@ test.use({trace:"off"}); // same reason as sprint.spec: trace screenshots compet
 const lj=(page:import("@playwright/test").Page)=>page.evaluate(()=>(window as any).__lj.state());
 
 test("long jump, 2 players x 3 attempts: rotation, foul, ranking, history",async({page},info)=>{
-  await page.goto("/#/");
+  await page.goto("/#/rungtys");
   await tap(page,".lj-tile","Šuolis į tolį tile on Pradžia");
   await screen(page,"longjump").toBeVisible();
   expect((await state(page)).hash).toBe("#/tolis");
@@ -62,5 +62,5 @@ test("long jump, 2 players x 3 attempts: rotation, foul, ranking, history",async
   await screen(page,"longjump").toBeVisible();
   expect((await state(page)).ingame).toBe(false);
   await page.goBack();
-  await screen(page,"home").toBeVisible();
+  await screen(page,"rungtys").toBeVisible(); // games open from the Rungtys tab
 });

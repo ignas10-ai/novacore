@@ -75,7 +75,8 @@ export async function hook(page:Page,sel:string,what:string){
   await expect(l,`UI hook ${sel} (${what}) not found - if the UI restyle renamed it, update test/e2e to the new hook`).toBeAttached();
   return l;
 }
-export async function tap(page:Page,sel:string,what:string){const l=await hook(page,sel,what);await l.click();return l}
+// slide-to-start buttons (src/ui/slide.ts) ignore a plain tap; the keyboard (Enter) activates them like a finished slide
+export async function tap(page:Page,sel:string,what:string){const l=await hook(page,sel,what);if(await l.evaluate(e=>e.classList.contains("slide")))await l.press("Enter");else await l.click();return l}
 export const screen=(page:Page,id:string)=>expect(page.locator(`#${id}`),`screen #${id} should be visible`);
 export const state=(page:Page)=>page.evaluate(()=>({hash:location.hash,d:(history.state?.d as number)||0,ingame:document.body.classList.contains("ingame"),view:document.body.dataset.view}));
 export const savedGames=(page:Page)=>page.evaluate(()=>JSON.parse(localStorage.getItem("novacore.history")||"[]"));

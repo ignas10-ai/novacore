@@ -35,7 +35,7 @@ import "./wall/wall.ts"; // Siena: its tile goes below the skiing tile
 import "./javelin/javelin.ts"; // Iečio metimas: its tile goes below the Siena tile
 import "./badminton/badminton.ts"; // Badmintonas: inserted after Siena too, so it sits before Iečio metimas
 import {initGalleries} from "./ui/gallery.ts"; // #41: setup heroes are 3-frame scroll-snap galleries
-import "./styles/glass.css"; // #38 glass look – last, so it wins over every game's own CSS
+import "./styles/mint.css"; // 11-03 mint look (was glass.css) – last, so it wins over every game's own CSS
 
 initGalleries(); // all game setup modules above have built their .gal-hero markup
 

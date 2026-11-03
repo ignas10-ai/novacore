@@ -22,7 +22,8 @@ test("solo boxing + TV board: tile -> setup -> gate -> round -> results -> back"
   await expect(tv.locator("#screen")).toHaveAttribute("data-phase","idle");
   await page.bringToFront();
 
-  await tap(page,".bx-tile","Boksas tile on Pradžia");
+  await tap(page,'#tabbar [data-tab="games"]',"Rungtys tab");
+  await tap(page,".bx-tile","Boksas tile in Rungtys");
   await screen(page,"boxing").toBeVisible();
   expect((await state(page)).hash).toBe("#/boksas");
   await tap(page,'[data-bx="1"]',"solo");
@@ -56,6 +57,6 @@ test("solo boxing + TV board: tile -> setup -> gate -> round -> results -> back"
   expect((await state(page)).ingame).toBe(false);
   await expect(tv.locator("#screen")).toHaveAttribute("data-phase","idle",{timeout:15_000});
   await page.goBack();
-  await screen(page,"home").toBeVisible();
+  await screen(page,"rungtys").toBeVisible(); // games open from the Rungtys tab
   expect(tvErrors,"TV browser errors").toEqual([]);
 });

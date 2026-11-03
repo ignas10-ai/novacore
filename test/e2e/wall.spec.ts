@@ -12,7 +12,7 @@ const wl=(page:import("@playwright/test").Page)=>page.evaluate(()=>(window as an
 const force=(page:import("@playwright/test").Page,v:string)=>page.evaluate(v=>(window as any).__wl.force(v),v);
 
 test("wall, 2 players: turns, walls survived, caught, ranking, history",async({page},info)=>{
-  await page.goto("/#/");
+  await page.goto("/#/rungtys");
   await tap(page,".wl-tile","Siena tile on Pradžia");
   await screen(page,"wall").toBeVisible();
   expect((await state(page)).hash).toBe("#/siena");
@@ -66,5 +66,5 @@ test("wall, 2 players: turns, walls survived, caught, ranking, history",async({p
   await screen(page,"wall").toBeVisible();
   expect((await state(page)).ingame).toBe(false);
   await page.goBack();
-  await screen(page,"home").toBeVisible();
+  await screen(page,"rungtys").toBeVisible(); // games open from the Rungtys tab
 });

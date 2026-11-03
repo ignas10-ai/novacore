@@ -1,0 +1,211 @@
+/* MINT (11-03, Ignas + Martynas picked it): white + mint #3DD6A8, one accent that follows the context (the game's colour,
+   default orange #FF7A2F), Lexend, small thick-outline chibi kids (public/chars/mini), a floating liquid-glass tab bar
+   without labels, slide-to-start. Imported LAST from main.ts (replaces glass.css), so it wins over main.css and every
+   game's CSS at equal specificity. Same token names as main.css: --red* = the context accent, so the games follow.
+   --gc = the game colour (set per game screen below, on Pradžia by home.ts, on each Rungtys tile). The camera flow /
+   in-game HUD keep their own (.cam) tokens. */
+@font-face{font-family:"Lexend";font-style:normal;font-weight:400 700;font-display:swap;src:url("/fonts/lexend-latin-ext.woff2") format("woff2");
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Lexend";font-style:normal;font-weight:400 700;font-display:swap;src:url("/fonts/lexend-latin.woff2") format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+:root{
+  --bg:#F3FBF7;--surface:#fff;--surface-2:#E4F2EC;
+  --ink:#0E2E26;--ink-2:#1F453B;--fg:var(--ink);--fg-mute:#4F6B62;--fg-faint:#5A766D;
+  --mint:#3DD6A8;--mint-ink:#0F8A66;
+  --gc:#8DE8CA;                                                   /* context colour (light); default = mint */
+  --yellow:#FFD66B;--yellow-tint:#FFF4D1;
+  --ol:#DCEBE5;--line:#E2EEE9;
+  --sh:0 2px 10px rgba(14,46,38,.06);--sh-lg:0 6px 20px rgba(14,46,38,.08);--sh-sm:0 1px 4px rgba(14,46,38,.06);
+  --disp:"Lexend",system-ui,sans-serif;--body:"Lexend",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r-card:20px;--r-ctl:16px;
+  --tb-h:96px;
+}
+/* the accent follows --gc: re-derived on every element that sets its own --gc (a var() resolves where it is declared) */
+:root,.screen,.sp-tile,.tabbar,.ex-sheet{
+  --red:color-mix(in oklab,var(--gc),#0E2E26 30%);--red-hi:color-mix(in oklab,var(--gc),#0E2E26 18%);
+  --red-deep:color-mix(in oklab,var(--gc),#0E2E26 42%);--red-ink:color-mix(in oklab,var(--gc),#0E2E26 55%);
+  --red-tint:color-mix(in srgb,var(--gc) 22%,#fff)}
+html,body{background:var(--bg)}
+body{font-family:var(--body)}
+.d{font-weight:700;letter-spacing:-.02em}
+.large-title{font:700 32px/1.1 var(--disp);letter-spacing:-.02em}
+.sec-title{font:600 18px/1.25 var(--disp)}
+.nav-title{font-weight:700}
+.lead{font-weight:500}
+.eyebrow{font-weight:600;letter-spacing:.08em}
+:is(.btn,.pill,.chip-btn,.link,.go.alt,.lbl,.card-title,.help,.note,.fine){font-weight:600}
+.box{border-width:1px;box-shadow:var(--sh)}
+
+/* game colours (the light shade; the accent tokens above derive from it) */
+#start,#rungtys{--gc:#8DE8CA}
+#sprint,#sprintEnd{--gc:#FF9C9C}#boxing,#boxEnd{--gc:#B7AEFF}#longjump,#ljEnd{--gc:#FFD66B}#hurdles,#hdEnd{--gc:#FFB98A}
+#ski,#skEnd{--gc:#8FD8FF}#bowling,#bwEnd{--gc:#F7A8D8}#badminton,#bdEnd{--gc:#C5E87A}#javelin,#jvEnd{--gc:#FFC9A0}#wall,#wlEnd{--gc:#A8E6F0}
+#profile{--gc:#8DE8CA}
+#groups,#group{--gc:#FFB98A}
+#end{--gc:#8DE8CA}
+
+/* ---------- buttons ---------- */
+.go{background:var(--ink);color:#fff;border:0;border-radius:22px;box-shadow:0 8px 20px rgba(14,46,38,.18);font:600 19px/1.1 var(--body);min-height:64px}
+.go.alt{background:var(--surface);color:var(--ink);border:1px solid var(--ol);box-shadow:var(--sh-sm)}
+.btn.red,.pill.accent{background:var(--red);color:#fff}
+.chip-btn{min-height:40px;padding:0 15px;border:0;border-radius:14px;box-shadow:none;font:500 14px/1 var(--body);color:var(--fg-mute);display:inline-flex;align-items:center;gap:6px;--ic:16px}
+.chip-btn[aria-pressed="true"]{background:var(--ink);color:#fff;font-weight:600}
+
+/* ---------- slide to start (src/ui/slide.ts) ---------- */
+.go.slide{position:relative;justify-content:center;padding:0 24px 0 84px;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden;isolation:isolate}
+.go.slide::before{content:"›››";position:absolute;right:22px;letter-spacing:-4px;color:rgba(255,255,255,.35);font-size:22px}
+.go.slide::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:var(--red);clip-path:inset(0 calc(100% - 34px - (100% - 68px)*var(--p,0)) 0 0 round 22px);opacity:.35}
+.slide-k{position:absolute;left:6px;top:50%;margin-top:-26px;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--red);color:#fff;--ic:24px;
+  box-shadow:0 4px 14px color-mix(in srgb,var(--red) 45%,transparent);transition:translate var(--duration-fast) var(--ease-smooth-out)}
+.go.slide.nudge .slide-k{animation:nudge .5s var(--ease-smooth-out)}
+@keyframes nudge{30%{translate:22px 0}}
+.go.slide:active{translate:none;box-shadow:0 8px 20px rgba(14,46,38,.18)}
+.go.alt.slide{background:var(--ink);color:#fff;border:0}
+
+/* ---------- tab bar: floating liquid glass, icons only ---------- */
+.screen.app{bottom:0;padding-bottom:calc(var(--tb-h) + env(safe-area-inset-bottom))}
+.tabbar{left:50%;right:auto;bottom:calc(18px + env(safe-area-inset-bottom));translate:-50% 0;width:min(272px,calc(100% - 40px));height:66px;padding:0 7px;border-radius:33px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.55));backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);
+  border:1px solid rgba(255,255,255,.9);box-shadow:inset 0 1px 0 #fff,0 10px 30px rgba(14,46,38,.16)}
+.tabbar a{flex:none;width:52px;height:52px;border-radius:26px;display:grid;place-items:center;color:rgba(14,46,38,.62);--ic:26px}
+.tabbar a .tb-ic{width:auto;height:auto;border:0;background:none!important;box-shadow:none!important;color:inherit}
+.tabbar a[aria-current="page"]{background:var(--ink);color:#fff}
+@media (orientation:landscape) and (max-height:560px){.tabbar a{flex-direction:column}}
+
+/* ---------- top bar ---------- */
+.scrolled>.wrap>.nav,.nav.inline{background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.icon-btn,.avatar{border:1px solid var(--ol)}
+.streak-pill{border:0!important;background:rgba(255,255,255,.75)!important;box-shadow:none!important;font-weight:600}
+.streak-pill [data-icon]{color:#FF7A2F}
+#home .icon-btn{background:rgba(255,255,255,.75);border:0;box-shadow:none}
+#homeAv,#profAv{background:#fff var(--me-img) 50% 100%/86% auto no-repeat!important}
+#homeAv>*,#profAv>*{display:none}
+#home .wordmark{font:700 22px/1 var(--disp);letter-spacing:-.03em}
+#home .wordmark::after{background:var(--ink)}
+
+/* ---------- Pradžia: today's game on its colour block ---------- */
+#home{background:linear-gradient(var(--gc),var(--gc)) 0 0/100% 470px no-repeat,var(--bg)}
+#home::before{content:"";position:absolute;left:0;right:0;top:400px;height:72px;background:var(--bg);clip-path:polygon(0 100%,100% 0,100% 101%,0 101%);pointer-events:none}
+#home .wrap{gap:16px}
+.today-hero{position:relative;display:block;height:320px;margin:-8px calc(-1*var(--gutter)) 0;text-decoration:none;isolation:isolate}
+.today-hero::before{content:"";position:absolute;left:50%;top:70px;width:270px;height:270px;margin-left:-135px;border-radius:50%;background:rgba(255,255,255,.22);z-index:-1}
+.today-big{position:absolute;left:0;right:0;top:4px;text-align:center;font:700 clamp(38px,12vw,58px)/.95 var(--disp);letter-spacing:-.03em;color:rgba(255,255,255,.5);text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.today-img{position:absolute;left:50%;bottom:0;height:270px;translate:calc(-50% + 18px) 0;filter:drop-shadow(0 10px 14px rgba(14,46,38,.18))}
+.today-info{margin-top:22px}
+.today-lbl{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--fg-mute)}
+.today-lbl a{margin-left:auto;display:inline-flex;align-items:center;gap:2px;color:var(--ink);font-weight:600;text-decoration:none;--ic:14px}
+.today-name{margin-top:4px;font:700 30px/1.1 var(--disp);letter-spacing:-.02em}
+.today-sub{margin-top:4px;font-size:14px;font-weight:500;color:var(--fg-mute)}
+#home .home-go{margin-top:4px}
+.home-go-txt{font:600 18px/1 var(--body)}
+#home .quick-sec{display:none}
+#home .rank-card{border:1px solid var(--ol);box-shadow:var(--sh-sm)}
+#home .chal{border:1px solid var(--ol)}
+
+/* ---------- Rungtys: colour cards with the sport kid ---------- */
+#games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#games .sp-tile{position:relative;display:flex;flex-direction:column;justify-content:flex-end;height:178px;padding:12px 14px;border:0;border-radius:22px;overflow:hidden;
+  background:var(--gc,#fff);color:var(--ink);box-shadow:none;text-decoration:none;isolation:isolate;align-items:stretch}
+#games .sp-tile[hidden]{display:none}
+#games .sp-tile::before{content:"";position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.25);z-index:-1}
+#games .sp-tile-art{position:absolute;inset:8px 0 46px;display:block;height:auto;border:0;background:none!important;aspect-ratio:auto}
+#games .sp-tile .sp-tile-art>:not(.sp-tile-img){display:none}
+#games .sp-tile .sp-tile-art>.sp-tile-img{display:block}
+.sp-tile-img{position:absolute;left:50%;bottom:0;height:100%;max-width:100%;object-fit:contain;translate:-50% 0}
+#games .sp-tile .sp-tile-txt{position:relative;width:100%;min-width:0;margin:0;padding:0;background:none;backdrop-filter:none;text-align:left}
+#games .sp-tile-txt .eyebrow,#games .sp-tile-go,#games .sp-tile>.pic{display:none}
+#games .sp-tile-txt b{display:block;font:700 16px/1.15 var(--disp);color:var(--ink);text-shadow:none;-webkit-text-stroke:0}
+#games .sp-tile-txt small{display:block;margin-top:2px;font:500 12px/1.25 var(--body);color:rgba(14,46,38,.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#rrTile{--gc:#8DE8CA}
+.games-filter{margin-top:-10px}
+#rungtys .link-more{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:0;background:none;color:var(--fg-mute);font:600 15px var(--body);text-decoration:none;--ic:18px}
+
+/* ---------- game setup screens (Rep Maratonas + every game); gallery structure from glass.css (#41) ---------- */
+.screen .gal-hero{position:relative;display:flex;flex-direction:column;gap:10px;padding:14px 0 12px;border:1px solid var(--ol);border-radius:26px;overflow:hidden;isolation:isolate;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--gc,var(--red)) 20%,rgba(255,255,255,.05)),rgba(255,255,255,.05));box-shadow:var(--sh-lg)}
+.gal-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;min-width:0;padding:0 16px}
+.gal-big{min-width:0;font:900 clamp(30px,8vw,42px)/1.05 var(--disp);color:#fff;overflow-wrap:normal}
+.gal-sub{flex:none;max-width:100%;margin-left:auto;padding:5px 11px;border-radius:99px;background:var(--gc-ink,var(--red-ink));color:#fff;font:800 11px/1.25 var(--body);letter-spacing:.06em;text-transform:uppercase;text-align:center;overflow-wrap:anywhere}
+.gal{display:flex;gap:10px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding:0 16px;scrollbar-width:none;padding:0 16px}
+.gal::-webkit-scrollbar{display:none}
+.gal:focus-visible{outline:2px solid var(--yellow);outline-offset:-2px;border-radius:18px}
+.gal-slide{position:relative;flex:0 0 86%;aspect-ratio:2/1;margin:0;border:1px solid rgba(255,255,255,.14);border-radius:18px;overflow:hidden;background:#1B2442;scroll-snap-align:center;box-shadow:0 8px 22px rgba(0,0,0,.32)}
+.gal-slide img{display:block;width:100%;height:100%;object-fit:cover}
+.gal-dots{display:flex;justify-content:center;align-items:center;gap:6px;min-height:10px;padding:0 16px}
+.gal-dot{width:9px;height:9px;padding:0;border:0;border-radius:99px;background:rgba(255,255,255,.28);transition:width var(--duration-fast) var(--ease-ui),background-color var(--duration-fast) var(--ease-ui),scale var(--duration-press) var(--ease-ui)}
+.gal-dot[aria-current="true"]{width:26px;background:var(--yellow)}
+.gal-dot:active{scale:.9}
+@media (orientation:landscape) and (max-height:560px){
+  /* phone landscape: a wide strip left, the dots in a column right, so the whole setup still fits on one screen */
+  .screen .gal-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;row-gap:8px;padding:10px 12px 8px}
+  .gal-head{grid-column:1 / -1;padding:0}
+  .gal-big{font-size:30px}
+  .gal{padding:0}
+  .gal-slide{flex-basis:46%}
+  .gal-dots{flex-direction:column;padding:0;min-height:0}
+  .gal-dot[aria-current="true"]{width:9px;height:26px}
+}
+.screen .gal-hero{background:var(--gc);border:0;box-shadow:none}
+.gal-big{font:700 clamp(28px,8vw,36px)/1.05 var(--disp);color:var(--ink);letter-spacing:-.02em}
+.gal-sub{background:rgba(255,255,255,.7);color:var(--ink);font-weight:600;letter-spacing:.02em;text-transform:none}
+.gal-slide{border:0;box-shadow:0 6px 16px rgba(14,46,38,.16)}
+.gal-dot{background:rgba(14,46,38,.2)}.gal-dot[aria-current="true"]{background:var(--ink)}
+.pl-card,.seg,.set-row,.ex-tile,.quick-tile,.rank-card,.lb-row,.grp-item,.hist-item,.ex-row,.me-card,.ledger>div{border-width:1px!important}
+.pl-card.on,.pl-card[aria-pressed="true"]{border-color:var(--red)!important;background:var(--red-tint)}
+.seg button.on,.seg button[aria-pressed="true"]{background:var(--red-tint);color:var(--ink);box-shadow:inset 0 0 0 2px var(--red)}
+.seg button:is(.on,[aria-pressed="true"]) :is(b,small,span){color:var(--ink)}
+.switch[aria-checked="true"]{background:var(--mint)}
+
+/* ---------- results ---------- */
+#end .res-bg{background:var(--gc);border:0}
+#end[data-w="2"]{--gc:#B7AEFF}#end[data-w="0"]{--gc:#FFD66B}
+#end .res-head :is(.wl,#winner,#endsub){color:var(--ink);text-shadow:none}
+#end .rec-badge{background:var(--ink);color:#fff;border:0;border-radius:14px}
+#end .res-stage{filter:drop-shadow(0 10px 14px rgba(14,46,38,.18))}
+#end .bars{border:0;border-radius:24px;background:#fff;box-shadow:var(--sh-lg)}
+#end .bar .chip{color:var(--fg-mute)}
+#end .brk,#end .chal-res,#end .duel-res{border:0;border-radius:20px;background:#fff;box-shadow:var(--sh)}
+.screen .sp-res-head,.screen .sp-res-head:is([data-w="0"],[data-w="1"],[data-w="2"]){background:var(--gc);border:0;color:var(--ink);min-height:240px;padding-right:44%;border-radius:26px;isolation:isolate;overflow:hidden}
+.screen .sp-res-head .sp-res-art{display:none}
+.screen .sp-res-head::after{content:"";position:absolute;right:0;bottom:-6px;width:46%;height:94%;z-index:-1;background:url(/chars/mini/rrh.webp) 50% 100%/contain no-repeat}
+.screen .sp-res-head :is(h2,.wl,p){color:var(--ink)}
+.screen .sp-row:first-child{border-color:var(--red);background:var(--red-tint)}
+
+/* ---------- Profilis: my kid on a coin, the 4 kids to pick ---------- */
+#profile{background:linear-gradient(var(--gc),var(--gc)) 0 0/100% 300px no-repeat,var(--bg)}
+.me-stage{position:relative;height:220px;margin-top:-10px;display:flex;justify-content:center;align-items:flex-end}
+.me-stage::before{display:none}
+.me-stage i{display:block;position:relative;width:170px;height:170px;margin-bottom:10px;border-radius:50%;background:#fff var(--me-img) 50% 100%/80% auto no-repeat;border:6px solid #fff;box-shadow:8px 0 0 rgba(14,46,38,.12),0 14px 30px rgba(14,46,38,.2);filter:none;transform:perspective(500px) rotateY(-18deg)}
+.char-pick:not(.lang-pick){display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%}
+.char-pick:not(.lang-pick) button{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;padding:10px 4px 8px;border-radius:18px;border:2px solid transparent;background:#fff;color:var(--ink);font:600 13px var(--body)}
+.char-pick i{display:block;flex:none;width:56px;height:56px;border-radius:50%;background:var(--c) var(--s) 50% 100%/80% auto no-repeat!important}
+.char-pick button[aria-pressed="true"]{border-color:var(--red);background:var(--red-tint);box-shadow:none}
+#profile .lang-pick{display:flex}
+.badge.on .medal-disc{background:linear-gradient(150deg,#FFE58A,#F5A623)}
+
+/* ---------- sheets ---------- */
+.ex-sheet-panel{background:var(--bg);color:var(--ink)}
+
+/* game setup screens are a step inside Rungtys: no tab bar over their start slider (back = the top-left arrow) */
+body:is([data-view="setup"],[data-view="sprint"],[data-view="boxing"],[data-view="longjump"],[data-view="hurdles"],[data-view="bowling"],[data-view="ski"],[data-view="wall"],[data-view="badminton"],[data-view="javelin"]) .tabbar{display:none}
+
+/* chibi kids in the old mascot slots (src/ui/mascots.ts) */
+img.mascot.kid{object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 6px 8px rgba(14,46,38,.14))}
+img.mascot.m-vs-r{transform:scaleX(-1)}
+
+/* ---------- onboarding: mint / sky / sun steps, ink text ---------- */
+#onb{--onb:#8DE8CA;--onb-fg:var(--ink);--onb-em:#0B6E52;--onb-btn:var(--ink);--onb-btn-fg:#fff}
+#onb[data-step="1"]{--onb:#8FD8FF;--onb-em:#155E8C}
+#onb[data-step="2"]{--onb:#FFD66B;--onb-em:#8A5A00;--onb-btn:var(--ink);--onb-btn-fg:#fff}
+.onb-title{font-weight:700;letter-spacing:-.02em}
+.onb-title em,#onb[data-step="2"] .onb-title em{color:var(--onb-em)}
+.onb-copy{font-weight:500}
+.onb-art{border:0;box-shadow:0 10px 30px rgba(14,46,38,.12)}
+.onb-dots i{border:0;background:rgba(255,255,255,.7)}
+.onb-dots[aria-valuenow="1"] i:nth-child(1),.onb-dots[aria-valuenow="2"] i:nth-child(2),.onb-dots[aria-valuenow="3"] i:nth-child(3),#onb[data-step="2"] .onb-dots i:nth-child(3){background:var(--ink)}
+.onb-nav .go.alt{border:0}
+.vs-art{background:linear-gradient(104deg,#FF9C9C 0 50%,#8FD8FF 50% 100%)}
+.vs-badge{background:#fff;color:var(--ink);border:0;box-shadow:0 6px 16px rgba(14,46,38,.18)}
+#onb .box.perm{border:0}

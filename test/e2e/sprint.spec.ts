@@ -9,8 +9,8 @@ test.setTimeout(5*60_000);
 test.use({trace:"off"});
 
 test("solo sprint: tile -> setup -> gate -> race -> results -> back",async({page})=>{
-  await page.goto("/#/");
-  await tap(page,".sp-tile","Sprintas tile on Pradžia");
+  await page.goto("/#/rungtys");
+  await tap(page,'.sp-tile[href="#/sprintas"]',"Sprintas tile in Rungtys");
   await screen(page,"sprint").toBeVisible();
   expect((await state(page)).hash).toBe("#/sprintas");
   await tap(page,'[data-sp="1"]',"solo (vs ghost)");
@@ -32,5 +32,5 @@ test("solo sprint: tile -> setup -> gate -> race -> results -> back",async({page
   await screen(page,"sprint").toBeVisible();
   expect((await state(page)).ingame).toBe(false);
   await page.goBack();
-  await screen(page,"home").toBeVisible();
+  await screen(page,"rungtys").toBeVisible(); // games open from the Rungtys tab
 });
