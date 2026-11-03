@@ -81,7 +81,7 @@ app.insertAdjacentHTML("beforeend",`
       <p class="help bw-rules">${tr("bw.rules")}</p>
     </section>
     <div class="cta">
-      <button class="go tap" id="bwGo" type="button"><span>${tr("bw.toLane")}</span><span data-icon="arrow-right"></span></button>
+      <button class="go tap" id="bwGo" type="button"><span>${tr("bw.toLane")}</span></button>
       <p class="fine">${tr("sp.private")}</p>
     </div>
   </div>

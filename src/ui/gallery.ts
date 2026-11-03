@@ -4,6 +4,7 @@
 import {t} from "../i18n/i18n.ts";
 
 const FRAMES = 3;
+const BETA = new Set(["bw", "hd", "bd", "jv"]); // the games whose detection/feel still needs real-phone tuning
 const slide = (code: string, n: number) =>
   `<figure class="gal-slide"><img src="/scenes/${code}-${n}.webp" alt="" width="780" height="390"${n > 1 ? ' loading="lazy"' : ""}></figure>`;
 
@@ -12,7 +13,7 @@ export function gallery(code: string, big: string, sub: string) {
   const slides = Array.from({length: FRAMES}, (_, i) => slide(code, i + 1)).join("");
   const dots = Array.from({length: FRAMES}, (_, i) => `<button class="gal-dot" type="button" aria-label="${t("gal.frame", {n: i + 1})}"></button>`).join("");
   return `<div class="gal-hero" data-gal="${code}">
-    <div class="gal-head"><span class="gal-big d">${big}</span><span class="gal-sub">${sub}</span></div>
+    <div class="gal-head"><span class="gal-big d">${big}</span>${BETA.has(code) ? `<span class="gal-beta">${t("u.betaTag")}</span>` : ""}<span class="gal-sub">${sub}</span></div>
     <div class="gal" tabindex="0" role="group" aria-label="${big}">${slides}</div>
     <div class="gal-dots">${dots}</div>
   </div>`;

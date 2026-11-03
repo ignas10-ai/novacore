@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// src/history/history.ts storage: missing / corrupt / throwing localStorage, the 50-row cap, recordGame()'s
+// src/history/history.ts storage: missing / corrupt / throwing localStorage, the 200-row cap, recordGame()'s
 // "beat your best" rule and per-player reps. The module wires #histSheet on import, so dom.ts and router.ts are
 // mocked with inert elements (markup ids are the UI restyle's business, not this test's).
 import {describe,it,expect,vi,beforeEach} from "vitest";
@@ -23,9 +23,9 @@ describe("loadHist / saveHist",()=>{
   it("missing key -> []",()=>expect(loadHist()).toEqual([]));
   it("corrupt JSON -> []",()=>{localStorage.setItem(KEY,"{oops");expect(loadHist()).toEqual([])});
   it("valid JSON that is not an array -> []",()=>{localStorage.setItem(KEY,'{"a":1}');expect(loadHist()).toEqual([]);localStorage.setItem(KEY,"null");expect(loadHist()).toEqual([])});
-  it("keeps at most 50 games, newest first",()=>{
-    saveHist(Array.from({length:60},(_,i)=>game({t:1000-i})));
-    const h=loadHist();expect(h).toHaveLength(50);expect(h[0].t).toBe(1000);
+  it("keeps at most 200 games, newest first",()=>{
+    saveHist(Array.from({length:220},(_,i)=>game({t:1000-i})));
+    const h=loadHist();expect(h).toHaveLength(200);expect(h[0].t).toBe(1000);
   });
   it("getItem throwing (storage blocked) -> [] instead of a crash",()=>{
     vi.spyOn(Storage.prototype,"getItem").mockImplementation(()=>{throw new DOMException("denied","SecurityError")});

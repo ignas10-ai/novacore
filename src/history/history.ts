@@ -5,11 +5,24 @@ import {S} from "../game/state.ts";
 import {$} from "../ui/dom.ts";
 import {refresh} from "../ui/router.ts";
 import type {Game} from "./stats.ts";
+import {gameXpTotal,trophyStates,TIER_XP} from "./trophies.ts";
 import {t,tn,dec,locale} from "../i18n/i18n.ts";
 
-const HIST_KEY="novacore.history", HIST_MAX=50, HIST_SHOW=10;
+const HIST_KEY="novacore.history", HIST_MAX=200, HIST_SHOW=10, PROGRESS_KEY="novacore.progress";
 export function loadHist():Game[]{try{const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");return Array.isArray(h)?h:[]}catch(e){return []}}
-export function saveHist(h:Game[]){try{localStorage.setItem(HIST_KEY,JSON.stringify(h.slice(0,HIST_MAX)))}catch(e){}}
+export function saveHist(h:Game[]){try{localStorage.setItem(HIST_KEY,JSON.stringify(h.slice(0,HIST_MAX)))}catch(e){}rememberProgress(h)}
+// XP/levels must survive the history cap: keep the highest ever reached and the trophies already unlocked.
+// (A deleted history does not demote the player; "Delete my data" clears this key too.)
+export interface Progress{xp:number;trophies:string[];have:Record<string,number>}
+export function loadProgress():Progress{try{const p=JSON.parse(localStorage.getItem(PROGRESS_KEY)||"{}");return {xp:Math.max(0,+p.xp||0),trophies:Array.isArray(p.trophies)?p.trophies.filter((x:unknown)=>typeof x==="string"):[],have:p.have&&typeof p.have==="object"?p.have:{}}}catch(e){return {xp:0,trophies:[],have:{}}}}
+export function rememberProgress(h:Game[]){
+  const cur=loadProgress(), ts=trophyStates(h);
+  const xp=Math.max(cur.xp,gameXpTotal(h)+ts.filter(x=>x.unlocked).reduce((n,x)=>n+TIER_XP[x.tier],0));
+  const trophies=[...new Set([...cur.trophies,...ts.filter(x=>x.unlocked).map(x=>x.id)])];
+  const have={...cur.have};
+  for(const x of ts)have[x.id]=Math.max(Number(have[x.id])||0,x.have);
+  try{localStorage.setItem(PROGRESS_KEY,JSON.stringify({xp,trophies,have}))}catch(e){}
+}
 // best single-player score among games with this player count
 function bestScore(h:Game[],p:number){return h.filter(g=>g.players===p).reduce((m,g)=>Math.max(m,...(g.score||[]).slice(0,p)),0)}
 const histSheet=$<HTMLDialogElement>("#histSheet"), histList=$("#histList"), histOpen=$("#histOpen"), histClose=$("#histClose"), histDone=$("#histDone"), histClear=$("#histClear"), histNote=$("#histNote");

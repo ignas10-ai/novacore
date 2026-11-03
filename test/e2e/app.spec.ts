@@ -54,32 +54,49 @@ test("Pratimai: open an exercise detail, Esc closes it",async({page},info)=>{
   await expect(d).not.toHaveAttribute("open","");
 });
 
-test("Profilis: sound / vibration switches persist, history and nickname sheets",async({page},info)=>{
-  // 5 games: more than the 3 shown inline, so the full history sheet button is offered
+test("Profilis: XP, trophies, settings, history and nickname",async({page},info)=>{
+  // 5 games: enough for the trophy cabinet and the full history sheet
   await page.addInitScript(()=>{if(!localStorage.getItem("novacore.history"))localStorage.setItem("novacore.history",JSON.stringify(Array.from({length:5},(_,i)=>(
     {t:Date.now()-i*36e5,players:i?1:2,duration:180,ex:["squat","jack"],score:[100+i,i?0:90],reps:[40,i?0:35],exReps:[{squat:20,jack:20},i?{}:{squat:35}]}))))});
   await page.goto("/#/profilis");
   await screen(page,"profile").toBeVisible();
-  await expect(page.locator("#stGames"),"games stat from history").toHaveText("5");
+  await expect(page.locator("#profLevel"),"level from the progress system").toContainText("Lygis");
+  await expect(page.locator("#profXpTxt")).toContainText("XP");
+  await expect(page.locator("#trophies .trophy-tile"),"trophy cabinet").toHaveCount(16);
+  await page.locator("#trophies .trophy-tile").first().click();
+  await expect(page.locator("#trophySheet")).toHaveAttribute("open","");
+  await expect(page.locator("#trophyTopList li")).not.toHaveCount(0);
+  await tap(page,"#trophyDone","trophy details done");
+  await expect(page.locator("#trophySheet")).not.toHaveAttribute("open","");
   await a11y(page,"profile",info);
-  const snd=page.locator("#profile [data-snd]"),vibe=page.locator("#profile [data-vibe]");
+  await tap(page,"#profSettings","settings button");
+  await screen(page,"settings").toBeVisible();
+  await a11y(page,"settings",info);
+  const snd=page.locator("#settings [data-snd]"),vibe=page.locator("#settings [data-vibe]");
   await expect(snd).toHaveAttribute("aria-checked","true");
   await snd.click();await vibe.click();
   await expect(snd).toHaveAttribute("aria-checked","false");
   await page.reload();
-  await expect(page.locator("#profile [data-snd]")).toHaveAttribute("aria-checked","false");
-  await expect(page.locator("#profile [data-vibe]")).toHaveAttribute("aria-checked","false");
+  await expect(page.locator("#settings [data-snd]")).toHaveAttribute("aria-checked","false");
+  await expect(page.locator("#settings [data-vibe]")).toHaveAttribute("aria-checked","false");
   await tap(page,"#histOpen","history sheet button");
   await expect(page.locator("#histSheet")).toHaveAttribute("open","");
   await expect(page.locator("#histList li")).toHaveCount(5);
   await a11y(page,"history-sheet",info);
   await page.keyboard.press("Escape");
   await expect(page.locator("#histSheet")).not.toHaveAttribute("open","");
+  await page.locator("#settings [data-back]").first().click();
+  await screen(page,"profile").toBeVisible();
+  await tap(page,"#profEdit","edit profile button");
+  await screen(page,"profileEdit").toBeVisible();
+  await a11y(page,"profile-edit",info);
   await tap(page,"#nickOpen","nickname button");
   await expect(page.locator("#nickSheet")).toHaveAttribute("open","");
   await page.locator("#nickIn").fill("Rūta");
   await tap(page,"#nickSave","nickname save");
   await expect(page.locator("#nickSheet")).not.toHaveAttribute("open","");
+  await page.locator("#profileEdit [data-back]").first().click();
+  await screen(page,"profile").toBeVisible();
   await expect(page.locator("#profNick")).toContainText("Rūta");
 });
 

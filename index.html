@@ -223,7 +223,6 @@
     <div class="games" id="games">
       <a class="sp-tile rr-tile tap" id="rrTile" href="#/zaisti"><span class="sp-tile-txt"><b class="d">Rep Maratonas</b><small>Įvairūs pratimai · 1–3 min</small></span><span class="sp-tile-art" aria-hidden="true"></span></a>
     </div>
-    <a class="link-more tap" href="#/pratimai"><span data-icon="dumbbell"></span>Visi pratimai</a>
   </div>
 </section>
 
@@ -293,58 +292,112 @@
 </section>
 
 <section class="screen app hide" id="profile" aria-labelledby="profTitle">
+  <div class="wrap prof-wrap">
+    <header class="nav"><div class="nav-in">
+      <h1 class="sr-only" id="profTitle" tabindex="-1">Profilis</h1>
+      <span class="nav-title prof-nav-title" aria-hidden="true">Profilis</span>
+      <span class="nav-acts"><button class="icon-btn sq tap" id="profSettings" type="button" aria-label="Nustatymai"><span data-icon="gear-six"></span></button></span>
+    </div></header>
+    <section class="prof-hero" id="profHero" aria-labelledby="profNick">
+      <div class="prof-hero-top"><span class="prof-kicker">Tavo profilis</span><button class="icon-btn sq tap prof-edit" id="profEdit" type="button" aria-label="Redaguoti profilį"><span data-icon="pencil-simple"></span></button></div>
+      <div class="prof-coin-wrap">
+        <button class="prof-coin tap" id="profCoin" type="button" aria-label="Perjungti veikėją ir nuotrauką" aria-pressed="false">
+          <span class="prof-coin-inner">
+            <span class="prof-coin-face front" data-avatar></span>
+            <span class="prof-coin-face back"><img id="profPhotoImg" alt="" hidden></span>
+          </span>
+        </button>
+        <span class="prof-flip-hint" data-icon="arrows-clockwise" aria-hidden="true"></span>
+      </div>
+      <b class="prof-name" id="profNick">Be vardo</b>
+      <small class="prof-sub" id="profSub">Saugoma šiame telefone</small>
+      <div class="prof-tags">
+        <span class="prof-level d" id="profLevel"></span>
+        <span class="prof-league-pill" id="profLeaguePill"><span data-icon="medal"></span><b id="profLeaguePillName">Bronza</b></span>
+      </div>
+      <div class="prof-xp">
+        <div class="prof-xp-top"><b id="profXpTxt"></b><small id="profXpNext"></small></div>
+        <div class="xp-bar"><i id="profXpFill"></i></div>
+        <small class="prof-xp-note">XP už žaidimus ir pasiektus trofėjus</small>
+      </div>
+    </section>
+    <section class="league-card" id="leagueCard" aria-labelledby="leagueLbl">
+      <span class="league-ic" id="profLeagueIcon" aria-hidden="true"></span>
+      <div class="league-txt"><span class="lbl" id="leagueLbl">Lygų sistema</span><b id="profLeagueName"></b><small id="profLeagueNext"></small><span class="league-bar"><i id="profLeagueFill"></i></span></div>
+    </section>
+    <section class="trophy-sec" aria-labelledby="profTrophyTitle">
+      <div class="row-between sec-head"><h2 class="sec-title" id="profTrophyTitle">Trofėjai</h2><small class="help" id="profTrophyCount"></small></div>
+      <button class="trophy-next" id="trophyNext" type="button" hidden></button>
+      <div class="trophy-grid" id="trophies"></div>
+    </section>
+    <p class="fine prof-fine"><span data-icon="lock"></span>Saugoma šiame telefone</p>
+  </div>
+</section>
+
+<section class="screen app hide" id="profileEdit" aria-labelledby="profEditTitle">
   <div class="wrap">
-    <header class="nav"><div class="nav-in"><span class="nav-title" aria-hidden="true">Profilis</span></div></header>
-    <h1 class="large-title" id="profTitle" tabindex="-1">Profilis</h1>
-    <div class="me-stage" aria-hidden="true"><i></i></div>
-    <div class="char-pick" role="group" aria-label="Personažas">
-      <button type="button" class="tap" data-char="r" aria-pressed="true"><i style="--s:url(/chars/mini/sp.webp);--c:#FF9C9C"></i>Kometa</button>
-      <button type="button" class="tap" data-char="b" aria-pressed="false"><i style="--s:url(/chars/mini/bx.webp);--c:#B7AEFF"></i>Banga</button>
-      <button type="button" class="tap" data-char="y" aria-pressed="false"><i style="--s:url(/chars/mini/lj.webp);--c:#FFD66B"></i>Saulė</button>
-      <button type="button" class="tap" data-char="g" aria-pressed="false"><i style="--s:url(/chars/mini/sk.webp);--c:#8FD8FF"></i>Mėta</button>
-    </div>
-    <div class="box me-card">
-      <span class="avatar lg char" id="profAv" data-avatar></span>
-      <div class="me-txt"><b id="profNick">Be vardo</b><small id="profSub">Saugoma šiame telefone</small></div>
+    <header class="nav inline"><div class="nav-in"><a class="icon-btn sq tap" href="#/profilis" data-back aria-label="Atgal"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="profEditTitle" tabindex="-1">Tavo profilis</h1></div></header>
+    <p class="lead" id="profEditSub">Vardas, veikėjas, nuotrauka ir fonas</p>
+    <div class="box edit-nick">
+      <span class="avatar lg char" id="profEditAv" data-avatar></span>
+      <div class="me-txt"><span class="lbl">Slapyvardis</span><b id="editNick">Be vardo</b></div>
       <button class="btn sm tap" id="nickOpen" type="button" aria-haspopup="dialog" aria-controls="nickSheet"><span data-icon="pencil"></span>Keisti</button>
     </div>
-    <div class="ledger" aria-label="Suvestinė">
-      <div data-tone="red"><span class="led-ic" data-icon="play"></span><b class="d" id="stGames">0</b><small>žaidimai</small></div>
-      <div data-tone="blue"><span class="led-ic" data-icon="zap"></span><b class="d" id="stReps">0</b><small>judesiai</small></div>
-      <div data-tone="yellow"><span class="led-ic" data-icon="trophy"></span><b class="d" id="stBest">0</b><small>rekordas</small></div>
-      <div data-tone="ink"><span class="led-ic" data-icon="flame"></span><b class="d" id="stStreak">0</b><small>serija</small></div>
-    </div>
-    <section class="box" aria-labelledby="actLbl">
-      <div class="row-between"><h2 class="card-title" id="actLbl">7 dienos</h2><small class="help" id="actSum"></small></div>
-      <div class="week" id="week"></div>
-    </section>
-    <section aria-labelledby="exTotLbl">
-      <h2 class="sec-title" id="exTotLbl">Pagal pratimą</h2>
-      <ul class="box ex-tot" id="exTot"></ul>
-    </section>
-    <section aria-labelledby="badgeLbl">
-      <div class="row-between sec-head"><h2 class="sec-title" id="badgeLbl">Ženkliukai</h2><small class="help" id="badgeN"></small></div>
-      <ul class="badges" id="badges"></ul>
-    </section>
-    <section aria-labelledby="histLbl">
-      <div class="row-between sec-head"><h2 class="sec-title" id="histLbl">Paskutiniai žaidimai</h2>
-        <button class="btn sm tap" id="histOpen" type="button" aria-haspopup="dialog" aria-controls="histSheet" aria-expanded="false"><span data-icon="history"></span>Visi</button></div>
-      <ol class="hist-list inline" id="histMini"></ol>
-    </section>
-    <section aria-labelledby="setLbl">
-      <h2 class="sec-title" id="setLbl">Nustatymai</h2>
-      <div class="box settings">
-        <div class="set-row"><span class="set-ic" data-icon="volume-2"></span><div class="set-txt"><b>Garsas</b><small>Už judesį, raundą ir finišą</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-snd aria-label="Garsas"><i></i></button></div>
-        <div class="set-row"><span class="set-ic" data-icon="vibrate"></span><div class="set-txt"><b>Vibracija</b><small>Trumpas virptelėjimas už judesį</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-vibe aria-label="Vibracija"><i></i></button></div>
-        <button class="set-row tap-row" type="button" data-tv aria-haspopup="dialog" aria-controls="screenSheet"><span class="set-ic" data-icon="tv"></span><div class="set-txt"><b>Rodyti per TV</b><small>TV lenta su kodu arba ekrano dubliavimas</small></div><span class="chev" data-icon="chevron-right"></span></button>
-        <div class="set-row"><span class="set-ic" data-icon="globe"></span><div class="set-txt"><b>Kalba</b><small>Language · lietuvių arba English</small></div><div class="char-pick lang-pick" role="radiogroup" aria-label="Kalba"><button class="tap" type="button" role="radio" data-lang="lt" aria-checked="true" lang="lt">LT</button><button class="tap" type="button" role="radio" data-lang="en" aria-checked="false" lang="en">EN</button></div></div>
-        <button class="set-row tap-row" id="onbAgain" type="button"><span class="set-ic" data-icon="info"></span><div class="set-txt"><b>Kaip žaisti</b><small>Parodyti įvadą dar kartą</small></div><span class="chev" data-icon="chevron-right"></span></button>
-        <div class="set-row"><span class="set-ic" data-icon="shield-check"></span><div class="set-txt"><b>Privatumas</b><small>Pagal nutylėjimą vaizdas niekur nesiunčiamas. Įjungus „Kamera per TV“, jis tiesiogiai (WebRTC) siunčiamas tik tam TV, kuris turi kodą. Serveriui – tik slapyvardis ir taškai.</small></div></div>
-        <a class="set-row tap-row" id="policyLink" href="privacy.html" target="_blank" rel="noopener"><span class="set-ic" data-icon="external-link"></span><div class="set-txt"><b>Privatumo politika</b><small>Kokius duomenis saugome ir kodėl</small></div><span class="chev" data-icon="chevron-right"></span></a>
-        <button class="set-row tap-row" id="delData" type="button"><span class="set-ic" data-icon="trash-2"></span><div class="set-txt"><b>Ištrinti mano duomenis</b><small>Slapyvardis, rezultatai, kompanijos – visam laikui</small></div><span class="chev" data-icon="chevron-right"></span></button>
+    <section class="box edit-card" aria-labelledby="photoTitle">
+      <div class="row-between"><h2 class="card-title" id="photoTitle">Savo nuotrauka</h2><span class="edit-mini" data-icon="image" aria-hidden="true"></span></div>
+      <p class="help" id="photoSub">Saugoma tik šiame telefone. Gali bet kada pašalinti.</p>
+      <div class="photo-row">
+        <span class="photo-prev" id="photoPrev" aria-hidden="true"><span data-icon="image"></span></span>
+        <div class="photo-txt"><b id="photoName">Dar neįkelta</b><div class="photo-acts"><button class="btn sm tap" id="photoPick" type="button"><span data-icon="upload-simple"></span>Įkelti nuotrauką</button><button class="btn sm alt tap" id="photoRemove" type="button" hidden><span data-icon="trash"></span>Pašalinti</button></div></div>
       </div>
-      <p class="fine" id="appVer">MoveClash</p>
+      <input id="photoInput" type="file" accept="image/*" hidden>
     </section>
+    <section class="box edit-card" aria-labelledby="charTitle">
+      <h2 class="card-title" id="charTitle">Tavo veikėjas</h2>
+      <p class="help" id="charSub">Jis matomas Pradžioje ir Profilyje</p>
+      <div class="char-grid" id="charGrid" role="group" aria-label="Tavo veikėjas">
+        <button type="button" class="tap" data-char="r" aria-pressed="true"><span class="char-art" style="--s:url(/chars/mini/sp.webp);--c:#FF9C9C"></span><b>Kometa</b></button>
+        <button type="button" class="tap" data-char="b" aria-pressed="false"><span class="char-art" style="--s:url(/chars/mini/bx.webp);--c:#B7AEFF"></span><b>Banga</b></button>
+        <button type="button" class="tap" data-char="y" aria-pressed="false"><span class="char-art" style="--s:url(/chars/mini/lj.webp);--c:#FFD66B"></span><b>Saulė</b></button>
+        <button type="button" class="tap" data-char="g" aria-pressed="false"><span class="char-art" style="--s:url(/chars/mini/sk.webp);--c:#8FD8FF"></span><b>Mėta</b></button>
+      </div>
+    </section>
+    <section class="box edit-card" aria-labelledby="bgTitle">
+      <h2 class="card-title" id="bgTitle">Profilio fonas</h2>
+      <p class="help" id="bgSub">Pasirink savo spalvą</p>
+      <div class="bg-swatches" id="bgSwatches" role="group" aria-label="Profilio fonas">
+        <button type="button" class="tap" data-bg="mint" aria-pressed="true" aria-label="Mėta"><i style="--sw:#8DE8CA"></i></button>
+        <button type="button" class="tap" data-bg="sky" aria-pressed="false" aria-label="Dangus"><i style="--sw:#8FD8FF"></i></button>
+        <button type="button" class="tap" data-bg="sun" aria-pressed="false" aria-label="Saulė"><i style="--sw:#FFD66B"></i></button>
+        <button type="button" class="tap" data-bg="peach" aria-pressed="false" aria-label="Persikas"><i style="--sw:#FFB98A"></i></button>
+        <button type="button" class="tap" data-bg="lilac" aria-pressed="false" aria-label="Alyva"><i style="--sw:#C5B6FF"></i></button>
+        <button type="button" class="tap" data-bg="rose" aria-pressed="false" aria-label="Rožė"><i style="--sw:#F7A8D8"></i></button>
+      </div>
+    </section>
+    <div class="set-row box home-photo-row">
+      <span class="set-ic" data-icon="image"></span>
+      <div class="set-txt"><b>Rodyti nuotrauką Pradžioje</b><small>Tavo nuotrauka vietoj veikėjo viršutiniame meniu</small></div>
+      <button class="switch" type="button" role="switch" aria-checked="false" id="homePhotoSwitch" aria-label="Rodyti nuotrauką Pradžioje"><i></i></button>
+    </div>
+  </div>
+</section>
+
+<section class="screen app hide" id="settings" aria-labelledby="setLbl">
+  <div class="wrap">
+    <header class="nav inline"><div class="nav-in"><a class="icon-btn sq tap" href="#/profilis" data-back aria-label="Atgal"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="setLbl" tabindex="-1">Nustatymai</h1></div></header>
+    <p class="lead" id="profSettingsSub">Garsas, kalba, privatumas ir duomenys</p>
+    <div class="box settings">
+      <div class="set-row"><span class="set-ic" data-icon="volume-2"></span><div class="set-txt"><b>Garsas</b><small>Už judesį, raundą ir finišą</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-snd aria-label="Garsas"><i></i></button></div>
+      <div class="set-row"><span class="set-ic" data-icon="vibrate"></span><div class="set-txt"><b>Vibracija</b><small>Trumpas virptelėjimas už judesį</small></div><button class="switch" type="button" role="switch" aria-checked="true" data-vibe aria-label="Vibracija"><i></i></button></div>
+      <button class="set-row tap-row" type="button" data-tv aria-haspopup="dialog" aria-controls="screenSheet"><span class="set-ic" data-icon="tv"></span><div class="set-txt"><b>Rodyti per TV</b><small>TV lenta su kodu arba ekrano dubliavimas</small></div><span class="chev" data-icon="chevron-right"></span></button>
+      <div class="set-row"><span class="set-ic" data-icon="globe"></span><div class="set-txt"><b>Kalba</b><small>Language · lietuvių arba English</small></div><div class="char-pick lang-pick" role="radiogroup" aria-label="Kalba"><button class="tap" type="button" role="radio" data-lang="lt" aria-checked="true" lang="lt">LT</button><button class="tap" type="button" role="radio" data-lang="en" aria-checked="false" lang="en">EN</button></div></div>
+      <button class="set-row tap-row" id="onbAgain" type="button"><span class="set-ic" data-icon="info"></span><div class="set-txt"><b>Kaip žaisti</b><small>Parodyti įvadą dar kartą</small></div><span class="chev" data-icon="chevron-right"></span></button>
+      <button class="set-row tap-row" id="histOpen" type="button" aria-haspopup="dialog" aria-controls="histSheet" aria-expanded="false"><span class="set-ic" data-icon="history"></span><div class="set-txt"><b>Žaidimų istorija</b><small>Paskutiniai tavo žaidimai</small></div><span class="chev" data-icon="chevron-right"></span></button>
+      <div class="set-row"><span class="set-ic" data-icon="shield-check"></span><div class="set-txt"><b>Privatumas</b><small>Pagal nutylėjimą vaizdas niekur nesiunčiamas. Įjungus „Kamera per TV“, jis tiesiogiai (WebRTC) siunčiamas tik tam TV, kuris turi kodą. Serveriui – tik slapyvardis ir taškai.</small></div></div>
+      <a class="set-row tap-row" id="policyLink" href="privacy.html" target="_blank" rel="noopener"><span class="set-ic" data-icon="external-link"></span><div class="set-txt"><b>Privatumo politika</b><small>Kokius duomenis saugome ir kodėl</small></div><span class="chev" data-icon="chevron-right"></span></a>
+      <button class="set-row tap-row" id="delData" type="button"><span class="set-ic" data-icon="trash-2"></span><div class="set-txt"><b>Ištrinti mano duomenis</b><small>Slapyvardis, rezultatai, kompanijos – visam laikui</small></div><span class="chev" data-icon="chevron-right"></span></button>
+    </div>
+    <p class="fine" id="appVer">MoveClash</p>
   </div>
 </section>
 </main>
@@ -583,6 +636,28 @@
       <button class="go alt hist-clear" id="histClear" type="button">Išvalyti</button>
       <button class="go ex-done" id="histDone" type="button"><span data-icon="check"></span>Gerai</button>
     </footer>
+  </div>
+</dialog>
+
+<dialog class="ex-sheet trophy-sheet" id="trophySheet" aria-labelledby="trophyName">
+  <div class="ex-sheet-panel">
+    <header class="ex-sheet-head">
+      <div class="ex-sheet-bar">
+        <span class="eyebrow">Trofėjo detalės</span>
+        <button class="icon-btn" id="trophyClose" type="button" aria-label="Uždaryti"><span data-icon="x"></span></button>
+      </div>
+      <div class="trophy-detail-hero" id="trophyArt" aria-hidden="true"></div>
+      <span class="trophy-tier-chip" id="trophyTier"></span>
+      <h2 class="d ex-sheet-title" id="trophyName"></h2>
+      <p class="ex-sheet-sub" id="trophyDesc"></p>
+    </header>
+    <div class="sheet-body trophy-detail">
+      <div class="trophy-meter"><div class="row-between"><span class="lbl">Progresas</span><b id="trophyProgressTxt"></b></div><div class="xp-bar"><i id="trophyProgressFill"></i></div><small id="trophyXp"></small></div>
+      <h3 class="sec-title sm" id="trophyTopLbl">Geriausi tavo rezultatai</h3>
+      <ol class="trophy-top" id="trophyTopList"></ol>
+      <p class="help" id="trophyNoScores" hidden>Dar nėra rezultatų – sužaisk žaidimą.</p>
+    </div>
+    <footer class="ex-sheet-foot"><button class="go ex-done" id="trophyDone" type="button"><span data-icon="check"></span>Gerai</button></footer>
   </div>
 </dialog>
 

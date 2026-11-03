@@ -85,7 +85,7 @@ try{
   console.log("sienos:",[...kinds].filter(x=>!x.startsWith("v")).join(", "));
   await q(()=>history.back());await sleep(800);
   ok("atgal iš rezultatų → sienos nustatymai",await q(()=>location.hash==="#/siena"&&!document.getElementById("wall").classList.contains("hide")));
-  await p.goto(`http://localhost:${port}/${lang==="en"?"?lang=en":""}#/profilis`,{waitUntil:"networkidle0"});
+  await p.goto(`http://localhost:${port}/${lang==="en"?"?lang=en":""}#/nustatymai`,{waitUntil:"networkidle0"});
   await sleep(600);await p.$eval("#histOpen",el=>el.click());await shot("history",700);
   ok("istorijos eilutė „Siena“",await q(()=>/Siena|The Wall/.test(document.querySelector("#histList .what")?.textContent||"")));
   ok("naršyklės klaidų nėra",!errs.length);

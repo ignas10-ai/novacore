@@ -63,10 +63,15 @@ test("English: onboarding -> game -> results -> clips, then switch back to Lithu
   await screen(page,"home").toBeVisible();
   await page.locator('#tabbar [data-tab="profile"]').click();
   await screen(page,"profile").toBeVisible();
+  await noLithuanian(page,"profile",info);
+  await tap(page,"#profSettings","settings button");
+  await screen(page,"settings").toBeVisible();
   await expect(page.locator("#setLbl")).toHaveText("Settings");
   await expect(page.locator('[data-lang="en"]')).toHaveAttribute("aria-checked","true");
-  await noLithuanian(page,"profile",info);
+  await noLithuanian(page,"settings",info);
   await page.locator('[data-lang="lt"]').click(); // saves novacore.lang + reloads with ?lang=lt
+  await expect(page.locator("#setLbl")).toHaveText("Nustatymai");
+  await page.locator("#settings [data-back]").first().click();
   await expect(page.locator("#profTitle")).toHaveText("Profilis");
   expect(await page.evaluate(()=>[document.documentElement.lang,localStorage.getItem("novacore.lang")])).toEqual(["lt","lt"]);
 });
