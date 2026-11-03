@@ -82,30 +82,17 @@ const POSES:Record<Pose,P>={
 };
 export const EX_IDS:ExId[]=["squat","jack","knees","squatjump","sidestep","lunge","crunch"];
 
-// Minimal player tokens: no faces, no old chibi/3D renders. Every non-exercise pose is a geometric badge with a
-// colour and a sport glyph, so the whole app gets one clean visual language. Exercise poses stay SVG (they teach the
-// movement). Same .mascot box/api, so all the existing layouts keep working.
+// full-body mascot. anim=true adds the looping exercise / idle animation (CSS, transform-only)
+// 11-03 mint: the non-exercise poses (idle / vs / win / lose / guard / punch) are the chibi kids (public/chars/mini);
+// exercise poses stay SVG, they show HOW the move goes. Same .mascot class + box, so every placement keeps its size.
+const KID:Record<Who,string>={r:"sp",b:"lj",y:"bd",g:"hd"}; // running kids (vs face-off)
+const KID_FRONT:Record<Who,string>={r:"rrh",b:"bx",y:"bd",g:"hd"}; // facing the camera (idle: setup scene, player cards)
 const KID_POSES=new Set<Pose>(["idle","vs","win","lose","guard","punch"]);
-const GLYPH:Record<Who,string>={
-  r:`<path d="M116 36 64 132h42l-16 66 72-104h-46z" fill="#fff" stroke="${INK}" stroke-width="8" stroke-linejoin="round"/>`,
-  b:`<path d="M50 102c18-20 36-20 54 0s36 20 54 0M50 138c18-20 36-20 54 0s36 20 54 0M50 174c18-20 36-20 54 0s36 20 54 0" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/>`,
-  y:`<circle cx="108" cy="118" r="31" fill="#fff"/><g stroke="#fff" stroke-width="9" stroke-linecap="round"><path d="M108 61v17M108 158v17M51 118h17M148 118h17M67 77l13 13M136 146l13 13M149 77l-13 13M80 146l-13 13"/></g>`,
-  g:`<path d="M98 54c46 6 68 44 46 80-8 14-24 28-46 38-30-42-24-80 0-118z" fill="#fff"/><path d="M103 68c-6 30-3 56 15 84" fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round"/>`,
-};
-function token(who:Who,pose:Pose,o:{anim?:boolean;label?:string;cls?:string}={}){
-  const c=C[who],a=o.label?`role="img" aria-label="${o.label}"`:'aria-hidden="true"';
-  const glyph=`<g transform="translate(100 118) scale(.64) translate(-108 -118)">${GLYPH[who]}</g>`;
-  return `<svg class="mascot token m-${who} mp-${pose}${o.anim?" anim":""}${o.cls?" "+o.cls:""}" viewBox="0 0 200 230" ${a} focusable="false">`
-    +`<ellipse cx="100" cy="218" rx="48" ry="7" fill="${INK}" opacity=".14"/>`
-    +`<circle cx="100" cy="116" r="71" fill="${c.body}" stroke="${INK}" stroke-width="7"/>`
-    +`<circle cx="100" cy="116" r="61" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2" stroke-dasharray="5 7"/>`
-    +glyph
-    +(pose==="win"?crown(100,5,58):"")
-    +(pose==="win"?spark(22,136,1)+spark(178,110,.7):"")
-    +`</svg>`;
-}
 export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mood?:Mood;label?:string;cls?:string}={}){
-  if(KID_POSES.has(pose))return token(who,pose,o);
+  if(KID_POSES.has(pose)){
+    const a=o.label?`alt="${o.label}"`:`alt="" aria-hidden="true"`;
+    return `<img class="mascot kid m-${who} mp-${pose}${o.cls?" "+o.cls:""}" src="/chars/mini/${pose==="vs"?KID[who]:KID_FRONT[who]}.webp" ${a}>`;
+  }
   const f=o.face??(RIGHT(who)?1:-1), c=C[who];
   let p=POSES[pose];
   if((pose==="punch"||pose==="javelin")&&f<0)p={...p,gl:[200-p.gr[0],p.gr[1]],gr:[200-p.gl[0],p.gl[1]]};
@@ -130,15 +117,12 @@ export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mo
     +(pose==="win"?`<g class="m-sparks">${spark(14,130,1)}${spark(186,112,.8)}${spark(178,176,.6)}</g>`:"")
     +`</svg>`;
 }
-// head-only token (HUD, setup chips, TV, result rows): a minimal badge, never a face.
+// head-only avatar (HUD, profile, setup chips): the head fills the box, tails cropped
+// player head = the chibi kid for that colour (public/chars/mini, head crop; 11-03, was the Claude Design v2 sheets).
+// One place, so every game's name field / HUD / results row follows. mood is kept for the API; the art has one face.
 export function avatar(who:Who,_mood?:Mood,o:{crown?:boolean;label?:string}={}){
-  const c=C[who],a=o.label?`role="img" aria-label="${o.label}"`:'aria-hidden="true"';
-  return `<span class="m-avatar token m-${who}" ${a}><svg viewBox="0 0 80 80" focusable="false">`
-    +`<circle cx="40" cy="40" r="35" fill="${c.body}" stroke="${INK}" stroke-width="4"/>`
-    +`<circle cx="40" cy="40" r="30" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="1.5" stroke-dasharray="3 4"/>`
-    +`<g transform="translate(40 42) scale(.31) translate(-108 -118)">${GLYPH[who]}</g>`
-    +(o.crown?crown(40,0,28):"")
-    +`</svg></span>`;
+  const a=o.label?`role="img" aria-label="${o.label}"`:'aria-hidden="true"';
+  return `<span class="m-avatar m-${who}" ${a} style="background:url(/chars/mini/${KID[who]}.webp) 50% 6%/175% auto no-repeat #fff">${o.crown?`<svg class="m-crown" viewBox="68 -2 64 50" aria-hidden="true" focusable="false">${crown(100,-12,50)}</svg>`:""}</span>`;
 }
 // VS face-off (home hero, onboarding): both mascots in guard + the yellow VS badge sits in the markup between them
 export const vsPair=()=>mascot("r","vs",{anim:true,cls:"m-vs-l"})+mascot("b","vs",{anim:true,cls:"m-vs-r"});

@@ -89,7 +89,7 @@ test("Profilis: XP, trophies, settings, history and nickname",async({page},info)
   await screen(page,"profile").toBeVisible();
   await tap(page,"#profEdit","edit profile button");
   await screen(page,"profileEdit").toBeVisible();
-  await expect(page.locator("#charGrid button"),"8 characters (4 chibi + 4 3D)").toHaveCount(8);
+  await expect(page.locator("#charGrid button"),"4 chibi characters").toHaveCount(4);
   await a11y(page,"profile-edit",info);
   await tap(page,"#nickOpen","nickname button");
   await expect(page.locator("#nickSheet")).toHaveAttribute("open","");

@@ -320,7 +320,7 @@
     <section class="prof-hero" id="profHero" aria-labelledby="profNick">
       <div class="prof-hero-top"><span class="prof-kicker">Tavo profilis</span><button class="icon-btn sq tap prof-edit" id="profEdit" type="button" aria-label="Redaguoti profilį"><span data-icon="pencil-simple"></span></button></div>
       <div class="prof-coin-wrap">
-        <button class="prof-coin tap" id="profCoin" type="button" aria-label="Perjungti avatarą ir nuotrauką" aria-pressed="false">
+        <button class="prof-coin tap" id="profCoin" type="button" aria-label="Perjungti veikėją ir nuotrauką" aria-pressed="false">
           <span class="prof-coin-inner">
             <span class="prof-coin-face front" data-avatar></span>
             <span class="prof-coin-face back"><img id="profPhotoImg" alt="" hidden></span>
@@ -372,9 +372,14 @@
       <input id="photoInput" type="file" accept="image/*" hidden>
     </section>
     <section class="box edit-card" aria-labelledby="charTitle">
-      <h2 class="card-title" id="charTitle">Tavo avataras</h2>
+      <h2 class="card-title" id="charTitle">Tavo veikėjas</h2>
       <p class="help" id="charSub">Jis matomas Pradžioje ir Profilyje</p>
-      <div class="char-grid" id="charGrid" role="group" aria-label="Tavo avataras"></div>
+      <div class="char-grid" id="charGrid" role="group" aria-label="Tavo veikėjas">
+        <button type="button" class="tap" data-char="r" aria-pressed="true"><span class="char-art" style="--s:url(/chars/mini/sp.webp);--c:#FF9C9C"></span><b>Kometa</b></button>
+        <button type="button" class="tap" data-char="b" aria-pressed="false"><span class="char-art" style="--s:url(/chars/mini/bx.webp);--c:#B7AEFF"></span><b>Banga</b></button>
+        <button type="button" class="tap" data-char="y" aria-pressed="false"><span class="char-art" style="--s:url(/chars/mini/lj.webp);--c:#FFD66B"></span><b>Saulė</b></button>
+        <button type="button" class="tap" data-char="g" aria-pressed="false"><span class="char-art" style="--s:url(/chars/mini/sk.webp);--c:#8FD8FF"></span><b>Mėta</b></button>
+      </div>
     </section>
     <section class="box edit-card" aria-labelledby="bgTitle">
       <h2 class="card-title" id="bgTitle">Profilio fonas</h2>

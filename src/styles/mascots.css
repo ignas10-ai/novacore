@@ -127,3 +127,9 @@
 /* character heads (#55): sheet crop – the front view is the left third, the head the top quarter */
 span.m-avatar{position:relative;aspect-ratio:1;border-radius:50%;background:no-repeat 8% 6%/520% auto;background-color:transparent}
 span.m-avatar .m-crown{position:absolute;left:18%;top:-38%;width:64%;overflow:visible}
+
+/* kid characters (public/chars/mini) breathe instead of standing frozen: HUD chips, ready screen, turn cards, vs cards */
+@keyframes kid-bob{0%,100%{translate:0 0;rotate:-.6deg}50%{translate:0 -3px;rotate:.6deg}}
+img.mascot.kid{animation:kid-bob 3.8s var(--ease-ui) infinite}
+.m-avatar{animation:kid-bob 3.2s var(--ease-ui) infinite}
+@media (prefers-reduced-motion:reduce){img.mascot.kid,.m-avatar{animation:none}}

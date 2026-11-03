@@ -1102,7 +1102,7 @@ body.duel .bars{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
   #exDetail .sheet-body{width:54%;flex:none;padding-top:20px}
   #exDetail .ex-sheet-foot{width:100%}
 }
-@media (max-width:370px){
+@media (max-width:380px){
   .quick-tile b{font-size:16px}
   .pl-foot b{font-size:18px}
   .seg button .d{font-size:26px}.seg button small{font-size:14px}

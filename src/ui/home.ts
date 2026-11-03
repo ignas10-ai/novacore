@@ -10,7 +10,7 @@ import {$} from "./dom.ts";
 import {t,tn} from "../i18n/i18n.ts";
 import {onView,go} from "./router.ts";
 import {renderHomeRank} from "./social.ts";
-import {GAME,HOME_ICON,applyChar} from "./chars.ts";
+import {GAME,HOME_ICON,POSE,applyChar} from "./chars.ts";
 import {sportArt} from "./sport.ts";
 import {icon} from "./icons.ts";
 import {slide} from "./slide.ts";
@@ -81,7 +81,7 @@ function feature(){
   const g=a.dataset.g!, name=a.querySelector(".sp-tile-txt b")?.textContent??"", m=GAME[g];
   $<HTMLAnchorElement>("#homeFeat").href=a.getAttribute("href")!;
   $("#home").style.setProperty("--gc",m.color);
-  $("#home").querySelector<HTMLElement>(".today-art")!.innerHTML=`<span class="today-symbol">${icon(HOME_ICON[g]||"sparkle")}</span><i class="today-spark"></i><i class="today-spark"></i>`;
+  $("#home").querySelector<HTMLElement>(".today-art")!.innerHTML=`<img class="today-img" alt="" src="/chars/${POSE[g]}.webp"><span class="today-badge">${icon(HOME_ICON[g]||"sparkle")}</span><i class="today-spark"></i><i class="today-spark"></i>`;
   $("#todayName").textContent=$("#todayBig").textContent=name;
   $("#todaySub").textContent=a.querySelector(".sp-tile-txt small")?.textContent??"";
 }

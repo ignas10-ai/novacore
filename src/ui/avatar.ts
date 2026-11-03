@@ -1,6 +1,6 @@
-// Token art in the markup + the local avatar emblem. paintArt() fills placeholders once:
-//   [data-mascot="r:idle"] / "b:vs:anim" = player token (who:pose[:anim]), [data-mascots="vs"] = the face-off pair,
-//   [data-head="r|b"] = head token, [data-avatar] = the player's emblem (minimal SVG, no face).
+// Character art in the markup + the local avatar head. paintArt() fills placeholders once:
+//   [data-mascot="r:idle"] / "b:vs:anim" = full-body kid (who:pose[:anim]), [data-mascots="vs"] = the face-off pair,
+//   [data-head="r|b"] = head avatar, [data-avatar] = the player's own character (public/chars/mini).
 // ponytail: the choice is local only (novacore.char); add a profiles column if friends should see it in Kompanijos.
 import {mascot,avatar,vsPair,type Who,type Pose} from "./mascots.ts";
 
@@ -9,10 +9,7 @@ export type Char=Who;
 export function getChar():Char{
   try{
     const v=localStorage.getItem(KEY);
-    if(v==="wave"||v==="orbit"||v==="moon"||v==="b")return "b";
-    if(v==="sun"||v==="star"||v==="y")return "y";
-    if(v==="leaf"||v==="g")return "g";
-    return "r";
+    return v==="b"||v==="y"||v==="g"?v:"r";
   }catch(e){return "r"}
 }
 export function paintArt(root:ParentNode=document){
