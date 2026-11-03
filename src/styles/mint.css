@@ -473,8 +473,9 @@ img.mascot.m-vs-r{transform:scaleX(-1)}
 @media (max-width:370px){.trophy-sheet .ex-sheet-title{font-size:26px}.trophy-art.big{width:82px;height:90px}}
 .photo-prev{display:grid;place-items:center;color:var(--fg-faint);--ic:22px}
 .photo-prev.has [data-icon]{display:none}
-.pl-card.on .pl-foot,.pl-card[aria-pressed="true"] .pl-foot{color:#fff}
+.pl-card.on .pl-foot,.pl-card[aria-pressed="true"] .pl-foot{background:var(--red);color:var(--ink)}
 .pl-card .pl-check{background:var(--yellow);color:var(--ink);border-color:rgba(255,255,255,.7)}
+.pl-foot{transition:background-color var(--duration-fast) var(--ease-ui),color var(--duration-fast) var(--ease-ui)}
 #gamesFilter{flex-wrap:wrap;max-width:100%}
 #gamesFilter .chip-btn{flex:none}
 @media (max-width:380px){
