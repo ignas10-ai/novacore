@@ -85,12 +85,13 @@ export const EX_IDS:ExId[]=["squat","jack","knees","squatjump","sidestep","lunge
 // full-body mascot. anim=true adds the looping exercise / idle animation (CSS, transform-only)
 // 11-03 mint: the non-exercise poses (idle / vs / win / lose / guard / punch) are the chibi kids (public/chars/mini);
 // exercise poses stay SVG, they show HOW the move goes. Same .mascot class + box, so every placement keeps its size.
-const KID:Record<Who,string>={r:"sp",b:"lj",y:"bd",g:"hd"};
+const KID:Record<Who,string>={r:"sp",b:"lj",y:"bd",g:"hd"}; // running kids (vs face-off)
+const KID_FRONT:Record<Who,string>={r:"rrh",b:"bx",y:"bd",g:"hd"}; // facing the camera (idle: setup scene, player cards)
 const KID_POSES=new Set<Pose>(["idle","vs","win","lose","guard","punch"]);
 export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mood?:Mood;label?:string;cls?:string}={}){
   if(KID_POSES.has(pose)){
     const a=o.label?`alt="${o.label}"`:`alt="" aria-hidden="true"`;
-    return `<img class="mascot kid m-${who} mp-${pose}${o.cls?" "+o.cls:""}" src="/chars/mini/${pose==="win"&&who==="r"?"rrh":KID[who]}.webp" ${a}>`;
+    return `<img class="mascot kid m-${who} mp-${pose}${o.cls?" "+o.cls:""}" src="/chars/mini/${pose==="vs"?KID[who]:KID_FRONT[who]}.webp" ${a}>`;
   }
   const f=o.face??(RIGHT(who)?1:-1), c=C[who];
   let p=POSES[pose];

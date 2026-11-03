@@ -209,3 +209,7 @@ img.mascot.m-vs-r{transform:scaleX(-1)}
 .vs-art{background:linear-gradient(104deg,#FF9C9C 0 50%,#8FD8FF 50% 100%)}
 .vs-badge{background:#fff;color:var(--ink);border:0;box-shadow:0 6px 16px rgba(14,46,38,.18)}
 #onb .box.perm{border:0}
+/* VS card: the kids whole (feet were cut by the card edge), centred, not stretched past their ~400 px art */
+.vs-art{padding:18px 12px 14px;place-items:center}
+.vs-fighters{align-items:end;max-width:340px;column-gap:6%}
+.vs-fighters img.mascot.kid{width:100%;height:auto;aspect-ratio:auto;max-height:clamp(140px,24vh,210px);margin-bottom:0;object-position:50% 100%}
