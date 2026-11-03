@@ -117,5 +117,5 @@ test("badminton solo to 11: hand pick, serve, points, results, history, back",as
   await screen(page,"badminton").toBeVisible();
   expect((await state(page)).ingame).toBe(false);
   await page.goBack();
-  await screen(page,"home").toBeVisible();
+  await screen(page,"rungtys").toBeVisible(); // games open from the Rungtys tab
 });

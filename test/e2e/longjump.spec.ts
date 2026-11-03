@@ -62,5 +62,5 @@ test("long jump, 2 players x 3 attempts: rotation, foul, ranking, history",async
   await screen(page,"longjump").toBeVisible();
   expect((await state(page)).ingame).toBe(false);
   await page.goBack();
-  await screen(page,"home").toBeVisible();
+  await screen(page,"rungtys").toBeVisible(); // games open from the Rungtys tab
 });

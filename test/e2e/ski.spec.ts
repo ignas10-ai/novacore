@@ -39,5 +39,5 @@ test("solo skiing: tile -> setup -> gate -> run -> results -> history",async({pa
   await screen(page,"ski").toBeVisible();
   expect((await state(page)).ingame).toBe(false);
   await page.goBack();
-  await screen(page,"home").toBeVisible();
+  await screen(page,"rungtys").toBeVisible(); // games open from the Rungtys tab
 });

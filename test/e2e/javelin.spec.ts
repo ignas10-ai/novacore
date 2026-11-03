@@ -61,5 +61,5 @@ test("javelin throw, 2 players x 3 attempts: hand pick, throw, foul, total ranki
   await screen(page,"javelin").toBeVisible();
   expect((await state(page)).ingame).toBe(false);
   await page.goBack();
-  await screen(page,"home").toBeVisible();
+  await screen(page,"rungtys").toBeVisible(); // games open from the Rungtys tab
 });

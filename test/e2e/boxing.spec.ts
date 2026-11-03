@@ -57,6 +57,6 @@ test("solo boxing + TV board: tile -> setup -> gate -> round -> results -> back"
   expect((await state(page)).ingame).toBe(false);
   await expect(tv.locator("#screen")).toHaveAttribute("data-phase","idle",{timeout:15_000});
   await page.goBack();
-  await screen(page,"home").toBeVisible();
+  await screen(page,"rungtys").toBeVisible(); // games open from the Rungtys tab
   expect(tvErrors,"TV browser errors").toEqual([]);
 });

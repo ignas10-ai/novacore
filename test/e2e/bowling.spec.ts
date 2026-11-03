@@ -96,5 +96,5 @@ test("bowling, 2 players x 3 frames: hand -> aim -> ball, scorecard, history, ba
   await screen(page,"bowling").toBeVisible();
   expect((await state(page)).ingame).toBe(false);
   await page.goBack();
-  await screen(page,"home").toBeVisible();
+  await screen(page,"rungtys").toBeVisible(); // games open from the Rungtys tab
 });
