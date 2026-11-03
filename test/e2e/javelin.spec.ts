@@ -10,7 +10,7 @@ test.use({trace:"off"}); // same reason as sprint.spec: trace screenshots compet
 const jv=(page:import("@playwright/test").Page)=>page.evaluate(()=>(window as any).__jv.state());
 
 test("javelin throw, 2 players x 3 attempts: hand pick, throw, foul, total ranking, history",async({page},info)=>{
-  await page.goto("/#/");
+  await page.goto("/#/rungtys");
   await tap(page,".jv-tile","Iečio metimas tile on Pradžia");
   await screen(page,"javelin").toBeVisible();
   expect((await state(page)).hash).toBe("#/ietis");

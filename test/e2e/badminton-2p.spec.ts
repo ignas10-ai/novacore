@@ -12,7 +12,7 @@ test.use({trace:"off",launchOptions:{args:camArgs(CAM2)}}); // two mascots in th
 const bd=(page:Page)=>page.evaluate(()=>(window as any).__bd.state());
 
 test("badminton 2 players: camera cuts to the receiver, target, results, history",async({page},info)=>{
-  await page.goto("/#/");
+  await page.goto("/#/rungtys");
   await tap(page,".bd-tile","Badmintonas tile on Pradžia");
   await screen(page,"badminton").toBeVisible();
   await tap(page,'[data-bd="2"]',"2 players");

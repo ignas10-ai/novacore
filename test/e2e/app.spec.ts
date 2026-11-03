@@ -97,8 +97,8 @@ test("setup: exercise picker keeps at least one exercise",async({page},info)=>{
   await expect(on,"the last exercise cannot be deselected").toHaveCount(1);
   await tap(page,"#exDone","picker done");
   await page.locator("#start [data-back]").first().click();
-  await screen(page,"home").toBeVisible();
-  expect((await state(page)).d).toBe(0);
+  await screen(page,"rungtys").toBeVisible(); // Rep Maratonas opens from the Rungtys tab
+  expect((await state(page)).d).toBe(1);
 });
 
 test.describe("Kompanijos (mocked Supabase)",()=>{

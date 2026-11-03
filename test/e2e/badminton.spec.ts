@@ -18,7 +18,7 @@ const waitTarget=async(page:Page,side:0|1)=>{
 };
 
 test("badminton third person: target bubble, auto-run, return, jump smash",async({page})=>{
-  await page.goto("/#/");
+  await page.goto("/#/rungtys");
   await tap(page,".bd-tile","Badmintonas tile on Pradžia");
   await tap(page,'[data-bd="1"]',"1 player (vs the bot)");
   await tap(page,"#bdGo","Į aikštę");
@@ -55,7 +55,7 @@ test("badminton third person: target bubble, auto-run, return, jump smash",async
 });
 
 test("badminton solo to 11: hand pick, serve, points, results, history, back",async({page},info)=>{
-  await page.goto("/#/");
+  await page.goto("/#/rungtys");
   await tap(page,".bd-tile","Badmintonas tile on Pradžia");
   await screen(page,"badminton").toBeVisible();
   await page.waitForTimeout(500);

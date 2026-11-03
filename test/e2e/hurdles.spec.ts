@@ -10,7 +10,7 @@ test.use({trace:"off"}); // same reason as sprint.spec: trace screenshots compet
 const hd=(page:import("@playwright/test").Page)=>page.evaluate(()=>(window as any).__hd.state());
 
 test("solo hurdles: 7 cleared + 1 clipped, finish time, history",async({page})=>{
-  await page.goto("/#/");
+  await page.goto("/#/rungtys");
   await tap(page,".hd-tile","Barjerinis bėgimas tile on Pradžia");
   await screen(page,"hurdles").toBeVisible();
   expect((await state(page)).hash).toBe("#/barjerai");

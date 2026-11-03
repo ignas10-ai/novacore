@@ -10,7 +10,7 @@ test.use({trace:"off",launchOptions:{args:camArgs(CAM2)}}); // two mascots in th
 const sk=(page:import("@playwright/test").Page)=>page.evaluate(()=>(window as any).__sk.state());
 
 test("two-player skiing race: two poses -> split run -> both results -> history",async({page})=>{
-  await page.goto("/#/");
+  await page.goto("/#/rungtys");
   await tap(page,".sk-tile","Slidinėjimas tile on Pradžia");
   await screen(page,"ski").toBeVisible();
   await tap(page,'[data-sk="2"]',"2 players (race)");

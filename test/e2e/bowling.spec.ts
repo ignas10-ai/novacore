@@ -12,7 +12,7 @@ test.use({trace:"off"}); // same reason as the sprint/duel specs: the trace comp
 const bw=(page:Page)=>page.evaluate(()=>(window as any).__bw.state());
 
 test("bowling, 2 players x 3 frames: hand -> aim -> ball, scorecard, history, back",async({page},info)=>{
-  await page.goto("/#/");
+  await page.goto("/#/rungtys");
   await tap(page,".bw-tile","Boulingas tile on Pradžia");
   await screen(page,"bowling").toBeVisible();
   expect((await state(page)).hash).toBe("#/boulingas");
