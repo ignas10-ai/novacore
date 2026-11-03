@@ -71,7 +71,7 @@ app.insertAdjacentHTML("beforeend",`
       <p class="help jv-rules">${tr("jv.rules")}</p>
     </section>
     <div class="cta">
-      <button class="go tap" id="jvGo" type="button"><span>${tr("jv.toRunway")}</span><span data-icon="arrow-right"></span></button>
+      <button class="go tap" id="jvGo" type="button"><span>${tr("jv.toRunway")}</span></button>
       <p class="fine">${tr("sp.private")}</p>
     </div>
   </div>

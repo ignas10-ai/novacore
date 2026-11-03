@@ -38,8 +38,12 @@ export function games(){
     const g=[...a.classList].find(c=>c!=="sp-tile"&&c.endsWith("-tile"))?.slice(0,-5)??"sp", m=GAME[g];
     a.dataset.g=g;if(!m)return;
     a.style.setProperty("--gc",m.color);a.dataset.duo=String(m.duo);
+    if(m.beta)a.insertAdjacentHTML("afterbegin",`<span class="sp-beta">${t("u.betaTag")}</span>`);
     a.querySelector(".sp-tile-art")?.insertAdjacentHTML("afterbegin",`<img class="sp-tile-img" alt="" src="/chars/${POSE[g]}.webp">`);
   });
+  grid.querySelectorAll<HTMLElement>(".sp-tile").forEach((a,i)=>a.style.setProperty("--i",String(i)));
+  // The category view is a shelf: no one-line description under the title (the title is the star).
+  grid.querySelectorAll<HTMLElement>(".sp-tile-txt small").forEach(s=>{s.hidden=true});
 }
 onView("games",games);
 // Rungtys filter: all / one player / two at the same time

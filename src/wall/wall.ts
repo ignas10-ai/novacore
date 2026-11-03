@@ -72,7 +72,7 @@ app.insertAdjacentHTML("beforeend",`
       </ol>
     </section>
     <div class="cta">
-      <button class="go tap" id="wlGo" type="button"><span>${tr("wl.toWall")}</span><span data-icon="arrow-right"></span></button>
+      <button class="go tap" id="wlGo" type="button"><span>${tr("wl.toWall")}</span></button>
       <p class="fine">${tr("sp.private")}</p>
     </div>
   </div>

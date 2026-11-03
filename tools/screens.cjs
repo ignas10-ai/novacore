@@ -71,10 +71,11 @@ function seed(now){
     await p.goto(base+"#/pratimai",{waitUntil:"networkidle0"});await shot("library",1200);
     await scrollTo("#library","end");await shot("library-bottom",600);
     await p.goto(base+"#/profilis",{waitUntil:"networkidle0"});await shot("profile",1300);
-    await scrollTo("#profile",landscape?560:620);await shot("profile-badges",700);
-    await scrollTo("#profile","end");await shot("profile-settings",700);
+    await scrollTo("#profile","end");await shot("profile-trophies",700);
+    await p.goto(base+"#/nustatymai",{waitUntil:"networkidle0"});await shot("settings",700);
     await tap("#histOpen");await shot("history-sheet",800);
     await p.keyboard.press("Escape");await sleep(400);
+    await p.goto(base+"#/profilis/redaguoti",{waitUntil:"networkidle0"});await shot("profile-edit",700);
     await tap("#nickOpen");await shot("nick-sheet",800);
     await p.keyboard.press("Escape");await sleep(400);
     await p.goto(base+"#/",{waitUntil:"networkidle0"});await sleep(800);
