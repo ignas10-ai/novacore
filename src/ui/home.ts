@@ -1,4 +1,5 @@
-// Pradžia (#home): greeting, streak, weekly goal, "Žaisti" -> setup, quick starts that skip the setup, the games grid.
+// Pradžia (#home): today's game (hero + slide to play), streak, weekly goal, quick starts that skip the setup.
+// Also fills the Rungtys tab (#rungtys: the games grid + filter).
 // The group rank card and the challenge card are filled by social.ts.
 import {S} from "../game/state.ts";
 import {startFlow} from "../game/game.ts";
@@ -9,8 +10,8 @@ import {$} from "./dom.ts";
 import {t,tn} from "../i18n/i18n.ts";
 import {onView,go} from "./router.ts";
 import {renderHomeRank} from "./social.ts";
-import {picto} from "./pictos.ts";
-import {POSE,applyChar} from "./chars.ts";
+import {POSE,GAME,applyChar} from "./chars.ts";
+import {slide} from "./slide.ts";
 
 function render(){
   const now=Date.now(), h=loadHist(), nick=cachedNick();
@@ -28,20 +29,27 @@ function render(){
   games();
   feature();
 }
-// game tiles are injected by each game module (anywhere in #home); collect them into the grid, badge each with its
-// pictogram and mirror them as the cover's icon row. Idempotent, so new tiles (Martynas' javelin, badminton) just appear.
-function games(){
+// game tiles are injected by each game module (anywhere in #home); move them into the Rungtys grid (#games, Rep Maratonas
+// stays first), tag each with its key, colour and duo flag. Idempotent, so new tiles (Martynas' javelin, badminton) just appear.
+export function games(){
   const grid=$("#games");
-  document.querySelectorAll<HTMLAnchorElement>("#home .sp-tile").forEach(a=>{
-    const g=[...a.classList].find(c=>c!=="sp-tile"&&c.endsWith("-tile"))?.slice(0,-5)??"sp";
-    if(!a.dataset.g){a.dataset.g=g;a.insertAdjacentHTML("afterbegin",`<span class="pic" aria-hidden="true">${picto(g)}</span>`)}
-    grid.append(a);
+  document.querySelectorAll<HTMLAnchorElement>("#home .sp-tile").forEach(a=>grid.append(a));
+  grid.querySelectorAll<HTMLAnchorElement>(".sp-tile:not([data-g])").forEach(a=>{
+    const g=[...a.classList].find(c=>c!=="sp-tile"&&c.endsWith("-tile"))?.slice(0,-5)??"sp", m=GAME[g];
+    a.dataset.g=g;if(!m)return;
+    a.style.setProperty("--gc",m.color);a.dataset.duo=String(m.duo);
+    a.querySelector(".sp-tile-art")?.insertAdjacentHTML("afterbegin",`<img class="sp-tile-img" alt="" src="/chars/${POSE[g]}.webp">`);
   });
-  $("#homePics").innerHTML=[...grid.querySelectorAll<HTMLAnchorElement>(".sp-tile")].map(a=>
-    `<a class="pic tap" data-g="${a.dataset.g}" href="${a.getAttribute("href")}" aria-label="${a.querySelector(".sp-tile-txt b")?.textContent??""}">${picto(a.dataset.g!)}</a>`).join("");
 }
+onView("games",games);
+// Rungtys filter: all / one player / two at the same time
+document.querySelectorAll<HTMLButtonElement>("#gamesFilter [data-f]").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#gamesFilter [data-f]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+  const f=b.dataset.f;
+  $("#games").querySelectorAll<HTMLElement>(".sp-tile").forEach(a=>a.hidden=!!f&&(a.dataset.duo==="true")!==(f==="duo"));
+});
 onView("home",render);
-$("#homePlay").onclick=()=>go("#/zaisti");
+$("#homePlay").onclick=()=>go($<HTMLAnchorElement>("#homeFeat").getAttribute("href")!);
 // quick start: set the same buttons the setup screen uses (keeps both in sync), then go straight to the camera
 document.querySelectorAll<HTMLElement>("[data-quick]").forEach(b=>b.onclick=()=>{
   const [p,d]=b.dataset.quick!.split(",");
@@ -49,13 +57,16 @@ document.querySelectorAll<HTMLElement>("[data-quick]").forEach(b=>b.onclick=()=>
   document.querySelector<HTMLElement>(`[data-d="${d}"]`)?.click();
   startFlow();
 });
-// today's game: the same one all day (day number mod the tiles), card = its pose over its frame + a play link
+// today's game: the same one all day (day number mod the games), hero = its colour + character, slide = its setup
 function feature(){
-  const tiles=[...document.querySelectorAll<HTMLAnchorElement>("#games .sp-tile")].filter(a=>POSE[a.dataset.g!]);
+  const tiles=[...document.querySelectorAll<HTMLAnchorElement>("#games .sp-tile")].filter(a=>GAME[a.dataset.g!]);
   const a=tiles[Math.floor(Date.now()/864e5)%Math.max(1,tiles.length)];if(!a)return;
-  const f=$<HTMLAnchorElement>("#homeFeat"),g=a.dataset.g!;
-  f.href=a.getAttribute("href")!;f.dataset.g=g;
-  f.querySelector<HTMLImageElement>(".feat-img")!.src=`/chars/${POSE[g]}.webp`;
-  f.querySelector(".feat-name")!.textContent=a.querySelector(".sp-tile-txt b")?.textContent??"";
+  const g=a.dataset.g!, name=a.querySelector(".sp-tile-txt b")?.textContent??"";
+  $<HTMLAnchorElement>("#homeFeat").href=a.getAttribute("href")!;
+  $("#home").style.setProperty("--gc",GAME[g].color);
+  $("#home").querySelector<HTMLImageElement>(".today-img")!.src=`/chars/${POSE[g]}.webp`;
+  $("#todayName").textContent=$("#todayBig").textContent=name;
+  $("#todaySub").textContent=a.querySelector(".sp-tile-txt small")?.textContent??"";
 }
+slide($<HTMLButtonElement>("#homePlay"));
 applyChar();

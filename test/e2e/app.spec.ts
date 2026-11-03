@@ -26,11 +26,11 @@ test.describe("first run",()=>{
   });
 });
 
-test("tabs: Pradžia -> Kompanijos -> Pratimai -> Profilis, back = Pradžia",async({page},info)=>{
+test("tabs: Pradžia -> Rungtys -> Lyderiai -> Profilis, back = Pradžia",async({page},info)=>{
   await page.goto("/#/");
   await screen(page,"home").toBeVisible();
   await a11y(page,"home",info);
-  for(const [tab,id,hash] of [["groups","groups","#/kompanijos"],["library","library","#/pratimai"],["profile","profile","#/profilis"]]){
+  for(const [tab,id,hash] of [["games","rungtys","#/rungtys"],["groups","groups","#/kompanijos"],["profile","profile","#/profilis"]]){
     await tap(page,`#tabbar [data-tab="${tab}"]`,`tab ${tab}`);
     await screen(page,id).toBeVisible();
     expect(await state(page)).toMatchObject({hash,d:1});
@@ -85,7 +85,7 @@ test("Profilis: sound / vibration switches persist, history and nickname sheets"
 
 test("setup: exercise picker keeps at least one exercise",async({page},info)=>{
   await page.goto("/#/");
-  await tap(page,"#homePlay","Pradžia play button");
+  await tap(page,'#tabbar [data-tab="games"]',"Rungtys tab");await tap(page,"#rrTile","Rep Maratonas tile");
   await screen(page,"start").toBeVisible();
   expect((await state(page)).hash).toBe("#/zaisti");
   await a11y(page,"setup",info);

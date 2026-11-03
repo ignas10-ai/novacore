@@ -29,12 +29,12 @@ test("English: onboarding -> game -> results -> clips, then switch back to Lithu
   await tap(page,"#onbNext","onboarding finish");
   await screen(page,"home").toBeVisible();
   await expect(page.locator("#homeTitle")).toHaveText("Hey, Testas!");
-  await expect(page.locator('#tabbar [data-tab="groups"]')).toHaveText("Crews");
+  await expect(page.locator('#tabbar [data-tab="groups"]')).toHaveText("Leaders");
   await noLithuanian(page,"home",info);
 
-  await tap(page,"#homePlay","Home play button");
+  await tap(page,'#tabbar [data-tab="games"]',"Rungtys tab");await tap(page,"#rrTile","Rep Maratonas tile");
   await screen(page,"start").toBeVisible();
-  await expect(page.locator("#setupTitle")).toHaveText("New game");
+  await expect(page.locator("#setupTitle")).toHaveText("Rep Marathon");
   await tap(page,'[data-p="1"]',"1 player");await tap(page,'[data-d="60"]',"1 minute");
   await expect(page.locator("#exSummary")).toHaveText(/exercises/);
   await noLithuanian(page,"setup",info);

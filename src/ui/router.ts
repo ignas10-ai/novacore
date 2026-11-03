@@ -1,16 +1,17 @@
 // Hash router for the app screens + bottom tab bar. URLs: #/ (Pradžia), #/kompanijos, #/kompanijos/<id>,
-// #/pratimai, #/profilis, #/zaisti (game setup). Query params (?g=CODE, ?c=<id>) live before the hash and are
+// #/rungtys (all games), #/pratimai, #/profilis, #/zaisti (Rep Maratonas setup). Query params (?g=CODE, ?c=<id>) live before the hash and are
 // untouched. history.state.d = how many entries this tab pushed, so in-app back buttons and the Home tab use the
 // real history (Android back always does what the screen's back button does). Tabs replace each other; only Home
 // stays underneath, so back from any tab lands on Pradžia, then leaves the app.
 // The game flow (#ready/#end/#clips) and the onboarding are not routes: they claim back via setBackHandler().
-export type View="home"|"groups"|"group"|"library"|"profile"|"setup"|"sprint"|"boxing"|"longjump"|"hurdles"|"bowling"|"ski"|"wall"|"badminton"|"javelin"|"screen";
-const SCREEN:Record<View,string>={home:"home",groups:"groups",group:"group",library:"library",profile:"profile",setup:"start",sprint:"sprint",boxing:"boxing",longjump:"longjump",hurdles:"hurdles",bowling:"bowling",ski:"ski",wall:"wall",badminton:"badminton",javelin:"javelin",screen:"screen"};
-const TAB:Record<View,string>={home:"home",groups:"groups",group:"groups",library:"library",profile:"profile",setup:"home",sprint:"home",boxing:"home",longjump:"home",hurdles:"home",bowling:"home",ski:"home",wall:"home",badminton:"home",javelin:"home",screen:""};
+export type View="home"|"games"|"groups"|"group"|"library"|"profile"|"setup"|"sprint"|"boxing"|"longjump"|"hurdles"|"bowling"|"ski"|"wall"|"badminton"|"javelin"|"screen";
+const SCREEN:Record<View,string>={home:"home",games:"rungtys",groups:"groups",group:"group",library:"library",profile:"profile",setup:"start",sprint:"sprint",boxing:"boxing",longjump:"longjump",hurdles:"hurdles",bowling:"bowling",ski:"ski",wall:"wall",badminton:"badminton",javelin:"javelin",screen:"screen"};
+const TAB:Record<View,string>={home:"home",games:"games",groups:"groups",group:"groups",library:"games",profile:"profile",setup:"games",sprint:"games",boxing:"games",longjump:"games",hurdles:"games",bowling:"games",ski:"games",wall:"games",badminton:"games",javelin:"games",screen:""};
 
 export function parse(hash:string):{v:View;arg:string}{
   const [a,b]=hash.replace(/^#\/?/,"").split("/");
   if(a==="kompanijos")return b?{v:"group",arg:decodeURIComponent(b)}:{v:"groups",arg:""};
+  if(a==="rungtys")return {v:"games",arg:""};
   if(a==="pratimai")return {v:"library",arg:""};
   if(a==="profilis")return {v:"profile",arg:""};
   if(a==="zaisti")return {v:"setup",arg:""};
@@ -36,7 +37,7 @@ export const current=()=>cur;
 export const setBackHandler=(fn:()=>boolean)=>{backHandler=fn};
 const el=(id:string)=>document.getElementById(id)!;
 
-const ROOTS:View[]=["home","groups","library","profile"];
+const ROOTS:View[]=["home","games","groups","library","profile"];
 const MOTION_MS=360; // = --duration-medium + a frame; the leaving screen stays visible for the push/pop slide
 let leaving:HTMLElement|null=null, leaveTimer=0;
 function settle(){clearTimeout(leaveTimer);document.querySelectorAll<HTMLElement>(".screen[data-enter]").forEach(s=>delete s.dataset.enter);if(leaving){leaving.classList.add("hide");delete leaving.dataset.leave;leaving.inert=false;leaving=null}}

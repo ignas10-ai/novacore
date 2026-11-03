@@ -4,9 +4,9 @@
 // Minimal markup with the screen ids the router owns; layout/CSS is irrelevant here.
 import {describe,it,expect,beforeAll} from "vitest";
 
-const SCREENS=["home","groups","group","library","profile","start","sprint","boxing","longjump","hurdles","bowling","ski","wall","badminton","javelin","screen","onb"];
+const SCREENS=["home","rungtys","groups","group","library","profile","start","sprint","boxing","longjump","hurdles","bowling","ski","wall","badminton","javelin","screen","onb"];
 document.body.innerHTML=SCREENS.map(id=>`<section id="${id}" class="screen app hide"><h1 tabindex="-1">${id}</h1></section>`).join("")+
-  `<nav id="tabbar">${[["home","#/"],["groups","#/kompanijos"],["library","#/pratimai"],["profile","#/profilis"]].map(([t,h])=>`<a data-tab="${t}" href="${h}">${t}</a>`).join("")}</nav>`+
+  `<nav id="tabbar">${[["home","#/"],["games","#/rungtys"],["groups","#/kompanijos"],["profile","#/profilis"]].map(([t,h])=>`<a data-tab="${t}" href="${h}">${t}</a>`).join("")}</nav>`+
   `<a id="sub" href="#/zaisti">play</a><a id="back" data-back href="#/">back</a>`;
 Element.prototype.scrollTo??=function(){}; // jsdom has no element scrolling
 history.replaceState(null,"","/?g=K7Q2ZX#/");
@@ -23,7 +23,7 @@ describe("parse",()=>{
     ["",{v:"home",arg:""}],["#",{v:"home",arg:""}],["#/",{v:"home",arg:""}],
     ["#/kompanijos",{v:"groups",arg:""}],["#/kompanijos/",{v:"groups",arg:""}],
     ["#/kompanijos/abc-123",{v:"group",arg:"abc-123"}],["#/kompanijos/10%20B%20kl.",{v:"group",arg:"10 B kl."}],
-    ["#/pratimai",{v:"library",arg:""}],["#/profilis",{v:"profile",arg:""}],["#/zaisti",{v:"setup",arg:""}],
+    ["#/rungtys",{v:"games",arg:""}],["#/pratimai",{v:"library",arg:""}],["#/profilis",{v:"profile",arg:""}],["#/zaisti",{v:"setup",arg:""}],
     ["#/sprintas",{v:"sprint",arg:""}],["#/boksas",{v:"boxing",arg:""}],["#/tolis",{v:"longjump",arg:""}],["#/barjerai",{v:"hurdles",arg:""}],["#/boulingas",{v:"bowling",arg:""}],["#/slidinejimas",{v:"ski",arg:""}],["#/siena",{v:"wall",arg:""}],["#/badmintonas",{v:"badminton",arg:""}],["#/ietis",{v:"javelin",arg:""}],["#/ekranas",{v:"screen",arg:""}],["#/ekranas/ABC234",{v:"screen",arg:"ABC234"}],["#kompanijos",{v:"groups",arg:""}],
     ["#/zaidimas",{v:"home",arg:""}],["#/nezinomas",{v:"home",arg:""}],["#/pratimai/extra",{v:"library",arg:""}],
   ])("%s",(h,want)=>expect(R.parse(h)).toEqual(want));
@@ -42,17 +42,17 @@ describe("history contract",()=>{
   });
   it("tab from Pradžia pushes (d=1), tab to tab replaces (d stays 1)",()=>{
     click('#tabbar [data-tab="groups"]');expect([location.hash,R.depth(),tab()]).toEqual(["#/kompanijos",1,"groups"]);
-    click('#tabbar [data-tab="library"]');expect([location.hash,R.depth(),tab()]).toEqual(["#/pratimai",1,"library"]);
+    click('#tabbar [data-tab="games"]');expect([location.hash,R.depth(),tab()]).toEqual(["#/rungtys",1,"games"]);
     expect(location.search).toBe("?g=K7Q2ZX");
   });
   it("re-tapping the current tab does not push",()=>{
-    click('#tabbar [data-tab="library"]');expect(R.depth()).toBe(1);
+    click('#tabbar [data-tab="games"]');expect(R.depth()).toBe(1);
   });
   it("back from any tab = Pradžia",async()=>{
     await back();expect([location.hash,R.depth(),R.current()]).toEqual(["#/",0,"home"]);
   });
   it("sub-screen push + data-back pops; group detail keeps the tab lit",async()=>{
-    click("#sub");expect([R.current(),R.depth()]).toEqual(["setup",1]);expect(tab()).toBe("home");
+    click("#sub");expect([R.current(),R.depth()]).toEqual(["setup",1]);expect(tab()).toBe("games");
     const p=pop();click("#back");await p;expect([R.current(),R.depth()]).toEqual(["home",0]);
     R.go("#/kompanijos");R.go("#/kompanijos/g1");expect([R.current(),R.depth(),tab()]).toEqual(["group",2,"groups"]);
     expect(seen.at(-1)).toBe("group:g1");
