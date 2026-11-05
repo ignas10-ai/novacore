@@ -1,5 +1,11 @@
 # Pakeitimų žurnalas
 
+## 2026-11-05 — Šokių kova: šok ir sustink (šaka `claude/dance-freeze`)
+
+- **Nauja rungtis `#/sokiai`** (`src/dance/`): groja ritmas – šok, taškai už judesio kiekį (riešų, alkūnių, klubų, kelių, kulkšnių greitis kūno vienetais, išlygintas ir apribotas iki 20 tšk./s); muzika netikėtai nutyla kas 4–8 s – **SUSTINK** 2,5 s: pajudėjai po 0,8 s = −20, išlaikei = +30, kas 3-ias sustingimas su poza (Rankos aukštyn / Lėktuvas / Rankos ant klubų) = +50. 1–2 žaidėjai (kairė/dešinė pusė kaip bokse), 60 s / 30 s, pasiruošimo vartai, istorija (`mode:"dance"`), trofėjai, klipas, „Žaisti dar kartą".
+- **Muzika be licencijų:** ritmas sintezuojamas Web Audio (kick/snare/hi-hat + bosas, 120 BPM), gerbia garso jungiklį; nutilimas = tikras muzikos nukirpimas.
+- Logika gryna (`src/dance/logic.ts`, `test/unit/dance.test.ts` – 9 testai). Slenksčiai (`NOISE`, `FULL`, `STILL`, `GRACE_S`) – kalibravimo rankenėlės, tikrinti su tikru telefonu.
+
 ## 2026-11-06 — Antras UI poliravimas: sporto lentyna, minimalus menas, split-screen (#67, šaka `claude/67-polish-2`)
 
 - **Rungtys:** vietoj pasikartojančio 2 stulpelių veikėjų tinklelio – vertikali sporto lentyna. Kiekviena rungtis turi savo animuotą sporto kompoziciją (`src/ui/sport.ts`: Phosphor ikona + judančios detalės, pvz. slidininkas leidžiasi šlaitu su sniegu, boulingo kamuolys ir kūgiai, barjerų taškas, badmintono skriejikas, ieties pėdsakas, sienos skylė), tamsų medalioną, didelį indeksą ir animuotą švieselę. **The Wall pervadintas į „Hole in the Wall“** (pavadinimas, istorija, trofėjai, setup ir nauja sienos-skylės ikona). BETA rungtys visada keliamos į sąrašo galą (`data-beta` rūšiavimas), o pats ženklas – didelis geltonai koralinis lipdukas su kibirkštimi, juodu kontūru ir švelniu pulsu.

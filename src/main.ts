@@ -27,6 +27,7 @@ import {Capacitor} from "@capacitor/core";
 import {App} from "@capacitor/app";
 import "./sprint/sprint.ts";
 import "./boxing/boxing.ts"; // after sprint: its Pradžia tile goes right below the sprint tile
+import "./dance/dance.ts"; // Šokių kova: its tile goes right below the boxing tile
 import "./longjump/longjump.ts"; // Šuolis į tolį: its tile goes below the boxing tile
 import "./hurdles/hurdles.ts"; // Barjerinis bėgimas: its tile goes below the long jump tile
 import "./bowling/bowling.ts"; // Boulingas: its tile goes below the hurdles tile
@@ -39,7 +40,7 @@ import {slide} from "./ui/slide.ts"; // every game starts with the same slide co
 import "./styles/mint.css"; // 11-03 mint look (was glass.css) – last, so it wins over every game's own CSS
 
 initGalleries(); // all game setup modules above have built their .gal-hero markup
-for(const id of ["spGo","bxGo","ljGo","hdGo","bwGo","skGo","wlGo","bdGo","jvGo"]){
+for(const id of ["spGo","bxGo","ljGo","hdGo","bwGo","skGo","wlGo","bdGo","jvGo","dcGo"]){
   const b=document.getElementById(id) as HTMLButtonElement|null;
   if(b)slide(b);
 }

@@ -4,7 +4,7 @@
 import type {Game} from "./stats.ts";
 import {gameReps, exTotals, bestStreak, weekStart} from "./stats.ts";
 
-export const GAME_MODES = ["rr", "sprint", "boxing", "longjump", "hurdles", "bowling", "ski", "wall", "badminton", "javelin"] as const;
+export const GAME_MODES = ["rr", "sprint", "boxing", "longjump", "hurdles", "bowling", "ski", "wall", "badminton", "javelin", "dance"] as const;
 export type GameMode = typeof GAME_MODES[number];
 export const modeOf = (g: Game): GameMode => (GAME_MODES.includes(g.mode as GameMode) ? g.mode as GameMode : "rr");
 export const gameModes = (h: Game[]) => new Set(h.map(modeOf));
@@ -135,7 +135,7 @@ function modeMetric(g: Game):{value:number;unit:string}{
     case "longjump": { const ds=valid((g.jumps||[]).flat()); return {value:ds.length?Math.max(...ds):0,unit:"trophy.unit.m"} }
     case "javelin": { const ds=valid((g.throws||[]).flat()); return {value:ds.length?ds.reduce((a,x)=>a+x,0):0,unit:"trophy.unit.m"} }
     case "wall": return {value:Math.max(0,...(g.reps||[]).slice(0,g.players)),unit:"trophy.unit.reps"};
-    case "boxing": return {value:Math.max(0,...(g.pts||[]).slice(0,g.players)),unit:"trophy.unit.score"};
+    case "boxing": case "dance": return {value:Math.max(0,...(g.pts||[]).slice(0,g.players)),unit:"trophy.unit.score"};
     case "bowling": return {value:Math.max(0,...(g.bwTotals||[]).slice(0,g.players)),unit:"trophy.unit.score"};
     case "badminton": return {value:Math.max(0,...(g.bdScore||[]).slice(0,g.players)),unit:"trophy.unit.score"};
     default: return {value:Math.max(0,...(g.score||[]).slice(0,g.players)),unit:"trophy.unit.score"};

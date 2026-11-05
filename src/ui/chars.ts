@@ -14,7 +14,7 @@ export const GAME:Record<string,{img:string;color:string;duo:boolean;beta?:boole
   rr:{img:"rr",color:"#8DE8CA",duo:true},sp:{img:"sp",color:"#FF9C9C",duo:true},bx:{img:"bx",color:"#B7AEFF",duo:true},
   lj:{img:"lj",color:"#FFD66B",duo:false},hd:{img:"hd",color:"#FFB98A",duo:true,beta:true},sk:{img:"sk",color:"#8FD8FF",duo:true},
   bw:{img:"bw",color:"#F7A8D8",duo:false,beta:true},bd:{img:"bd",color:"#C5E87A",duo:true,beta:true},jv:{img:"jv",color:"#FFC9A0",duo:false,beta:true},
-  wl:{img:"rrh",color:"#A8E6F0",duo:false},
+  wl:{img:"rrh",color:"#A8E6F0",duo:false},dc:{img:"rr",color:"#FFB3E6",duo:true},
 };
 export const POSE:Record<string,string>=Object.fromEntries(Object.entries(GAME).map(([k,g])=>[k,"mini/"+g.img]));
 const KEY="novacore.char"; // shared with avatar.ts (it maps anything but "b" to Raudonas for the old SVG head)
@@ -30,9 +30,9 @@ export function applyChar(){
 // Home uses its own abstract HOME_ICON badge instead, so the two screens never show the same art.
 export const SPORT:Record<string,string>={
   rr:"sport-rr",sp:"sport-sp",bx:"sport-bx",lj:"sport-lj",hd:"sport-hd",
-  bw:"sport-bw",sk:"sport-sk",wl:"sport-wl",bd:"sport-bd",jv:"sport-jv",
+  bw:"sport-bw",sk:"sport-sk",wl:"sport-wl",bd:"sport-bd",jv:"sport-jv",dc:"sport-dc",
 };
 export const HOME_ICON:Record<string,string>={
   rr:"arrows-clockwise",sp:"zap",bx:"shield",lj:"arrow-up-right",hd:"timer",
-  bw:"target",sk:"snowflake",wl:"door-open",bd:"wind",jv:"arrow-up",
+  bw:"target",sk:"snowflake",wl:"door-open",bd:"wind",jv:"arrow-up",dc:"music-notes",
 };
