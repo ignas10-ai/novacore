@@ -9,6 +9,7 @@ Rodyklė: kas kur guli ir ką skaityti pirmiausia. Atnaujinta 2026-10-23.
 | [TESTAVIMO-PROTOKOLAS.md](TESTAVIMO-PROTOKOLAS.md) | Kaip testuojam žaidimą su tikrais žmonėmis ir kaip siųsti įrašus Ignui. |
 | [APKLAUSA.md](APKLAUSA.md) | 9 apklausos klausimai, Google Forms nustatymai, kur platinti, kaip skaityti rezultatus. |
 | [KONKURENTAI.md](KONKURENTAI.md) | Esamų sprendimų matrica su kainomis ir šaltiniais – išskirtinumo argumentams. |
+| [PARTY-MODE.md](PARTY-MODE.md) | Vakarėlio režimo (Party Mode) koncepcija, taisyklės ir MVP specifikacija. |
 
 Techniniai failai repo šaknyje: `README.md` (kas tai), `CHANGELOG.md` (kas keitėsi), `AGENTS.md` (kaip veikia kodas, skaityti prieš keičiant `index.html`), `test-detect.cjs` (`node test-detect.cjs` → `OK`).
 

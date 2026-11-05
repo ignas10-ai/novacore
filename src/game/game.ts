@@ -16,6 +16,9 @@ import {demoRoot,showDemo,hideDemo} from "../ui/coach.ts";
 import {renderResults} from "../ui/results.ts";
 import {$,replay,setDigits,setCue,toast} from "../ui/dom.ts";
 import {screenPhase} from "../cast/cast.ts";
+import {recordGame} from "../history/history.ts";
+import {partyActive,partyLegDone} from "../party/bus.ts";
+import type {PartyLegCfg} from "../party/logic.ts";
 import {S} from "./state.ts";
 import {t} from "../i18n/i18n.ts";
 
@@ -54,7 +57,7 @@ function detect(lm:Lm[],i:number,ex:string,mult:number){
 
 // Other game modes (src/sprint) take over after the ready gate: start() replaces startGame(), reset() runs in resetGame(),
 // shown() = its result screen is up (back closes it like #end). null = the rep game.
-export interface GameMode{start():void;reset():void;shown():boolean;tv?:boolean} // tv: the mode publishes to the TV board (cast.ts)
+export interface GameMode{start():void;reset():void;shown():boolean;tv?:boolean;party?:(cfg:PartyLegCfg)=>void} // tv: the mode publishes to the TV board (cast.ts); party: prepare a party leg before startFlow
 let flowMode:GameMode|null=null;
 const inGameEntry=()=>!!history.state?.game;
 export async function startFlow(mode:GameMode|null=null){
@@ -120,7 +123,7 @@ function startGame(){
   lastRound=-1;
   // more selected exercises than 30 s rounds -> rotate the skipped one between games
   S.exShift=S.duel?S.duel.shift():S.activeEX.length>1?Math.floor(Math.random()*S.activeEX.length):0; // duel: same order on both phones; S so cast.ts sees it
-  startRec();
+  if(!partyActive())startRec(); // party legs do not record clips
   S.lastRecDrawAt=performance.now();
   $("#recInd").hidden=!S.rec;
   S.running=true;S.t0=performance.now();
@@ -285,6 +288,15 @@ function finish(){
   setCue(hintCue,hintCueText,"","");setCue(readyCue,readyCueText,"","");
   document.body.classList.remove("playing");
   if(S.players===1)S.score[1]=0;
+  if(partyActive()){
+    // Party leg: keep the normal history row, then hand the result to the party overlay (no #end, no clips).
+    recordGame();
+    hudRoot.classList.remove("on");
+    $("#recInd").hidden=true;
+    stopCamera();
+    partyLegDone();
+    return;
+  }
   const end=renderResults();
   S.duel?.finish(); // remote duel: send the final score, show both on #end
   screenPhase("done"); // final scoreboard on the TV before the clips are cut

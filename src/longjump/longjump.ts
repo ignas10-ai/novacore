@@ -18,6 +18,7 @@ import {releaseWakeLock} from "../ui/wakelock.ts";
 import {onView,home} from "../ui/router.ts";
 import {fillIcons} from "../ui/icons.ts";
 import {loadHist,saveHist} from "../history/history.ts";
+import {partyActive,partyLegDone} from "../party/bus.ts";
 import type {Game} from "../history/stats.ts";
 import {$} from "../ui/dom.ts";
 import {t as tr,tn,dec} from "../i18n/i18n.ts";
@@ -406,6 +407,7 @@ function finish(){
   const h=loadHist();
   h.unshift({t:Date.now(),players:n,duration:Math.round((performance.now()-startedAt)/1000),ex:["longjump"],score:[0,0],reps:steps.slice(),mode:"longjump",jumps:jumps.map(j=>j.slice())});
   saveHist(h);
+  if(partyActive()){partyLegDone();return}
   const r=rank(jumps), top=r[0].best, winners=r.filter(x=>x.place===1);
   const newPb=top!=null&&top>pb;
   const head=$("#ljResHead"),win=$("#ljWin"),sub=$("#ljSub");
@@ -449,6 +451,8 @@ $("#ljHome").onclick=()=>{resetGame();screenPhase("idle");document.body.classLis
 export const LONGJUMP:GameMode={
   start:begin,
   tv:true,
+  party(cfg){n=2;names[0]=cfg.names[0];names[1]=cfg.names[1];S.players=1}, // one jumper at a time; P1 = the starter
+
   reset(){
     cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call lj-call";
     setScreenMode(null);feedCad=0;autoX=-1;turnRoot.hidden=true;sand.fill(0);

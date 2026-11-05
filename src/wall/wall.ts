@@ -20,6 +20,7 @@ import {releaseWakeLock} from "../ui/wakelock.ts";
 import {onView,home} from "../ui/router.ts";
 import {fillIcons} from "../ui/icons.ts";
 import {loadHist,saveHist} from "../history/history.ts";
+import {partyActive,partyLegDone} from "../party/bus.ts";
 import type {Game} from "../history/stats.ts";
 import {$,replay} from "../ui/dom.ts";
 import {t as tr,tn,dec,type Key} from "../i18n/i18n.ts";
@@ -370,6 +371,7 @@ function finish(){
   const h=loadHist();
   h.unshift({t:Date.now(),players:n,duration:Math.round((performance.now()-startedAt)/1000),ex:["wall"],score:[0,0],reps:scores.map(s=>s.rounds),mode:"wall",secs:scores.map(s=>Math.round(s.secs*10)/10)});
   saveHist(h);
+  if(partyActive()){partyLegDone();return}
   const r=rank(scores), top=scores[r[0].i].rounds, winners=r.filter(x=>x.place===1), w=winners.length===1?winners[0].i:-1, lead=w<0?r[0].i:w;
   const head=$("#wlResHead"),win=$("#wlWin"),sub=$("#wlSub");
   if(!top){win.textContent=tr("wl.wallWins");sub.textContent=tr("wl.wallWinsSub")}
@@ -408,6 +410,8 @@ $("#wlHome").onclick=()=>{resetGame();screenPhase("idle");document.body.classLis
 export const WALL:GameMode={
   start:begin,
   tv:true,
+  party(cfg){n=2;names[0]=cfg.names[0];names[1]=cfg.names[1];S.players=1}, // one player at a time; P1 = the starter
+
   reset(){
     cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call wl-call";
     setScreenMode(null);force="";R=null;lastPs=null;lmKeep=null;turnRoot.hidden=true;hideSt();oc.clearRect(0,0,ov.width,ov.height);

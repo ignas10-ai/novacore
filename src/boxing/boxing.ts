@@ -16,6 +16,7 @@ import {releaseWakeLock} from "../ui/wakelock.ts";
 import {onView,home} from "../ui/router.ts";
 import {fillIcons,icon} from "../ui/icons.ts";
 import {loadHist,saveHist} from "../history/history.ts";
+import {partyActive,partyLegDone} from "../party/bus.ts";
 import type {Game as Row} from "../history/stats.ts";
 import {$,replay,setDigits} from "../ui/dom.ts";
 import {t as tr,tn} from "../i18n/i18n.ts";
@@ -247,7 +248,8 @@ function frame(now:number){
 }
 function startRound(now:number){
   phase="play";t0=now;phaseAt=now;
-  startRec();S.lastRecDrawAt=now;hadRec=!!S.rec; // highlight clip like the rep game (camera only, no pads)
+  if(!partyActive())startRec();
+  S.lastRecDrawAt=now;hadRec=!!S.rec; // highlight clip like the rep game (camera only, no pads); party legs skip clips
   S.t0=now;
   screenPhase("play");
 }
@@ -433,6 +435,7 @@ function finishRound(){
   h.unshift({t:Date.now(),players:n,duration:dur,ex:["boxing"],score:[0,0],reps:[0,1].map(i=>i<n?G.p[i].hits:0),mode:"boxing",
     pts,acc:[0,1].map(i=>i<n?Math.round(accuracy(G.p[i])*100):0),combo:[0,1].map(i=>i<n?G.p[i].best:0)});
   saveHist(h);
+  if(partyActive()){partyLegDone();return}
   const top=Math.max(...pts.slice(0,n)), newPb=top>0&&top>pb;
   const w=winner(G), head=$("#bxResHead");
   $("#bxResWl").textContent=`${tr("bx.title")} · ${dur} s`;
@@ -471,6 +474,7 @@ $("#bxClip").onclick=()=>{endRoot.classList.add("hide");openClips()};
 export const BOXING:GameMode={
   start:begin,
   tv:true,
+  party(){S.players=2;dur=30}, // the party uses a 30 s round
   reset(){cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call bx-call";
     setScreenMode(null);fx=[];part.fill(0);oc.clearRect(0,0,ov.width,ov.height);curLm=[null,null];lastPs=null;
     runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("boxing")},

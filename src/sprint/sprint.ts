@@ -14,6 +14,7 @@ import {releaseWakeLock} from "../ui/wakelock.ts";
 import {onView,home} from "../ui/router.ts";
 import {fillIcons} from "../ui/icons.ts";
 import {loadHist,saveHist} from "../history/history.ts";
+import {partyActive,partyLegDone} from "../party/bus.ts";
 import type {Game} from "../history/stats.ts";
 import {$} from "../ui/dom.ts";
 import {t as tr,tn,dec} from "../i18n/i18n.ts";
@@ -404,6 +405,7 @@ function finishRace(){
   h.unshift({t:Date.now(),players:S.players,duration:Math.round(raceT),ex:["knees"],score:[0,0],reps:R.map((r,i)=>i<S.players?r.steps:0),
     exReps:R.map((r,i)=>({knees:i<S.players?r.steps:0})),mode:"sprint",times,splits:R.map(r=>r.splits.map(v=>Math.round(v*100)/100))});
   saveHist(h);
+  if(partyActive()){partyLegDone();return}
   const best=Math.min(...times.map(t=>t??1e9));
   const pb=best<1e9&&(!prev||best<prev.t);
   // header: who won
@@ -449,6 +451,7 @@ $("#spHome").onclick=()=>{resetGame();document.body.classList.remove("ingame");h
 export const SPRINT:GameMode={
   start:begin,
   tv:true,
+  party(cfg){S.players=cfg.format==="duo"?2:1}, // the party starts a normal startFlow after this
   reset(){cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call";feedCad=0;
     setScreenMode(null);screenPhase("idle");
     runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("sprinting")},

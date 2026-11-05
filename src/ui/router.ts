@@ -4,9 +4,9 @@
 // real history (Android back always does what the screen's back button does). Tabs replace each other; only Home
 // stays underneath, so back from any tab lands on Pradžia, then leaves the app.
 // The game flow (#ready/#end/#clips) and the onboarding are not routes: they claim back via setBackHandler().
-export type View="home"|"games"|"groups"|"group"|"library"|"profile"|"settings"|"edit"|"setup"|"sprint"|"boxing"|"longjump"|"hurdles"|"bowling"|"ski"|"wall"|"badminton"|"javelin"|"screen";
-const SCREEN:Record<View,string>={home:"home",games:"rungtys",groups:"groups",group:"group",library:"library",profile:"profile",settings:"settings",edit:"profileEdit",setup:"start",sprint:"sprint",boxing:"boxing",longjump:"longjump",hurdles:"hurdles",bowling:"bowling",ski:"ski",wall:"wall",badminton:"badminton",javelin:"javelin",screen:"screen"};
-const TAB:Record<View,string>={home:"home",games:"games",groups:"groups",group:"groups",library:"games",profile:"profile",settings:"profile",edit:"profile",setup:"games",sprint:"games",boxing:"games",longjump:"games",hurdles:"games",bowling:"games",ski:"games",wall:"games",badminton:"games",javelin:"games",screen:""};
+export type View="home"|"games"|"groups"|"group"|"library"|"profile"|"settings"|"edit"|"setup"|"party"|"sprint"|"boxing"|"longjump"|"hurdles"|"bowling"|"ski"|"wall"|"badminton"|"javelin"|"screen";
+const SCREEN:Record<View,string>={home:"home",games:"rungtys",groups:"groups",group:"group",library:"library",profile:"profile",settings:"settings",edit:"profileEdit",setup:"start",party:"party",sprint:"sprint",boxing:"boxing",longjump:"longjump",hurdles:"hurdles",bowling:"bowling",ski:"ski",wall:"wall",badminton:"badminton",javelin:"javelin",screen:"screen"};
+const TAB:Record<View,string>={home:"home",games:"games",groups:"groups",group:"groups",library:"games",profile:"profile",settings:"profile",edit:"profile",setup:"games",party:"home",sprint:"games",boxing:"games",longjump:"games",hurdles:"games",bowling:"games",ski:"games",wall:"games",badminton:"games",javelin:"games",screen:""};
 
 export function parse(hash:string):{v:View;arg:string}{
   const [a,b]=hash.replace(/^#\/?/,"").split("/");
@@ -16,6 +16,7 @@ export function parse(hash:string):{v:View;arg:string}{
   if(a==="profilis")return b==="redaguoti"?{v:"edit",arg:""}:{v:"profile",arg:""};
   if(a==="nustatymai")return {v:"settings",arg:""};
   if(a==="zaisti")return {v:"setup",arg:""};
+  if(a==="vakarelis")return {v:"party",arg:""}; // src/party
   if(a==="sprintas")return {v:"sprint",arg:""}; // src/sprint
   if(a==="boksas")return {v:"boxing",arg:""}; // src/boxing
   if(a==="tolis")return {v:"longjump",arg:""}; // src/longjump

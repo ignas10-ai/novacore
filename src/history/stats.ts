@@ -21,6 +21,7 @@ export interface Game{
   bdScore?:number[];bdTarget?:number;bdRallies?:number;bdLongest?:number; // badminton (src/badminton, score stays [0,0])
   bdStrokes?:{serve:number;clear:number;drop:number;smash:number}[]; // badminton: serve/clear/drop/smash counts per player
   bdJumps?:number[]; // badminton: jump smashes per player
+  party?: {id:string; game:string; points:number; lineup:[number, number]; starter:0 | 1; winner:0 | 1 | -1; pts:[number, number]}; // Party Mode leg metadata
 }
 export const WEEK_GOAL=5;
 
