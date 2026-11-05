@@ -4,9 +4,9 @@
 // real history (Android back always does what the screen's back button does). Tabs replace each other; only Home
 // stays underneath, so back from any tab lands on Pradžia, then leaves the app.
 // The game flow (#ready/#end/#clips) and the onboarding are not routes: they claim back via setBackHandler().
-export type View="home"|"games"|"groups"|"group"|"library"|"profile"|"settings"|"edit"|"setup"|"sprint"|"boxing"|"longjump"|"hurdles"|"bowling"|"ski"|"wall"|"badminton"|"javelin"|"screen";
-const SCREEN:Record<View,string>={home:"home",games:"rungtys",groups:"groups",group:"group",library:"library",profile:"profile",settings:"settings",edit:"profileEdit",setup:"start",sprint:"sprint",boxing:"boxing",longjump:"longjump",hurdles:"hurdles",bowling:"bowling",ski:"ski",wall:"wall",badminton:"badminton",javelin:"javelin",screen:"screen"};
-const TAB:Record<View,string>={home:"home",games:"games",groups:"groups",group:"groups",library:"games",profile:"profile",settings:"profile",edit:"profile",setup:"games",sprint:"games",boxing:"games",longjump:"games",hurdles:"games",bowling:"games",ski:"games",wall:"games",badminton:"games",javelin:"games",screen:""};
+export type View="home"|"games"|"groups"|"group"|"library"|"profile"|"settings"|"edit"|"setup"|"sprint"|"boxing"|"longjump"|"hurdles"|"bowling"|"ski"|"wall"|"badminton"|"javelin"|"dance"|"screen";
+const SCREEN:Record<View,string>={home:"home",games:"rungtys",groups:"groups",group:"group",library:"library",profile:"profile",settings:"settings",edit:"profileEdit",setup:"start",sprint:"sprint",boxing:"boxing",longjump:"longjump",hurdles:"hurdles",bowling:"bowling",ski:"ski",wall:"wall",badminton:"badminton",javelin:"javelin",dance:"dance",screen:"screen"};
+const TAB:Record<View,string>={home:"home",games:"games",groups:"groups",group:"groups",library:"games",profile:"profile",settings:"profile",edit:"profile",setup:"games",sprint:"games",boxing:"games",longjump:"games",hurdles:"games",bowling:"games",ski:"games",wall:"games",badminton:"games",javelin:"games",dance:"games",screen:""};
 
 export function parse(hash:string):{v:View;arg:string}{
   const [a,b]=hash.replace(/^#\/?/,"").split("/");
@@ -25,6 +25,7 @@ export function parse(hash:string):{v:View;arg:string}{
   if(a==="siena")return {v:"wall",arg:""}; // src/wall
   if(a==="badmintonas")return {v:"badminton",arg:""}; // src/badminton
   if(a==="ietis")return {v:"javelin",arg:""}; // src/javelin
+  if(a==="sokiai")return {v:"dance",arg:""}; // src/dance
   if(a==="ekranas")return {v:"screen",arg:b?decodeURIComponent(b):""};
   return {v:"home",arg:""}; // also #/zaidimas (game entry) after a reload
 }
