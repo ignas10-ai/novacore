@@ -26,6 +26,7 @@ function noise(dur:number,gain:number){
   const s=ac.createBufferSource(),g=ac.createGain();g.gain.value=gain;s.buffer=b;s.connect(g).connect(ac.destination);s.start();
 }
 const buzz=(ms:number|number[])=>{if(vibeOn)try{navigator.vibrate?.(ms)}catch(e){}};
+export const soundIsOn=()=>soundOn; // Šokių kova (src/dance) schedules its own beat
 export const haptic=(ms:number|number[])=>buzz(ms);
 export const sfx={
   rep:(i:number)=>{tone(i?1046:784,.07,.16);buzz(30)},

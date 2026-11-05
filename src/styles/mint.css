@@ -256,7 +256,7 @@ body{font-family:var(--body)}
 .ex-sheet-panel{background:var(--bg);color:var(--ink)}
 
 /* game setup screens are a step inside Rungtys: no tab bar over their start slider (back = the top-left arrow) */
-body:is([data-view="setup"],[data-view="sprint"],[data-view="boxing"],[data-view="longjump"],[data-view="hurdles"],[data-view="bowling"],[data-view="ski"],[data-view="wall"],[data-view="badminton"],[data-view="javelin"]) .tabbar{display:none}
+body:is([data-view="setup"],[data-view="sprint"],[data-view="boxing"],[data-view="longjump"],[data-view="hurdles"],[data-view="bowling"],[data-view="ski"],[data-view="wall"],[data-view="badminton"],[data-view="javelin"],[data-view="dance"]) .tabbar{display:none}
 
 /* kid characters in the mascot slots (src/ui/mascots.ts) */
 img.mascot.kid{object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 6px 8px rgba(14,46,38,.14))}
@@ -490,7 +490,7 @@ img.mascot.m-vs-r{transform:scaleX(-1)}
   .trophy-next{padding:9px 11px}
 }
 /* setup screens hide the floating tab bar, so they must use the full window height (no dead 96 px strip below the start slide) */
-body:is([data-view="setup"],[data-view="sprint"],[data-view="boxing"],[data-view="longjump"],[data-view="hurdles"],[data-view="bowling"],[data-view="ski"],[data-view="wall"],[data-view="badminton"],[data-view="javelin"]) .screen.app{bottom:0;padding-bottom:max(24px,env(safe-area-inset-bottom))}
+body:is([data-view="setup"],[data-view="sprint"],[data-view="boxing"],[data-view="longjump"],[data-view="hurdles"],[data-view="bowling"],[data-view="ski"],[data-view="wall"],[data-view="badminton"],[data-view="javelin"],[data-view="dance"]) .screen.app{bottom:0;padding-bottom:max(24px,env(safe-area-inset-bottom))}
 /* Games in phone landscape: a compact shelf, two columns of rows would be too cramped for titles */
 @media (orientation:landscape) and (max-height:560px){
   #games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
