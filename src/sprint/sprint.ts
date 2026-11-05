@@ -20,12 +20,13 @@ import {$} from "../ui/dom.ts";
 import {t as tr,tn,dec} from "../i18n/i18n.ts";
 import {RACE_M,V_MAX,runner,onStep,advance,simulate,ghostX,type Runner} from "./speed.ts";
 import {LOOKS,newPose,runPose,setPose,standPose,winPose,drawRunner,type Pose} from "./runner.ts";
-import {mascot,avatar} from "../ui/mascots.ts";
+import {mascot,avatar,setAvatarPair,gameAvatarPair} from "../ui/mascots.ts";
 import {screenPhase,setScreenMode} from "../cast/cast.ts";
 import type {ScreenState} from "../cast/room.ts";
 import {layout,build,drawBack,drawFinishBack,drawFinishFront,drawFront,sx,SKEW,type Layout} from "./scene.ts";
 
 const NAMES=[tr("p.red"),tr("p.blue")];
+const DEF_NAMES=[...NAMES];
 const DEFAULT_GHOST=simulate(2.8).splits; // ~15 s: the target before the first run
 const POS_S=1.7, SET_MIN=1.3, SET_MAX=2.3, END_AFTER=8, LIMIT_S=60, RESULTS_DELAY=2200;
 const fmt=(s:number)=>dec(s,2);
@@ -178,6 +179,7 @@ function resize(){
 addEventListener("resize",()=>{if(phase!=="off")resize()});
 
 function begin(){
+  setAvatarPair(gameAvatarPair("sp"));
   solo=S.players===1;
   for(const r of R)Object.assign(r,runner());
   const b=bestRun(loadHist());
@@ -451,8 +453,8 @@ $("#spHome").onclick=()=>{resetGame();document.body.classList.remove("ingame");h
 export const SPRINT:GameMode={
   start:begin,
   tv:true,
-  party(cfg){S.players=cfg.format==="duo"?2:1}, // the party starts a normal startFlow after this
-  reset(){cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call";feedCad=0;
+  party(cfg){S.players=cfg.format==="duo"?2:1;NAMES[0]=cfg.names[0];NAMES[1]=cfg.names[1]}, // the party starts a normal startFlow after this
+  reset(){NAMES[0]=DEF_NAMES[0];NAMES[1]=DEF_NAMES[1];setAvatarPair(null);cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call";feedCad=0;
     setScreenMode(null);screenPhase("idle");
     runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("sprinting")},
   shown:()=>!endRoot.classList.contains("hide"),

@@ -17,10 +17,11 @@ import {releaseWakeLock} from "../ui/wakelock.ts";
 import {onView,home} from "../ui/router.ts";
 import {fillIcons} from "../ui/icons.ts";
 import {loadHist,saveHist} from "../history/history.ts";
+import {partyActive,partyLegDone} from "../party/bus.ts";
 import type {Game} from "../history/stats.ts";
 import {$} from "../ui/dom.ts";
 import {t as tr,dec} from "../i18n/i18n.ts";
-import {mascot,avatar} from "../ui/mascots.ts";
+import {mascot,avatar,setAvatarPair,gameAvatarPair} from "../ui/mascots.ts";
 import {screenPhase,setScreenMode} from "../cast/cast.ts";
 import type {ScreenState} from "../cast/room.ts";
 import {RACE_M,V_MAX} from "../sprint/speed.ts";
@@ -30,6 +31,7 @@ import {HURDLES,N_HURDLES,GRACE_S,newRun,stepAt,tick,jump,cue,cleared,hopLift,ty
 import {drawZones,drawHurdle} from "./track.ts";
 
 const NAMES=[tr("p.red"),tr("p.blue")];
+const DEF_NAMES=[...NAMES];
 const POS_S=1.7, SET_MIN=1.3, SET_MAX=2.3, END_AFTER=8, LIMIT_S=60, RESULTS_DELAY=2200, VIEW_M=8, STUMBLE_S=.6;
 const fmt=(s:number)=>dec(s,2);
 const kmh=(v:number)=>Math.round(v*3.6);
@@ -173,6 +175,7 @@ function resize(){
 addEventListener("resize",()=>{if(phase!=="off")resize()});
 
 function begin(){
+  setAvatarPair(gameAvatarPair("hd"));
   solo=S.players===1;
   for(let i=0;i<2;i++){R[i]=newRun();TK[i]=takeoffState()}
   lane[0]=solo?1:0;lane[1]=solo?0:1; // solo: you in the near lane
@@ -363,6 +366,7 @@ function finishRace(){
   h.unshift({t:Date.now(),players:n,duration:Math.round(raceT),ex:["knees"],score:[0,0],reps:R.map((a,i)=>i<n?a.r.steps:0),
     exReps:R.map((a,i)=>({knees:i<n?a.r.steps:0})),mode:"hurdles",times,clr});
   saveHist(h);
+  if(partyActive()){partyLegDone();return}
   const best=Math.min(...times.map(t=>t??1e9)), newPb=best<pb;
   const head=$("#hdResHead"),win=$("#hdWin"),sub=$("#hdSub");
   let w=-1;
@@ -407,7 +411,8 @@ $("#hdHome").onclick=()=>{resetGame();screenPhase("idle");document.body.classLis
 export const HURDLES_MODE:GameMode={
   start:begin,
   tv:true,
-  reset(){cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call";
+  party(cfg){S.players=2;NAMES[0]=cfg.names[0];NAMES[1]=cfg.names[1]},
+  reset(){NAMES[0]=DEF_NAMES[0];NAMES[1]=DEF_NAMES[1];setAvatarPair(null);cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call";
     setScreenMode(null);feedCad=0;autoD.fill(-1);
     runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("sprinting","hurdling")},
   shown:()=>!endRoot.classList.contains("hide"),

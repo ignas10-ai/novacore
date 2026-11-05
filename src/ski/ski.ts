@@ -17,10 +17,11 @@ import {releaseWakeLock} from "../ui/wakelock.ts";
 import {onView,home} from "../ui/router.ts";
 import {fillIcons} from "../ui/icons.ts";
 import {loadHist,saveHist} from "../history/history.ts";
+import {partyActive,partyLegDone} from "../party/bus.ts";
 import type {Game} from "../history/stats.ts";
 import {$} from "../ui/dom.ts";
 import {t as tr,tn,dec} from "../i18n/i18n.ts";
-import {mascot,avatar,type Who} from "../ui/mascots.ts";
+import {mascot,avatar,setAvatarPair,gameAvatarPair,type Who} from "../ui/mascots.ts";
 import {cachedNick} from "../online/api.ts";
 import {screenPhase,setScreenMode} from "../cast/cast.ts";
 import type {ScreenState} from "../cast/room.ts";
@@ -218,6 +219,7 @@ function resize(){
 addEventListener("resize",()=>{if(phase!=="off")resize()});
 
 function begin(){
+  setAvatarPair(gameAvatarPair("sk"));
   n=total(playerCount);race=n===2;names0=Array.from({length:n},(_,i)=>nameAt(i));
   course=newCourse((Math.random()*0xffffffff)>>>0);pb=bestEver(loadHist());
   times=Array(n).fill(null);raws=Array(n).fill(null);pens=Array(n).fill(0);cleans=Array(n).fill(0);misses=Array(n).fill(0);hits=Array(n).fill(0);
@@ -520,6 +522,7 @@ function finishRace(){
   h.unshift({t:Date.now(),players:n,duration:Math.round((performance.now()-startedAt)/1000),ex:["ski"],score:[0,0],reps:Array(n).fill(0),
     mode:"ski",times:times.slice(),skiRaw:raws.slice(),skiPen:pens.slice(),skiGates:cleans.slice(),skiMiss:misses.slice(),skiHit:hits.slice()});
   saveHist(h);
+  if(partyActive()){partyLegDone();return}
   const r=rank(times),top=r[0].time,winners=r.filter(x=>x.place===1);
   const newPb=top!=null&&top<pb;
   const head=$("#skResHead"),win=$("#skWin"),sub=$("#skSub");
@@ -578,7 +581,9 @@ function warpOne(p:number,z:number){
 export const SKI:GameMode={
   start:begin,
   tv:true,
+  party(cfg){playerCount=2;names[0]=cfg.names[0];names[1]=cfg.names[1];S.players=2},
   reset(){
+    setAvatarPair(null);
     cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);clearTimeout(legendTimer);
     clearTimeout(boostTimers[0]);clearTimeout(boostTimers[1]);
     callRoot.className="sp-call sk-call";legend.classList.remove("on");boostEls.forEach(el=>el.classList.remove("on"));

@@ -742,3 +742,28 @@ body.charging .charge::before{animation:charge-pulse .7s var(--ease-ui) infinite
 body.charging .screen{filter:saturate(1.05)}
 @keyframes charge-pulse{0%,100%{opacity:.4}50%{opacity:.9}}
 body.ingame .charge{display:none}
+
+/* Party characters in the other games' setup galleries (not in the Rungtys icon rows). */
+.gal-slide .gal-char{position:absolute;right:10px;bottom:10px;width:46px;height:46px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.94);border:2px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.28);z-index:3}
+.gal-slide .gal-char svg{width:100%;height:100%;display:block}
+.sa-party .ic{animation:sa-float 2.6s var(--ease-ui) infinite}
+.sa-party .sa-a,.sa-party .sa-b,.sa-party .sa-c{width:5px;height:5px;border-radius:50%;bottom:9px;animation:sa-twinkle 2.2s var(--ease-ui) infinite}
+.sa-party .sa-a{left:10px;background:var(--yellow)}
+.sa-party .sa-b{left:24px;background:#FF9C9C;animation-delay:-.6s}
+.sa-party .sa-c{right:10px;background:#8FD8FF;animation-delay:-1.2s}
+
+/* hover life on the whole Games shelf, matching the Party Mode row */
+#games .sp-tile.game-row::after{content:"";position:absolute;top:-40%;bottom:-40%;left:-60%;width:42%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);rotate:16deg;z-index:0;transition:left var(--duration-slow) var(--ease-smooth-out);pointer-events:none}
+#games .sp-tile.game-row:hover::after{left:120%}
+#games .sp-tile.game-row{transition:transform var(--duration-fast) var(--ease-bounce),scale var(--duration-press) var(--ease-ui),translate var(--duration-press) var(--ease-ui),box-shadow var(--duration-fast) var(--ease-ui),background-color var(--duration-fast) var(--ease-ui)}
+#games .sp-tile.game-row:hover{transform:translateY(-3px);box-shadow:0 9px 20px rgba(14,46,38,.14)}
+#games .sp-tile.game-row:hover::before{scale:1.14}
+#games .sp-tile.game-row:hover .game-art .ic{animation-duration:1.7s}
+#games .sp-tile.game-row:hover .game-halo{animation-duration:4s}
+#games .sp-tile.game-row:hover .game-arrow{translate:3px -3px;background:#fff}
+@media (prefers-reduced-motion:reduce){
+  #games .sp-tile.game-row:hover{transform:none}
+  #games .sp-tile.game-row::after{display:none}
+}
+#games .sp-tile.game-row .game-art,#games .sp-tile.game-row .sp-tile-txt{z-index:1}
+#games .sp-tile.game-row .game-arrow{position:absolute;z-index:1}

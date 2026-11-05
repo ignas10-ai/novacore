@@ -18,9 +18,10 @@ import {releaseWakeLock} from "../ui/wakelock.ts";
 import {onView,home} from "../ui/router.ts";
 import {fillIcons} from "../ui/icons.ts";
 import {loadHist,saveHist} from "../history/history.ts";
+import {partyActive,partyLegDone} from "../party/bus.ts";
 import {$,replay,setDigits} from "../ui/dom.ts";
 import {t as tr,tn} from "../i18n/i18n.ts";
-import {mascot,avatar} from "../ui/mascots.ts";
+import {mascot,avatar,setAvatarPair,gameAvatarPair} from "../ui/mascots.ts";
 import {cachedNick} from "../online/api.ts";
 import {screenPhase,setScreenMode} from "../cast/cast.ts";
 import type {ScreenState} from "../cast/room.ts";
@@ -422,6 +423,7 @@ function resize(){
 addEventListener("resize",()=>{if(phase!=="off")resize()});
 
 function begin(){
+  setAvatarPair(gameAvatarPair("bd"));
   solo=S.players===1;
   M=newMatch(target);s=newShuttle(0);
   chosen=[1,1];picked=[false,solo];choice=[newChoice(),newChoice()]; // the bot's hand is picked automatically
@@ -581,6 +583,7 @@ function finish(){
     reps:[shots(M.strokes[0]),shots(M.strokes[1])],mode:"badminton",bdScore:score,bdTarget:M.target,bdRallies:M.rallies,bdLongest:M.longest,
     bdStrokes:[{...M.strokes[0]},{...M.strokes[1]}],bdJumps:[...M.jumps]});
   saveHist(h);
+  if(partyActive()){partyLegDone();return}
   const w=M.winner as Side, head=$("#bdResHead");
   $("#bdResWl").textContent=`${tr("bd.title")} · ${tr("bd.toN",{n:M.target})}`;
   head.dataset.w=String(w+1);
@@ -651,7 +654,9 @@ $("#bdHome").onclick=()=>{resetGame();screenPhase("idle");document.body.classLis
 export const BADMINTON:GameMode={
   start:begin,
   tv:true,
+  party(cfg){n=2;target=11;names[0]=cfg.names[0];names[1]=cfg.names[1];S.players=2},
   reset(){
+    setAvatarPair(null);
     cancelAnimationFrame(raf);phase="off";S.running=false;matchOver=false;
     clearTimeout(callTimer);clearTimeout(strokeTimer);clearCall();
     setScreenMode(null);screenPhase("idle");

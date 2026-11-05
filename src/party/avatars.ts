@@ -29,6 +29,12 @@ export const PARTY_CHARS: PartyChar[] = [
   {id: "p7", name: "Vėjas", skin: "#D89B6C", hair: "#2F343B", jersey: "#FFC9A0", bg: "#FFF0E3", accent: "#B7AEFF", style: "afro", glasses: true},
 ];
 
+// One character per other game, used in the Rungtys rows and the game setup galleries (never in the party settings).
+export const GAME_CHAR: Record<string, string> = {
+  rr: "p0", sp: "p1", bx: "p2", lj: "p3", hd: "p4", bw: "p5", sk: "p6", wl: "p7", bd: "p2", jv: "p5",
+};
+export const gameChar = (game: string) => GAME_CHAR[game] ?? "p0";
+
 const INK = "#2F343B";
 const charOf = (id: string) => PARTY_CHARS.find(c => c.id === id) ?? PARTY_CHARS[0];
 export const partyCharName = (id: string) => charOf(id).name;

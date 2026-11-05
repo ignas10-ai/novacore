@@ -25,6 +25,7 @@ let phase:ScreenPhase="idle";
 let bc:BroadcastChannel|null=null, ch:RealtimeChannel|null=null, joined=false;
 let timer=0, lastSent=0, tvSeen=0;
 let camOn=false, camPeer:string|null=null;
+let mirrorBase:HTMLCanvasElement|null=null, mirrorOverlay:HTMLCanvasElement|null=null;
 let pc:RTCPeerConnection|null=null, camStream:MediaStream|null=null, camCv:HTMLCanvasElement|null=null;
 let camDraw=0, camRemoteSet=false, camPendingIce:RTCIceCandidateInit[]=[], camGen=0;
 
@@ -125,15 +126,33 @@ function camSize(w:number,h:number){
   const s=Math.min(1,CAM_LONG/Math.max(w,h),CAM_SHORT/Math.min(w,h));
   return {w:Math.max(2,Math.round(w*s/2)*2),h:Math.max(2,Math.round(h*s/2)*2)}; // even sizes for H.264
 }
+// Party mode can mirror a game canvas (sprint track, long jump field, bowling lane…) instead of the raw camera.
+// Boxing and Wall draw their game overlay ON TOP of the camera, so they pass a base + overlay pair.
 function drawCam(){
-  const src=document.getElementById("cv") as HTMLCanvasElement|null;
-  if(!camCv||!src||!src.width||!src.height)return;
+  const base=(mirrorBase&&mirrorBase.width&&mirrorBase.height?mirrorBase:document.getElementById("cv")) as HTMLCanvasElement|null;
+  if(!camCv||!base||!base.width||!base.height)return;
   const c=camCv.getContext("2d");
   if(!c)return;
-  const size=camSize(src.width,src.height);
+  const size=camSize(base.width,base.height);
   if(camCv.width!==size.w||camCv.height!==size.h){camCv.width=size.w;camCv.height=size.h}
   c.imageSmoothingEnabled=true;c.imageSmoothingQuality="high";
-  c.drawImage(src,0,0,camCv.width,camCv.height);
+  c.drawImage(base,0,0,camCv.width,camCv.height);
+  if(mirrorOverlay&&mirrorOverlay.width&&mirrorOverlay.height)c.drawImage(mirrorOverlay,0,0,camCv.width,camCv.height);
+}
+export function setMirror(base:HTMLCanvasElement|null,overlay:HTMLCanvasElement|null=null){
+  mirrorBase=base;mirrorOverlay=overlay;
+  if(camCv)drawCam();
+}
+// Party mode turns the TV stream on for the whole session (default on in the setup), so the TV is a live mirror
+// of the game instead of just a scoreboard. It is still the same WebRTC camera-per-TV transport.
+export function setCam(on:boolean){
+  if(!code)return;
+  camOn=on;
+  camPeer=null;
+  if(on){if(phase==="ready"||phase==="play")startCamCast();}
+  else stopCamCast(true);
+  publish(true);
+  refreshCamUI();
 }
 // Ask the encoder to keep the resolution and give the 720p picture enough bitrate (the WebRTC default is ~1-2 Mbps).
 function tuneSender(sender:RTCRtpSender,stream:MediaStream){
@@ -151,7 +170,7 @@ async function startCamCast(){
   if(!code||pc||!camOn||(phase!=="ready"&&phase!=="play"))return;
   const gen=++camGen;
   if(typeof RTCPeerConnection==="undefined"){camOn=false;refreshCamUI();return}
-  const src=document.getElementById("cv") as HTMLCanvasElement|null;
+  const src=(mirrorBase&&mirrorBase.width?mirrorBase:document.getElementById("cv")) as HTMLCanvasElement|null;
   if(!src||typeof src.captureStream!=="function"){camOn=false;refreshCamUI();return}
   const size=camSize(src.width||1280,src.height||720);
   camCv=document.createElement("canvas");camCv.width=size.w;camCv.height=size.h;

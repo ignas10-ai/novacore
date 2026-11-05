@@ -18,6 +18,7 @@ import {$,replay,setDigits,setCue,toast} from "../ui/dom.ts";
 import {screenPhase} from "../cast/cast.ts";
 import {recordGame} from "../history/history.ts";
 import {partyActive,partyLegDone} from "../party/bus.ts";
+import {startPartyMusic} from "../party/music.ts";
 import type {PartyLegCfg} from "../party/logic.ts";
 import {S} from "./state.ts";
 import {t} from "../i18n/i18n.ts";
@@ -110,6 +111,7 @@ function exitGame(){
 
 function startGame(){
   if(S.running)return;
+  if(partyActive())startPartyMusic(); // party music only while the round is actually running
   clearTimeout(startTimer);startTimer=0;
   if(flowMode){readyRoot.classList.add("hide");readyRoot.classList.remove("done","holding");setCue(readyCue,readyCueText,"","");flowMode.start();return}
   nudgedRound=-1;S.lastPointAt[0]=S.lastPointAt[1]=0;

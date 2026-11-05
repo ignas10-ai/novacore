@@ -6,7 +6,7 @@
 // The game flow (#ready/#end/#clips) and the onboarding are not routes: they claim back via setBackHandler().
 export type View="home"|"games"|"groups"|"group"|"library"|"profile"|"settings"|"edit"|"setup"|"party"|"sprint"|"boxing"|"longjump"|"hurdles"|"bowling"|"ski"|"wall"|"badminton"|"javelin"|"screen";
 const SCREEN:Record<View,string>={home:"home",games:"rungtys",groups:"groups",group:"group",library:"library",profile:"profile",settings:"settings",edit:"profileEdit",setup:"start",party:"party",sprint:"sprint",boxing:"boxing",longjump:"longjump",hurdles:"hurdles",bowling:"bowling",ski:"ski",wall:"wall",badminton:"badminton",javelin:"javelin",screen:"screen"};
-const TAB:Record<View,string>={home:"home",games:"games",groups:"groups",group:"groups",library:"games",profile:"profile",settings:"profile",edit:"profile",setup:"games",party:"home",sprint:"games",boxing:"games",longjump:"games",hurdles:"games",bowling:"games",ski:"games",wall:"games",badminton:"games",javelin:"games",screen:""};
+const TAB:Record<View,string>={home:"home",games:"games",groups:"groups",group:"groups",library:"games",profile:"profile",settings:"profile",edit:"profile",setup:"games",party:"games",sprint:"games",boxing:"games",longjump:"games",hurdles:"games",bowling:"games",ski:"games",wall:"games",badminton:"games",javelin:"games",screen:""};
 
 export function parse(hash:string):{v:View;arg:string}{
   const [a,b]=hash.replace(/^#\/?/,"").split("/");

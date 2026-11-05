@@ -16,10 +16,11 @@ import {releaseWakeLock} from "../ui/wakelock.ts";
 import {onView,home} from "../ui/router.ts";
 import {fillIcons} from "../ui/icons.ts";
 import {loadHist,saveHist} from "../history/history.ts";
+import {partyActive,partyLegDone} from "../party/bus.ts";
 import type {Game} from "../history/stats.ts";
 import {$} from "../ui/dom.ts";
 import {t as tr,tn,dec} from "../i18n/i18n.ts";
-import {mascot,avatar} from "../ui/mascots.ts";
+import {mascot,avatar,setAvatarPair,gameAvatarPair} from "../ui/mascots.ts";
 import {cachedNick} from "../online/api.ts";
 import {screenPhase,setScreenMode} from "../cast/cast.ts";
 import type {ScreenState} from "../cast/room.ts";
@@ -191,6 +192,7 @@ addEventListener("resize",()=>{if(phase!=="off")resize()});
 const viewM=()=>L.portrait?9:14;
 
 function begin(){
+  setAvatarPair(gameAvatarPair("jv"));
   throws=Array.from({length:n},()=>[]);steps=Array(n).fill(0);names0=[...Array(n).keys()].map(nameAt);
   k=0;pb=bestEver(loadHist());startedAt=performance.now();
   runRoot.classList.remove("hide");endRoot.classList.add("hide");
@@ -498,6 +500,7 @@ function finish(){
   const h=loadHist();
   h.unshift({t:Date.now(),players:n,duration:Math.round((performance.now()-startedAt)/1000),ex:["javelin"],score:[0,0],reps:steps.slice(),mode:"javelin",throws:throws.map(j=>j.slice())});
   saveHist(h);
+  if(partyActive()){partyLegDone();return}
   const r=rank(throws),top=r[0],winners=r.filter(x=>x.place===1);
   const newPb=top?.best!=null&&top.best>pb;
   const allFoul=r.every(x=>x.place==null);
@@ -552,7 +555,9 @@ function forceThrow(now:number,h:number,s:number){
 export const JAVELIN:GameMode={
   start:begin,
   tv:true,
+  party(cfg){n=2;names[0]=cfg.names[0];names[1]=cfg.names[1];S.players=1},
   reset(){
+    setAvatarPair(null);
     cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call lj-call jv-call";
     setScreenMode(null);feedCad=0;autoX=-1;scripted=false;pickHandled=false;
     turnRoot.hidden=true;pickRoot.hidden=true;

@@ -35,6 +35,7 @@ function render(){
 // stays first), tag each with its key, colour and duo flag. Idempotent, so new tiles (Martynas' javelin, badminton) just appear.
 export function games(){
   const grid=$("#games");
+  const party=grid.querySelector<HTMLElement>(".party-game-row"); // party mode entry stays above the sport shelf
   document.querySelectorAll<HTMLAnchorElement>("#home .sp-tile").forEach(a=>grid.append(a));
   const tiles=[...grid.querySelectorAll<HTMLAnchorElement>(".sp-tile")];
   for(const a of tiles){
@@ -54,7 +55,7 @@ export function games(){
   }
   // BETA games always live at the back of the shelf; the rest keep their order.
   tiles.sort((a,b)=>Number(a.dataset.beta==="true")-Number(b.dataset.beta==="true"));
-  grid.replaceChildren(...tiles);
+  grid.replaceChildren(...(party?[party,...tiles]:tiles));
   tiles.forEach((a,i)=>a.style.setProperty("--i",String(i)));
   grid.querySelectorAll<HTMLElement>(".game-idx").forEach((n,i)=>{n.textContent=String(i+1).padStart(2,"0")});
 }

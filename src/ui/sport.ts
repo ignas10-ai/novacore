@@ -15,6 +15,7 @@ const WALL=`<svg viewBox="0 0 64 64" aria-hidden="true" class="sa-wl-svg">
 
 export function sportArt(g:string){
   if(g==="wl")return `<span class="sa sa-wl">${WALL}<i class="sa-a"></i><i class="sa-b"></i><i class="sa-c"></i></span>`;
+  if(g==="party")return `<span class="sa sa-party">${icon("trophy")}<i class="sa-a"></i><i class="sa-b"></i><i class="sa-c"></i></span>`;
   const glyph=icon(SPORT[g]||"sport-rr");
   return `<span class="sa sa-${g}">${glyph}<i class="sa-a"></i><i class="sa-b"></i><i class="sa-c"></i></span>`;
 }

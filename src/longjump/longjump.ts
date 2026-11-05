@@ -22,7 +22,7 @@ import {partyActive,partyLegDone} from "../party/bus.ts";
 import type {Game} from "../history/stats.ts";
 import {$} from "../ui/dom.ts";
 import {t as tr,tn,dec} from "../i18n/i18n.ts";
-import {mascot,avatar,type Who} from "../ui/mascots.ts";
+import {mascot,avatar,setAvatarPair,gameAvatarPair,type Who} from "../ui/mascots.ts";
 import {cachedNick} from "../online/api.ts";
 import {screenPhase,setScreenMode} from "../cast/cast.ts";
 import type {ScreenState} from "../cast/room.ts";
@@ -185,6 +185,7 @@ addEventListener("resize",()=>{if(phase!=="off")resize()});
 const viewM=()=>L.portrait?9:14;
 
 function begin(){
+  setAvatarPair(gameAvatarPair("lj"));
   jumps=Array.from({length:n},()=>[]);steps=Array(n).fill(0);names0=[...Array(n).keys()].map(nameAt);
   k=0;pb=bestEver(loadHist());startedAt=performance.now();
   runRoot.classList.remove("hide");endRoot.classList.add("hide");
@@ -454,6 +455,7 @@ export const LONGJUMP:GameMode={
   party(cfg){n=2;names[0]=cfg.names[0];names[1]=cfg.names[1];S.players=1}, // one jumper at a time; P1 = the starter
 
   reset(){
+    setAvatarPair(null);
     cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call lj-call";
     setScreenMode(null);feedCad=0;autoX=-1;turnRoot.hidden=true;sand.fill(0);
     runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("sprinting","longjumping");

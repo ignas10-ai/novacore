@@ -20,7 +20,7 @@ import {partyActive,partyLegDone} from "../party/bus.ts";
 import type {Game as Row} from "../history/stats.ts";
 import {$,replay,setDigits} from "../ui/dom.ts";
 import {t as tr,tn} from "../i18n/i18n.ts";
-import {mascot,avatar} from "../ui/mascots.ts";
+import {mascot,avatar,setAvatarPair,gameAvatarPair} from "../ui/mascots.ts";
 import {startRec,finishClips,openClips} from "../clips/clips.ts";
 import {highlightSegments} from "../clips/highlight.ts";
 import {screenPhase,setScreenMode} from "../cast/cast.ts";
@@ -28,6 +28,7 @@ import type {ScreenState} from "../cast/room.ts";
 import {newGame,update,assign,fist,accuracy,winner,multOf,MIN_SPEED,ARM_S,type Game,type Ev,type Kind,type Target} from "./logic.ts";
 
 const NAMES=[tr("p.red"),tr("p.blue")];
+const DEF_NAMES=[...NAMES];
 const INK="#14183A", TONE=["#FF3B3B","#2F6BFF"], GOLD="#FFC61A";
 const READY_S=1.2, BEAT_S=0.7, END_S=1.7;
 const reduced=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -196,6 +197,7 @@ function topBand(){
 addEventListener("resize",()=>{if(phase!=="off")topBand()});
 
 function begin(){
+  setAvatarPair(gameAvatarPair("bx"));
   solo=S.players===1;
   const ar=(detCv.width/detCv.height)||(cv.width/cv.height)||16/9;
   G=newGame(S.players,ar,dur);
@@ -474,8 +476,8 @@ $("#bxClip").onclick=()=>{endRoot.classList.add("hide");openClips()};
 export const BOXING:GameMode={
   start:begin,
   tv:true,
-  party(){S.players=2;dur=30}, // the party uses a 30 s round
-  reset(){cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call bx-call";
+  party(cfg){S.players=2;dur=30;NAMES[0]=cfg.names[0];NAMES[1]=cfg.names[1]}, // the party uses a 30 s round
+  reset(){NAMES[0]=DEF_NAMES[0];NAMES[1]=DEF_NAMES[1];setAvatarPair(null);cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call bx-call";
     setScreenMode(null);fx=[];part.fill(0);oc.clearRect(0,0,ov.width,ov.height);curLm=[null,null];lastPs=null;
     runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("boxing")},
   shown:()=>!endRoot.classList.contains("hide"),

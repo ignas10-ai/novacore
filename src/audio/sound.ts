@@ -49,10 +49,11 @@ export const sfx={
   push:()=>{noise(.06,.14);tone(560,.06,.05,"sine")},
 };
 const save=(k:string,on:boolean)=>{try{localStorage.setItem(k,on?"1":"0")}catch(e){}};
+export const soundEnabled=()=>soundOn;
 document.addEventListener("click",e=>{
   const b=(e.target as Element).closest("[data-snd],[data-vibe]");
   if(!b)return;
-  if(b.hasAttribute("data-snd")){soundOn=!soundOn;save("novacore.sound",soundOn);if(soundOn){ensureAudio();tone(880,.08,.16)}}
+  if(b.hasAttribute("data-snd")){soundOn=!soundOn;save("novacore.sound",soundOn);if(soundOn){ensureAudio();tone(880,.08,.16)}document.dispatchEvent(new CustomEvent("novacore:sound",{detail:soundOn}))}
   else{vibeOn=!vibeOn;save("novacore.vibe",vibeOn);buzz(40)}
   sync();
 });

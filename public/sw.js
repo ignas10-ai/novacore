@@ -1,6 +1,6 @@
 // NovaCore service worker. Bump VERSION whenever the icons or this file's logic change in a way that must reach
 // installed phones immediately; old caches are deleted on activate.
-const VERSION="novacore-v8"; // v8: back to the minimal kid characters (mini), no realistic/scene art
+const VERSION="novacore-v9"; // v9: cache the party-mode background music too
 const PRECACHE=`${VERSION}-pre`, RUNTIME=`${VERSION}-rt`;
 const APP=["./","./index.html","./manifest.webmanifest","./pose-samples.json","./icons/icon-192.png","./icons/icon-512.png","./icons/maskable-512.png"];
 // MediaPipe wasm/model + fonts: network first, fall back to the last good copy so the game still loads offline
@@ -9,9 +9,9 @@ const RUNTIME_HOSTS=["cdn.jsdelivr.net","storage.googleapis.com","fonts.googleap
 // The current ones are read from index.html at install, so the game works offline after the first visit.
 // ponytail: hashes from older deploys stay in PRECACHE (~230 KB each) until VERSION is bumped.
 const isAsset=url=>url.pathname.startsWith("/assets/");
-// kid character art (public/chars/mini): network first, cache the last copy,
-// so the setup galleries and the Pradžia tiles still show offline after the first visit (the names are stable).
-const isMedia=url=>url.pathname.startsWith("/chars/");
+// kid character art (public/chars/mini) and the party music: network first, cache the last copy,
+// so the galleries, Pradžia tiles and the party soundtrack work offline after the first visit.
+const isMedia=url=>url.pathname.startsWith("/chars/")||url.pathname.startsWith("/audio/");
 const shellAssets=()=>fetch("./",{cache:"no-store"}).then(r=>r.text()).then(html=>[...new Set([...html.matchAll(/(?:src|href)="\/?(assets\/[^"]+)"/g)].map(m=>"./"+m[1]))]);
 
 self.addEventListener("install",e=>{

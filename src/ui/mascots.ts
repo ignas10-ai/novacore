@@ -5,6 +5,8 @@
 // "mascots" in main.css; every animated part is an inner <g> so CSS transform never fights the pose transform attribute.
 // Units: viewBox 0 0 200 230, head centre (100,84) r 60, ground at y 216.
 
+import {PARTY_CHARS, partyAvatar, gameChar} from "../party/avatars.ts";
+
 export type Who="r"|"b"|"y"|"g"; // y / g = Geltonas, Žalias (Šuolis į tolį party mode, src/longjump)
 export type Mood="fierce"|"smirk"|"happy"|"sad";
 export type ExId="squat"|"jack"|"knees"|"squatjump"|"sidestep"|"lunge"|"crunch";
@@ -120,9 +122,26 @@ export function mascot(who:Who,pose:Pose="idle",o:{face?:number;anim?:boolean;mo
 // head-only avatar (HUD, profile, setup chips): the head fills the box, tails cropped
 // player head = the chibi kid for that colour (public/chars/mini, head crop; 11-03, was the Claude Design v2 sheets).
 // One place, so every game's name field / HUD / results row follows. mood is kept for the API; the art has one face.
-export function avatar(who:Who,_mood?:Mood,o:{crown?:boolean;label?:string}={}){
+export function baseAvatar(who:Who,_mood?:Mood,o:{crown?:boolean;label?:string}={}){
   const a=o.label?`role="img" aria-label="${o.label}"`:'aria-hidden="true"';
   return `<span class="m-avatar m-${who}" ${a} style="background:url(/chars/mini/${KID[who]}.webp) 50% 6%/175% auto no-repeat #fff">${o.crown?`<svg class="m-crown" viewBox="68 -2 64 50" aria-hidden="true" focusable="false">${crown(100,-12,50)}</svg>`:""}</span>`;
+}
+// The mini games use two (or four) of the new party characters in their HUD/result avatars. The party setup and
+// result overlay deliberately use baseAvatar() so the new faces stay out of the party UI.
+let avatarPair: [string, string, string, string] | null = null;
+export function setAvatarPair(pair: [string, string, string, string] | null) { avatarPair = pair; }
+export function gameAvatarPair(game: string): [string, string, string, string] {
+  const first = gameChar(game);
+  const i = Math.max(0, PARTY_CHARS.findIndex(c => c.id === first));
+  const at = (n: number) => PARTY_CHARS[(i + n) % PARTY_CHARS.length].id;
+  return [at(0), at(4), at(2), at(6)];
+}
+export function avatar(who:Who,mood?:Mood,o:{crown?:boolean;label?:string}={}){
+  if (!avatarPair) return baseAvatar(who, mood, o);
+  const idx = who === "r" ? 0 : who === "b" ? 1 : who === "y" ? 2 : 3;
+  const team = who === "b" || who === "g" ? 1 : 0;
+  const a=o.label?`role="img" aria-label="${o.label}"`:'aria-hidden="true"';
+  return `<span class="m-avatar party-game-av m-${who}" ${a}>${partyAvatar(avatarPair[idx], team)}</span>`;
 }
 // VS face-off (home hero, onboarding): both mascots in guard + the yellow VS badge sits in the markup between them
 export const vsPair=()=>mascot("r","vs",{anim:true,cls:"m-vs-l"})+mascot("b","vs",{anim:true,cls:"m-vs-r"});

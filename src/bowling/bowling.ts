@@ -17,10 +17,11 @@ import {releaseWakeLock} from "../ui/wakelock.ts";
 import {onView,home} from "../ui/router.ts";
 import {fillIcons} from "../ui/icons.ts";
 import {loadHist,saveHist} from "../history/history.ts";
+import {partyActive,partyLegDone} from "../party/bus.ts";
 import type {Game as Row} from "../history/stats.ts";
 import {$} from "../ui/dom.ts";
 import {t as tr,tn} from "../i18n/i18n.ts";
-import {mascot,avatar,type Who} from "../ui/mascots.ts";
+import {mascot,avatar,setAvatarPair,gameAvatarPair,type Who} from "../ui/mascots.ts";
 import {cachedNick} from "../online/api.ts";
 import {screenPhase,setScreenMode} from "../cast/cast.ts";
 import type {ScreenState} from "../cast/room.ts";
@@ -194,6 +195,7 @@ const cur=()=>turnOf(series);
 
 // ---------- flow ----------
 function begin(){
+  setAvatarPair(gameAvatarPair("bw"));
   names0=[...Array(n).keys()].map(nameAt);
   series=newSeries(n,frames);firstTurn=true;lastPlayer=-1;
   pb=bestTotal(loadHist(),frames);
@@ -360,6 +362,7 @@ function finish(){
   const row:Row={t:Date.now(),players:n,duration:Math.round((performance.now()-startAt)/1000),ex:["bowling"],score:[0,0],reps,
     mode:"bowling",bwFrames:frames,bwRolls:series.frameRolls.map(fr=>fr.flat()),bwFrameRolls:series.frameRolls.map(fr=>fr.map(x=>x.slice())),bwTotals:totals.slice()};
   h.unshift(row);saveHist(h);
+  if(partyActive()){partyLegDone();return}
   const best=Math.max(0,...totals),newPb=best>pb;
   const winners=r.filter(x=>x.place===1),w=winners.length===1?winners[0].i:-1;
   const head=$("#bwResHead"),win=$("#bwWin"),sub=$("#bwSub");
@@ -731,6 +734,7 @@ function frame(now:number){
   if(phase!=="off"){render(now,dt);if(now-hudAt>80){hudAt=now;if(phase!=="roll"||!resultShown)updateHud()}}
 }
 function reset(){
+  setAvatarPair(null);
   cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);
   callRoot.className="sp-call bw-call";turnRoot.hidden=true;handEl.classList.remove("on");
   pickRoot.hidden=true;pickRoot.classList.remove("in","out");
@@ -742,6 +746,7 @@ function reset(){
 export const BOWLING:GameMode={
   start:begin,
   tv:true,
+  party(cfg){n=2;frames=3;names[0]=cfg.names[0];names[1]=cfg.names[1];S.players=1},
   reset,
   shown:()=>!endRoot.classList.contains("hide")||(phase==="card"&&!runRoot.classList.contains("hide")),
 };
