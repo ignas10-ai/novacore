@@ -21,6 +21,8 @@ import {t as tr} from "../i18n/i18n.ts";
 import {mascot,avatar} from "../ui/mascots.ts";
 import {startRec,finishClips,openClips} from "../clips/clips.ts";
 import {highlightSegments} from "../clips/highlight.ts";
+import {screenPhase,setScreenMode} from "../cast/cast.ts";
+import type {ScreenState} from "../cast/room.ts";
 import {newDance,update,winner,pts,HOLD_PTS,POSE_PTS,type Dance,type Ev,type PoseId} from "./logic.ts";
 
 const NAMES=[tr("p.red"),tr("p.blue")];
@@ -41,7 +43,7 @@ const app=document.getElementById("app")??document.body;
 app.insertAdjacentHTML("beforeend",`
 <section class="screen app hide" id="dance" aria-labelledby="dcTitle">
   <div class="wrap">
-    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="dcTitle" tabindex="-1">${tr("dc.title")}</h1><span class="icon-btn" aria-hidden="true" style="visibility:hidden"></span></div></header>
+    <header class="nav inline"><div class="nav-in"><a class="icon-btn tap" href="#/" data-back aria-label="${tr("app.back")}"><span data-icon="chevron-left"></span></a><h1 class="nav-title" id="dcTitle" tabindex="-1">${tr("dc.title")}</h1><button class="icon-btn tap" data-tv type="button" aria-label="${tr("home.cast")}" aria-haspopup="dialog" aria-controls="screenSheet"><span data-icon="cast"></span></button></div></header>
     ${gallery("dc",tr("dc.title").toUpperCase(),tr("dc.hero"))}
     <section class="pick" aria-label="${tr("dc.dancers")}">
       <div class="seg sp-seg" role="group" aria-label="${tr("dc.dancers")}">
@@ -197,11 +199,12 @@ function begin(){
   G=newDance(S.players,ar,dur);
   evLog.length=0;beat=-1;shownSec=-1;hadRec=false;lastSec=0;secPts=0;shownSc[0]=shownSc[1]="";
   pb=bestPts(loadHist(),dur);
-  runRoot.classList.remove("hide");runRoot.classList.toggle("solo",solo);runRoot.classList.remove("freeze");
+  runRoot.classList.remove("hide");runRoot.classList.toggle("solo",solo);runRoot.classList.remove("freeze");delete runRoot.dataset.lead;
   $("#dcPbN").textContent=String(pb);
   scEl.forEach(e=>{e.textContent="0"});enEl.forEach(e=>{e.style.transform="scaleX(0)"});poseEl.hidden=true;
   clock.textContent=fmtClock(dur);bar.style.transform="scaleX(1)";
   document.body.classList.add("dance");
+  setScreenMode(tvState); // the TV board shows the dance energy/STOP state (src/cast)
   S.running=true; // game.ts swallows Android back while running
   phase="count";phaseAt=performance.now();
   call(tr("dc.getReady"),tr("dc.readySub"));sfx.tick();
@@ -236,6 +239,7 @@ function startRound(now:number){
   phase="play";t0=now;phaseAt=now;
   startRec();S.lastRecDrawAt=now;hadRec=!!S.rec;S.t0=now;
   musicOn();
+  screenPhase("play");
 }
 function endRound(now:number){
   phase="end";phaseAt=now;musicOff();
@@ -302,14 +306,35 @@ function finishRound(){
   $("#dcClip").hidden=!hadRec;
   runRoot.classList.add("hide");document.body.classList.remove("dance");
   endRoot.classList.remove("hide");endRoot.scrollTop=0;
+  screenPhase("done");
 }
 $("#dcAgain").onclick=()=>{resetGame();startFlow(DANCE)};
 $("#dcHome").onclick=()=>{resetGame();document.body.classList.remove("ingame");home()};
 $("#dcClip").onclick=()=>{endRoot.classList.add("hide");openClips()};
 
+// what the TV board shows (cast.ts merges it over the rep-game state): live energy bars, the STOP/pose card, points
+function tvState():Partial<ScreenState>{
+  const now=performance.now(),on=phase==="play"||phase==="end",done=phase==="off"&&!endRoot.classList.contains("hide");
+  return {
+    duration:dur,
+    left:on?Math.max(0,dur-(now-t0)/1000):done?0:dur,
+    round:G.freezes,
+    mult:1,
+    ex:{id:"dance",name:tr("dc.title")},
+    score:[pts(G.p[0]),G.players>1?pts(G.p[1]):0] as [number,number],
+    reps:G.p.slice(0,G.players).reduce((n,P)=>n+P.held,0),
+    energy:[G.p[0].energy,G.p[1].energy] as [number,number],
+    stop:phase==="play"&&G.phase==="freeze",
+    pose:phase==="play"&&G.phase==="freeze"?G.pose:null,
+    winner:done?winner(G):0,
+  };
+}
+
 export const DANCE:GameMode={
   start:begin,
+  tv:true,
   reset(){cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call bx-call";musicOff();lastPs=null;
+    setScreenMode(null);screenPhase("idle");delete runRoot.dataset.lead;
     runRoot.classList.add("hide");runRoot.classList.remove("freeze");endRoot.classList.add("hide");document.body.classList.remove("dance")},
   shown:()=>!endRoot.classList.contains("hide"),
 };

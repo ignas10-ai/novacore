@@ -18,7 +18,8 @@ const root=$("#screen"), s1=$("#bsS1"), s2=$("#bsS2"), p1Label=$("#bsP1Label"),
   staleEl=$("#bsStale"), liveEl=$("#bsLive"), liveTxt=$("#bsLiveTxt"), footCode=$("#bsFootCode"),
   waitLine=$("#bsWaiting"), waitCode=$("#bsWaitCode"), errEl=$("#bsErr"),
   codeIn=$<HTMLInputElement>("#bsCodeIn"), form=$<HTMLFormElement>("#bsConnect"), fsBtn=$("#bsFs"),
-  camVid=$<HTMLVideoElement>("#bsCamVid"), camBg=$<HTMLCanvasElement>("#bsCamBg"), camBtn=$<HTMLButtonElement>("#bsCam"), camBtnTxt=$("#bsCamTxt");
+  camVid=$<HTMLVideoElement>("#bsCamVid"), camBg=$<HTMLCanvasElement>("#bsCamBg"), camBtn=$<HTMLButtonElement>("#bsCam"), camBtnTxt=$("#bsCamTxt"),
+  e1=$("#bsE1"), e2=$("#bsE2"), stopEl=$("#bsStop"), stopWord=$("#bsStopWord"), stopSub=$("#bsStopSub"), stopPose=$("#bsStopPose");
 
 let room="", bc:BroadcastChannel|null=null, ch:RealtimeChannel|null=null;
 let state:ScreenState|null=null, baseAt=0, baseLeft=0, lastSeenAt=0, seenAny=false, demoId="";
@@ -35,6 +36,8 @@ function cleanup(){
   if(bc){try{bc.close()}catch(e){}bc=null}
   if(ch&&sb){try{sb.removeChannel(ch).catch(()=>{})}catch(e){}ch=null}
   state=null;seenAny=false;demoId="";prevScore=[0,0];lastSecond=-1;
+  root.dataset.dance="";stopEl.hidden=true;
+  e1.style.transform="scaleX(0)";e2.style.transform="scaleX(0)";
   releaseWakeLock();
 }
 function sendHello(){
@@ -187,19 +190,42 @@ function toggleCamTV(){
   }
 }
 
+// Šokių kova (src/dance): the phone publishes the movement energy per player and the freeze state; the TV fills the
+// bars under the scores and covers the board with the big STOP! card while the music is off.
+function paintDance(s:ScreenState){
+  root.dataset.dance=s.energy?"1":"";
+  if(s.energy){
+    e1.style.transform=`scaleX(${s.energy[0].toFixed(2)})`;
+    e2.style.transform=`scaleX(${s.energy[1].toFixed(2)})`;
+  }else{
+    e1.style.transform="scaleX(0)";e2.style.transform="scaleX(0)";
+  }
+  const frozen=!!s.stop&&s.phase==="play";
+  stopEl.hidden=!frozen;
+  if(frozen){
+    stopWord.textContent=t("dc.stop");
+    stopSub.textContent=t("dc.stopSub");
+    const pose=s.pose??null;
+    stopPose.hidden=!pose;
+    stopPose.textContent=pose?t(`dc.pose.${pose}`):"";
+  }
+}
+
 function render(s:ScreenState){
   // the board speaks the phone's language (static text re-translated once per change; the rest is set below)
   if(s.lang!==lang){setLang(s.lang);document.documentElement.lang=s.lang;translateDom(root)}
+  const dance=s.ex?.id==="dance";
   root.dataset.phase=s.phase;
   root.dataset.players=String(s.players);
   root.dataset.winner=s.phase==="done"?String(s.winner):"";
   if(!s.cam&&!tCamWanted&&root.dataset.cam==="1")stopCamView();
   updateCamBtn();
+  paintDance(s);
   footCode.textContent=room;
   waitCode.textContent=room;
   waitLine.hidden=s.phase!=="idle";
   p1Label.textContent=s.players===1?t("mode.Solo"):"P1";
-  multEl.hidden=s.phase!=="play";
+  multEl.hidden=s.phase!=="play"||dance;
   staleEl.hidden=true;
   verdict.hidden=s.phase!=="done";
   if(s.phase==="idle"){
@@ -222,7 +248,9 @@ function render(s:ScreenState){
     setDemo("",s.phase);
     verdictTag.textContent=t("tv.end");
     verdictTxt.textContent=s.players===1?t("res.yours"):s.winner===0?t("res.tie"):t("tv.pWins",{n:s.winner});
-    repsEl.textContent=`${tn("u.moves",s.reps)} · ${t("u.min",{n:dec(s.duration/60,s.duration>=60?0:1)})}`;
+    repsEl.textContent=dance
+      ?`${t("tv.danceHeld",{n:s.reps})} · ${t("u.min",{n:dec(s.duration/60,s.duration>=60?0:1)})}`
+      :`${tn("u.moves",s.reps)} · ${t("u.min",{n:dec(s.duration/60,s.duration>=60?0:1)})}`;
     timerEl.textContent="0:00";
     barEl.style.transform="scaleX(0)";
     root.dataset.low="0";
@@ -230,10 +258,10 @@ function render(s:ScreenState){
   }
   // play
   roundEl.hidden=false;exEl.hidden=false;
-  roundEl.textContent=t("tv.round",{n:s.round+1});
+  roundEl.textContent=dance?t("tv.danceFreeze",{n:s.round}):t("tv.round",{n:s.round+1});
   exEl.textContent=s.ex?.name||"";
   multEl.textContent=`×${s.mult}`;
-  setDemo(s.ex?.id||"",s.phase);
+  setDemo(dance?"":s.ex?.id||"",s.phase);
 }
 
 function tick(){

@@ -429,7 +429,7 @@ export const lt={
   "trophy.week5":"Savaitės ritmas",
   "trophy.week5D":"Sužaisk 5 žaidimus per vieną savaitę",
   "trophy.allModes":"Visų rungčių čempionas",
-  "trophy.allModesD":"Išbandyk visas 10 rungčių",
+  "trophy.allModesD":"Išbandyk visas 11 rungčių",
   "trophy.mode.rr":"Rep Maratonas",
   "trophy.mode.sprint":"Sprintas 100 m",
   "trophy.mode.boxing":"Boksas",
@@ -1334,4 +1334,6 @@ export const lt={
   "dc.posesN":"pozos: {n}",
   "dc.clipSub":"Geriausi šokiai",
   "hist.dance":"Šokių kova · {mode} · {n} s",
+  "tv.danceFreeze":"Sustingimų: {n}",
+  "tv.danceHeld":"Išlaikyta sustingimų: {n}",
 } as const;

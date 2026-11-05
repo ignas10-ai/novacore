@@ -35,4 +35,17 @@ assert.strictEqual(readState({...base,left:999}).left,180,"left is clamped to th
 assert.strictEqual(readState({...base,ex:{id:"x",name:"a".repeat(80)}}).ex.name.length,40,"long names truncated");
 assert.strictEqual(readState({...base,ex:{id:'x"]',name:"y"}}).ex,null,"selector-unsafe exercise id rejected");
 assert.strictEqual(readState({...base,winner:9}).winner,0);
+// Šokių kova (src/dance): energy bars + STOP/pose are additive and clamped; older payloads keep working
+const dance={...base,energy:[.42,1.7],stop:true,pose:"plane"};
+const d=readState(dance);
+assert.deepStrictEqual(d.energy,[.42,1],"energy clamped to 0..1");
+assert.strictEqual(d.stop,true,"freeze flag survives");
+assert.strictEqual(d.pose,"plane","known pose survives");
+assert.strictEqual(readState({...base,energy:[-2,"x"]}).energy[0],0,"bad energy -> 0");
+assert.strictEqual(readState({...base,energy:[NaN,Infinity]}).energy[1],0,"non-finite energy -> 0");
+assert.strictEqual(readState({...base,pose:"hack"}).pose,null,"unknown pose rejected");
+assert.strictEqual(readState({...base,stop:"yes"}).stop,false,"only a real true stops the board");
+assert.strictEqual(readState(base).energy,undefined,"no dance field on other games");
+assert.strictEqual(readState(base).stop,false);
+assert.strictEqual(readState(base).pose,null);
 console.log("OK");
