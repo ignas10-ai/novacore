@@ -4,7 +4,7 @@
 **Viena frazė:** *Visi žaidimai. Viena komanda. Viena taurė.*
 **Angliškai:** Party Mode.
 
-> **Galutinis 2026-11-05 srautas (viršija žemiau esančius senus punktus):** žaidėjų vardų ir pasirinkimo **nėra** – tik dviejų komandų pavadinimai, o prie kameros stoja kas nori. Paleidus: 3,8 s disco kamuolio intro (be skip; žaidimai iššoka ir toliau sukasi aplink kamuolį) → 5 s 1v1 VS kortelė → automatinis traukimas → automatinis žaidimo paleidimas (be „Stok prieš kamerą“ mygtuko) → **best-of-3 serija** (pirma komanda, laimėjusi 2 raundus; daugiausia 3) → raundo rezultatas (auto po 5 s) → serijos rezultatas (auto po 6 s) → disco lobby, kuris po 5 s vėl traukia automatiškai. Taškai: 1 už seriją, 0,5 lygiosios, viena 2× comeback serija. Muzika groja **tik žaidimo metu** (po rankų gate iki raundo pabaigos). Komandų pavadinimai rodomi vietoj P1 pasiruošimo ekrane ir HUD. Kataloge kortelė vadinasi **„Party Mode“**, be paantraštės, su didesniu šriftu ir sulygintu tekstu. Lobby/finalas – tamsus neoninis disco klubas. Žemiau esantis planas likęs istorinis; kur prieštarauja, vadovaukitės šiuo bloku.
+> **Galutinis 2026-11-05 srautas (viršija žemiau esančius senus punktus):** **Vakarėlio pool'as – 9 žaidimai (7 stabilūs + 2 beta; Dance Clash įtrauktas, alfa Badmintonas/Ietis neįtraukti; beta jungiklis – tik Barjerai/Boulingas).** Žaidėjų vardų ir pasirinkimo **nėra** – tik dviejų komandų pavadinimai, o prie kameros stoja kas nori. Paleidus: 3,8 s disco kamuolio intro (be skip; žaidimai iššoka ir toliau sukasi aplink kamuolį) → 5 s 1v1 VS kortelė → automatinis traukimas → automatinis žaidimo paleidimas (be „Stok prieš kamerą“ mygtuko) → **best-of-3 serija** (pirma komanda, laimėjusi 2 raundus; daugiausia 3) → raundo rezultatas (auto po 5 s) → serijos rezultatas (auto po 6 s) → disco lobby, kuris po 5 s vėl traukia automatiškai. Taškai: 1 už seriją, 0,5 lygiosios, viena 2× comeback serija. Muzika groja **tik žaidimo metu** (po rankų gate iki raundo pabaigos). Komandų pavadinimai rodomi vietoj P1 pasiruošimo ekrane ir HUD. Kataloge kortelė vadinasi **„Party Mode“**, be paantraštės, su didesniu šriftu ir sulygintu tekstu. Lobby/finalas – tamsus neoninis disco klubas. Žemiau esantis planas likęs istorinis; kur prieštarauja, vadovaukitės šiuo bloku.
 >
 > **Ankstesnis MVP įgyvendinimas:** visi **10 žaidimų** (6 pagrindiniai + 4 beta su jungikliu), 2 komandos, 1–4 žaidėjai komandoje. Srautas: setup → **5 s gaublio intro** → lobby, kuriame komandos pasirenka po atstovą → **automatinis rungties traukimas** su CS:GO dėžės / marmuro lenktynių animacija → „Stok prieš kamerą“ kortelė → įprastas `startFlow` žaidimas → rezultatas → lobby. **Žaidėjų vardų nereikia** – žaidėjai žymimi „Raudoni 1“, „Mėlyni 1“ ir t. t. **Taškai:** 1 už pergalę, 0,5 lygiosios, viena **2× comeback** rungtis (kai komanda atsilieka 2+ arba tai paskutinė rungtis). Pridėta **vakarėlio muzika** (`src/party/music.ts`, 2 NCS takeliai, tik žaidimo metu). 8 nauji SVG veikėjai naudojami kitų žaidimų setup galerijose ir HUD/rezultatų eilutėse (ne vakarėlio setup'e / rezultate / MVP). Startas – vaivorykštinis slideris su stipria įkrova; TV – **žaidimo veidrodis** per esamą WebRTC; tęsimas per `localStorage`. **Dar ne:** atskira vakarėlio TV taškų lenta, paskutinių vakarėlių sąrašas, trofėjai.
 >
@@ -16,7 +16,7 @@
 
 ### 1.1 Problema
 
-MoveClash turi 10 mini žaidimų, bet grupė vis dar žaidžia juos po vieną: atidaryk žaidimą → nustatymai → žaidėjai → žaidimas → rezultatas → atgal → kitas žaidimas. Tarp žaidimų dingsta tempas, niekas nežino, kas „laimi vakarą“, o žiūrovai neturi bendros lentelės. Trūksta sluoksnio, kuris 10 žaidimų paverstų vienu vakaru.
+MoveClash turi 11 mini žaidimų, bet grupė vis dar žaidžia juos po vieną: atidaryk žaidimą → nustatymai → žaidėjai → žaidimas → rezultatas → atgal → kitas žaidimas. Tarp žaidimų dingsta tempas, niekas nežino, kas „laimi vakarą“, o žiūrovai neturi bendros lentelės. Trūksta sluoksnio, kuris juos paverstų vienu vakaru.
 
 ### 1.2 Idėja
 
@@ -36,7 +36,7 @@ Tai **ne naujas žaidimas** ir **ne non-stop sesija**. Tai vakaro rezultatų len
 
 ### 1.4 Kodėl tai tinka būtent dabar
 
-- **Viskas jau yra:** 10 žaidimų, `GameMode` sutartis, rankų pakėlimo vartai, kamera, modelis, TV lenta, veikėjai, istorija, XP, trofėjai. Nereikia naujo judesių atpažinimo, naujų pratimų ribų ar naujo 3D meno.
+- **Viskas jau yra:** 11 žaidimų (9 vakarėlio poole), `GameMode` sutartis, rankų pakėlimo vartai, kamera, modelis, TV lenta, veikėjai, istorija, XP, trofėjai. Nereikia naujo judesių atpažinimo, naujų pratimų ribų ar naujo 3D meno.
 - **Tai atsako į klausimą „kodėl atsidaryti antrą kartą?“** Vakarėlis yra priežastis pasikviesti draugus, o revanšas — vienas paspaudimas.
 - **Atskiros rungtys = mažesnė techninė rizika.** Nereikia laikyti kameros ir modelio per visą vakarą; kiekviena rungtis naudoja įprastą `startFlow` kelią. Tarp rungčių kamera išjungiama, kaip ir įprastame žaidime.
 - **Tai skiriasi nuo kitų:** ne „dar vienas kameros fitneso žaidimas“, o sofos vakarėlio platforma, kur telefonas yra teisėjas, o TV — stadionas.
@@ -65,7 +65,7 @@ Mokyklos validacijai: 3 grupės (2v2, 3v3, šeima), kiek pradėtų vakarėlių b
 - **Komandų dydis neįvedamas.** App'e nėra žaidėjų skaičiaus, vardų ar eilių; prie kameros stoja kas nori. Komanda gali turėti 2–8 žmones, bet tai socialinis susitarimas, ne nustatymas.
 - **Žaidėjų vardų nėra.** Naudojami tik komandų pavadinimai ir baziniai komandų veikėjai (Kometa / Banga), o ne 8 nauji chibi veikėjai.
 - **Vienoje rungtyje žaidžia po vieną atstovą iš komandos.** Tai pagrindinis supaprastinimas:
-  - tinka visiems 10 žaidimų be 4 žaidėjų agregavimo taisyklių;
+  - tinka visiems 9 vakarėlio žaidimams be 4 žaidėjų agregavimo taisyklių;
   - rungtis lieka 1–4 min. (best-of-3 serija – 2–3 raundai);
   - visi turi rolę: žaidi, palaikai, ruošiesi;
   - taškus gauna komanda; MVP nėra.
@@ -76,7 +76,7 @@ Mokyklos validacijai: 3 grupės (2v2, 3v3, šeima), kiek pradėtų vakarėlių b
 
 - **Nėra „Traukti rungtį“ mygtuko ir jokio pasirinkimo.** Pirmą kartą po disco intro ir 1v1 kortelės, vėliau iš lobby po 5 s, rungtis ištraukiama **automatiškai** ir parodoma per animaciją.
 - **Be pasikartojimų:** kol yra nežaistų žaidimų, tas pats žaidimas nekartojamas.
-- **Pool'as:** 6 pagrindiniai žaidimai (Rep Maratonas, Sprintas, Boksas, Šuolis į tolį, Slidinėjimas, Siena) + 4 beta (Barjerai, Boulingas, Badmintonas, Ietis), įjungiami „Įtraukti beta rungtis“ jungikliu. Setup'e galima atjungti ir atskirus žaidimus; turi likti bent 1.
+- **Pool'as:** 7 stabilūs žaidimai (Rep Maratonas, Sprintas, Boksas, **Dance Clash**, Šuolis į tolį, Slidinėjimas, Siena) + 2 beta (Barjerai, Boulingas), įjungiami „Įtraukti beta rungtis“ jungikliu. **Alfa žaidimai (Badmintonas, Ietis) į vakarėlį neįtraukti.** Setup'e galima atjungti ir atskirus žaidimus; turi likti bent 1.
 - **Animacija keičiasi:** **6 skirtingi ilgesni traukimai** – CS:GO kortelių karuselė, marmuro lenktynės, ruletės ratas, slotų mašina, smiginio lenta ir kortų fanas, **traukiami atsitiktinai ir nekartojant paskutinių dviejų**. Kiekvienas naudoja žaidimų spalvas ir sporto ikonas, trunka ~5,2–5,8 s + ~1,1 s nugalėtojo atskleidimą. Atskleidimas iškart paleidžia žaidimą.
 - Jei liko 0 žaidimų, vakarėlis baigiasi (daugiausia taškų turinti komanda laimi; lygiosios — žr. 2.7).
 - **Atšaukti seriją** galima tik grįžus į lobby su „Tęsti seriją“ / „Baigti vakarėlį“; atskiro „Praleisti rungtį“ nėra. Jei rungtis neįmanoma (trauma), vakarėlį galima baigti lobby'je.
@@ -84,8 +84,8 @@ Mokyklos validacijai: 3 grupės (2v2, 3v3, šeima), kiek pradėtų vakarėlių b
 ### 2.3 Kas žaidžia? (be pasirinkimo)
 
 - **App'e niekas nepasirenkamas.** Komandos žaidėjai patys nusprendžia, kas stos prie kameros; app'as rodo tik komandos pavadinimą.
-- **2 žaidėjų žaidime** (Sprintas, Boksas, Slidinėjimas, Barjerai, Badmintonas, Rep Maratonas) abu atstovai stoja vienu metu ir kovoja.
-- **1 žaidėjo žaidime** (Siena, Šuolis į tolį, Ietis, Boulingas) komandos žaidžia paeiliui: pirmos komandos atstovas, tada antros. Žaidimo „turn card“ pats perima antrą žaidėją.
+- **2 žaidėjų žaidime** (Sprintas, Boksas, **Dance Clash**, Slidinėjimas, Barjerai, Rep Maratonas) abu atstovai stoja vienu metu ir kovoja.
+- **1 žaidėjo žaidime** (Siena, Šuolis į tolį, Boulingas) komandos žaidžia paeiliui: pirmos komandos atstovas, tada antros. Žaidimo „turn card“ pats perima antrą žaidėją. (Badmintonas/Ietis – alfa, į vakarėlį neįtraukti.)
 - **Pradedančioji komanda** rodoma pasiruošimo ekrane: „Pradeda: Raudoni · antras: Mėlyni“. 1P serijoje starteris keičiasi kiekvieną raundą.
 - **Nėra „Stok prieš kamerą“ mygtuko:** po traukimo žaidimas paleidžiamas automatiškai; laiko atsistoti duoda įprastas rankų pakėlimo gate.
 - **Bendri komandų pavadinimai** rodomi vietoj P1/P2 pasiruošimo ekrane ir rep žaidimo HUD.
@@ -138,13 +138,12 @@ Kiekviena rungtis — 2 aktyvūs žaidėjai (po vieną iš komandos). **Kiekvien
 | **Rep Maratonas** (`rr`) | 30 s, 1 raundas; abu atstovai vienu metu | 30 s | 1 | Pratimų rinkinys: pritūpimai + šuoliukai + keliai + šoniniai. |
 | **Sprintas** (`sp`) | 100 m, 2 takeliai, vienas bėgimas | 1 min | 1 | Įprasta ankstyvo starto taisyklė. |
 | **Boksas** (`bx`) | 30 s, abu vienu metu | 1 min | 1 | Vakarėlyje klipas neįrašomas. |
+| **Dance Clash** (`dc`) | 30 s, abu vienu metu; savo sintezuotas ritmas | 30 s | 1 | Muzika nutyla – sustink; poza kas 3 sustingimą. |
 | **Šuolis į tolį** (`lj`) | po 3 bandymus, paeiliui | 2 min | 1 | Geresnis šuolis; lygiosios — 2-u bandymu; foul = X. |
 | **Barjerai** (`hd`) | 100 m, 2 takeliai | 1 min | 1 | Beta; pagal nutylėjimą išjungta. |
 | **Boulingas** (`bw`) | po 3 kadrus, paeiliui | 3–4 min | 1 | Bendras kėglių skaičius; beta; ilgiausia rungtis. |
 | **Slidinėjimas** (`sk`) | 2 žaidėjų lenktynės, tas pats 400 m kursas | 1 min | 1 | Split-screen; abu vienu metu. |
 | **Siena** (`wl`) | po 1 bandymą, paeiliui | 1 min | 1 | Daugiau sienų; lygiosios — ilgesnis laikas. |
-| **Badmintonas** (`bd`) | rungtynės iki 11 (vėliau galima 7) | 3–5 min | 1 | Beta; ilgiausia rungtis. |
-| **Ietis** (`jv`) | po 3 metimus, paeiliui | 2 min | 1 | Galiojančių metimų suma (kaip žaidimo reitinge); lygiosios — geriausias metimas. |
 
 Pastaba: party nustatymai perduodami į žaidimo pačio setup kintamuosius (pvz., `dur=30` boksui, `frames=3` boulingui, `n=2`/vardai turn-based žaidimams). Žaidimo taisyklės neforkinamos.
 
@@ -172,7 +171,7 @@ Pastaba: party nustatymai perduodami į žaidimo pačio setup kintamuosius (pvz.
 1. **Nav + hero:** atgal, „Vakarėlis“, TV mygtukas; `gallery("party")` 3 panelių sporto emblemos hero.
 2. **Komandos:** dvi kortelės (raudona / mėlyna). Kiekvienoje: tik komandos pavadinimas (numatytas „Raudoni“ / „Mėlyni“) ir komandos avataras. **Jokių žaidėjų eilių, vardų ar „Pridėti žaidėją“.**
 3. **Vakarėlio ilgis:** „Visos rungtys“ (pagal nutylėjimą) / „Iki 5 taškų“.
-4. **Žaidimų pool'as:** 6 pagrindinių žaidimų chip'ų tinklelis; beta jungiklis atskleidžia ir įjungia 4 beta žaidimus (viso 10). Bent 1 žaidimas.
+4. **Žaidimų pool'as:** 7 stabilių žaidimų chip'ų tinklelis (įskaitant Dance Clash); beta jungiklis atskleidžia ir įjungia 2 beta žaidimus (Barjerus, Boulingą), viso 9. **Alfa (Badmintonas, Ietis) neįtraukti.** Bent 1 žaidimas.
 5. **TV ir muzika:** „Rodyti per TV“ atidaro esamą `#screenSheet`; atskiras „Rodyti žaidimą per TV“ (mirror) jungiklis (numatytas įjungtas) ir „Muzika“ jungiklis (numatytas įjungtas, `novacore.partyMusic`) su NCS kūrinių priskyrimu smulkiu tekstu.
 6. **Pradėti:** `slide()` mygtukas „Pradėti vakarėlį“, vaivorykštinis su stiprėjančia aura. Paleidus – disco kamuolio intro (be skip), 1v1 kortelė ir automatinis traukimas.
 
@@ -302,7 +301,7 @@ Kamera atidaroma ir uždaroma **kiekvienai rungčiai atskirai**, kaip įprastame
 | `src/party/party.ts` | Setup, 5 s gaublio intro, lobby su atstovų pasirinkimu, automatinis traukimas (case / marble), „Stok prieš kamerą“ kortelė, rezultato overlay, finalas, persistence, TV veidrodis, muzikos paleidimas. |
 | `src/party/party.css` | Vakarėlio stiliai + intro/draw animacijos. |
 | `test/unit/party.test.ts` | Traukimas, 1/0,5 taškai, 2× comeback, `legResult` visiems 10 režimų, lygiosios/DNF/foul, validacija. |
-| `test/e2e/party.spec.ts` | Intro → lobby → automatinis traukimas → Sprintas → rezultatas → finalas; `party-solo`, `party-rep`, `party-javelin`. |
+| `test/e2e/party.spec.ts` | Intro → lobby → automatinis traukimas → Sprintas → rezultatas → finalas; `party-solo`, `party-rep`, `party-dance`. |
 
 ### 4.3 Duomenų modelis
 

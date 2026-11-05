@@ -25,7 +25,7 @@ async function wallRound(page:import("@playwright/test").Page){
 test("party solo leg: wall series -> team mapping -> final",async({page},info)=>{
   await page.goto("/#/vakarelis");
   await screen(page,"party").toBeVisible();
-  for(const id of ["rr","sp","bx","lj","sk"])await tap(page,`[data-pool="${id}"]`,`pool ${id} off`);
+  for(const id of ["rr","sp","bx","lj","sk","dc"])await tap(page,`[data-pool="${id}"]`,`pool ${id} off`);
   await expect(page.locator('[data-pool="wl"]')).toHaveAttribute("aria-pressed","true");
 
   await tap(page,"#partyStart","start party");

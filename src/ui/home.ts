@@ -41,20 +41,26 @@ export function games(){
   for(const a of tiles){
     const g=[...a.classList].find(c=>c!=="sp-tile"&&c.endsWith("-tile"))?.slice(0,-5)??"sp", m=GAME[g];
     a.dataset.g=g;if(!m)continue;
-    a.dataset.duo=String(m.duo);a.dataset.beta=String(!!m.beta);
+    a.dataset.duo=String(m.duo);a.dataset.beta=String(!!m.beta);a.dataset.alpha=String(!!m.alpha);
     const name=a.querySelector(".sp-tile-txt b")?.textContent??"", sub=a.querySelector(".sp-tile-txt small")?.textContent??"";
     a.style.setProperty("--gc",m.color);
     a.classList.add("game-row");
+    const badge=m.beta
+      ?`<span class="sp-beta"><span class="sp-beta-ic">${icon("sparkle")}</span>${t("u.betaTag")}</span>`
+      :m.alpha
+      ?`<span class="sp-alpha"><span class="sp-alpha-ic">${icon("sparkle")}</span>${t("u.alphaTag")}</span>`
+      :"";
     a.innerHTML=`<span class="game-idx d" aria-hidden="true"></span>
       <span class="game-art" aria-hidden="true">${sportArt(g)}<i class="game-halo"></i><i class="game-spark"></i></span>
-      <span class="sp-tile-txt"><b class="d"></b>${m.beta?`<span class="sp-beta"><span class="sp-beta-ic">${icon("sparkle")}</span>${t("u.betaTag")}</span>`:""}<small></small></span>
+      <span class="sp-tile-txt"><b class="d"></b>${badge}<small></small></span>
       <span class="game-arrow" aria-hidden="true">${icon("arrow-up-right")}</span>`;
     a.querySelector(".sp-tile-txt b")!.textContent=name;
     a.querySelector(".sp-tile-txt small")!.textContent=sub;
     a.querySelector(".game-idx")!.textContent="";
   }
-  // BETA games always live at the back of the shelf; the rest keep their order.
-  tiles.sort((a,b)=>Number(a.dataset.beta==="true")-Number(b.dataset.beta==="true"));
+  // Pre-release games live at the back: BETA first, then ALPHA (alpha is the earlier version); the rest keep their order.
+  const tier=(a:HTMLElement)=>a.dataset.alpha==="true"?2:a.dataset.beta==="true"?1:0;
+  tiles.sort((a,b)=>tier(a)-tier(b));
   grid.replaceChildren(...(party?[party,...tiles]:tiles));
   tiles.forEach((a,i)=>a.style.setProperty("--i",String(i)));
   grid.querySelectorAll<HTMLElement>(".game-idx").forEach((n,i)=>{n.textContent=String(i+1).padStart(2,"0")});

@@ -606,3 +606,4 @@ body:has(#party.party-live:not(.hide)) #party{bottom:0}
 @media (prefers-reduced-motion:reduce){
   .draw-wheel,.slot-strip,.dart-needle,.fan-card{transition:none!important}
 }
+.party-pool-chip .alpha{margin-left:2px;padding:2px 5px;font-size:9px}

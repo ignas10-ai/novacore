@@ -767,3 +767,14 @@ body.ingame .charge{display:none}
 }
 #games .sp-tile.game-row .game-art,#games .sp-tile.game-row .sp-tile-txt{z-index:1}
 #games .sp-tile.game-row .game-arrow{position:absolute;z-index:1}
+
+/* ALPHA is the earlier version: a cool blue/lavender sticker, placed below BETA at the back */
+.sp-alpha{position:relative;display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-left:0;min-height:26px;padding:0 9px 0 6px;
+  border:1.5px solid var(--ink);border-radius:9px;background:linear-gradient(135deg,#8FD8FF 0%,#B7AEFF 100%);color:var(--ink);
+  font:800 11px/1 var(--body);letter-spacing:.1em;box-shadow:0 2px 0 color-mix(in srgb,var(--ink) 38%,transparent);rotate:1.5deg;
+  animation:alpha-pop 3.2s var(--ease-ui) infinite;white-space:nowrap}
+.sp-alpha .sp-alpha-ic{display:grid;place-items:center;width:12px;height:12px;color:var(--ink);--ic:12px}
+.sp-alpha .ic{width:12px;height:12px}
+@keyframes alpha-pop{0%,100%{scale:1;rotate:1.5deg}50%{scale:1.045;rotate:-1deg}}
+.gal-alpha{flex:none;display:inline-flex;align-items:center;min-height:26px;padding:0 9px;border:1.5px solid var(--ink);border-radius:9px;background:linear-gradient(135deg,#8FD8FF 0%,#B7AEFF 100%);color:var(--ink);font:800 10.5px/1 var(--body);letter-spacing:.1em;box-shadow:0 2px 0 color-mix(in srgb,var(--ink) 34%,transparent);rotate:1.5deg}
+@media (max-width:370px){.sp-alpha{font-size:10px;min-height:24px;padding:0 7px 0 5px;margin-left:5px}}

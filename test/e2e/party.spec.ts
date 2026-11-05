@@ -24,7 +24,7 @@ test("party MVP: setup -> VS -> auto draw -> sprint series -> final",async({page
   await expect(page.locator("#partyStart")).toBeVisible();
 
   // Leave only Sprint in the random pool: the draw is then deterministic without a test hook.
-  for(const id of ["rr","bx","lj","sk","wl"])await tap(page,`[data-pool="${id}"]`,`pool ${id} off`);
+  for(const id of ["rr","bx","lj","sk","wl","dc"])await tap(page,`[data-pool="${id}"]`,`pool ${id} off`);
   await expect(page.locator('[data-pool="sp"]')).toHaveAttribute("aria-pressed","true");
   await a11y(page,"party-setup",info);
 

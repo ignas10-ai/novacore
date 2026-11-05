@@ -5,15 +5,21 @@ import {sportArt} from "./sport.ts";
 import {partyAvatar, gameChar} from "../party/avatars.ts";
 
 const FRAMES = 3;
-const BETA = new Set(["bw", "hd", "bd", "jv"]);
+const BETA = new Set(["bw", "hd"]);
+const ALPHA = new Set(["bd", "jv"]);
 const slide = (code: string, n: number) =>
   `<figure class="gal-slide gal-art-${n}" role="img" aria-label="${t("gal.frame", {n})}">${sportArt(code)}${code === "party" ? "" : `<span class="gal-char" aria-hidden="true">${partyAvatar(gameChar(code), 0)}</span>`}<span class="gal-art-dot"></span></figure>`;
 
 export function gallery(code: string, big: string, sub: string) {
   const slides = Array.from({length: FRAMES}, (_, i) => slide(code, i + 1)).join("");
   const dots = Array.from({length: FRAMES}, (_, i) => `<button class="gal-dot" type="button" aria-label="${t("gal.frame", {n: i + 1})}"></button>`).join("");
+  const badge = BETA.has(code)
+    ? `<span class="gal-beta">${t("u.betaTag")}</span>`
+    : ALPHA.has(code)
+    ? `<span class="gal-alpha">${t("u.alphaTag")}</span>`
+    : "";
   return `<div class="gal-hero" data-gal="${code}">
-    <div class="gal-head"><span class="gal-big d">${big}</span>${BETA.has(code) ? `<span class="gal-beta">${t("u.betaTag")}</span>` : ""}<span class="gal-sub">${sub}</span></div>
+    <div class="gal-head"><span class="gal-big d">${big}</span>${badge}<span class="gal-sub">${sub}</span></div>
     <div class="gal" tabindex="0" role="group" aria-label="${big}">${slides}</div>
     <div class="gal-dots">${dots}</div>
   </div>`;

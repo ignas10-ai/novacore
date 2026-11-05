@@ -58,7 +58,7 @@ function detect(lm:Lm[],i:number,ex:string,mult:number){
 
 // Other game modes (src/sprint) take over after the ready gate: start() replaces startGame(), reset() runs in resetGame(),
 // shown() = its result screen is up (back closes it like #end). null = the rep game.
-export interface GameMode{start():void;reset():void;shown():boolean;tv?:boolean;party?:(cfg:PartyLegCfg)=>void} // tv: the mode publishes to the TV board (cast.ts); party: prepare a party leg before startFlow
+export interface GameMode{start():void;reset():void;shown():boolean;tv?:boolean;party?:(cfg:PartyLegCfg)=>void;partyMusic?:boolean} // tv: publishes to the TV board; party: prepare a party leg; partyMusic:false = the game has its own soundtrack (Dance Clash)
 let flowMode:GameMode|null=null;
 const inGameEntry=()=>!!history.state?.game;
 export async function startFlow(mode:GameMode|null=null){
@@ -111,7 +111,7 @@ function exitGame(){
 
 function startGame(){
   if(S.running)return;
-  if(partyActive())startPartyMusic(); // party music only while the round is actually running
+  if(partyActive()&&flowMode?.partyMusic!==false)startPartyMusic(); // party music only while the round is actually running; Dance Clash has its own beat
   clearTimeout(startTimer);startTimer=0;
   if(flowMode){readyRoot.classList.add("hide");readyRoot.classList.remove("done","holding");setCue(readyCue,readyCueText,"","");flowMode.start();return}
   nudgedRound=-1;S.lastPointAt[0]=S.lastPointAt[1]=0;

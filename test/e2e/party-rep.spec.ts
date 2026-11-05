@@ -9,7 +9,7 @@ test.use({trace:"off",launchOptions:{args:camArgs(CAM2)}});
 test("party rep leg: 30 s rounds -> series -> final",async({page},info)=>{
   await page.goto("/#/vakarelis");
   await screen(page,"party").toBeVisible();
-  for(const id of ["sp","bx","lj","sk","wl"])await tap(page,`[data-pool="${id}"]`,`pool ${id} off`);
+  for(const id of ["sp","bx","lj","sk","wl","dc"])await tap(page,`[data-pool="${id}"]`,`pool ${id} off`);
   await expect(page.locator('[data-pool="rr"]')).toHaveAttribute("aria-pressed","true");
 
   await tap(page,"#partyStart","start party");

@@ -1433,3 +1433,5 @@ a.pic{text-decoration:none}a.pic:active{scale:.94}
 #games .sp-tile>.pic{top:8px} /* badge on the frame corner (the frame height now follows the tile width) */
 .cover{display:block;margin:0 calc(12px - var(--gutter))}
 #homeScene{display:block;width:100%;height:auto;aspect-ratio:16/9;border-radius:14px;background:#A9D3FF}
+
+.alpha{flex:none;padding:5px 11px 4px;border-radius:var(--r-in);background:linear-gradient(135deg,#8FD8FF,#B7AEFF);color:var(--ink);font:900 12px/1.2 var(--body);letter-spacing:.14em;text-transform:uppercase}

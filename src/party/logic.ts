@@ -15,19 +15,19 @@ export interface PartyGame {
   sport: string;       // Phosphor sport glyph id
 }
 
-// All 10 games in the party pool; the beta ones are opt-in in the setup. Every leg is worth 1 point
+// The party pool: 7 stable games + 2 BETA games (only when the beta switch is on).
+// ALPHA games (Badminton, Javelin) are intentionally excluded from Party Mode. Every leg is worth 1 point
 // (0.5 each on a tie); one comeback leg per party is worth 2 (1 each on a tie).
 export const PARTY_GAMES: PartyGame[] = [
   {id: "rr", format: "duo", beta: false, titleKey: "party.game.rr", howKey: "party.how.rr", sport: "sport-rr"},
   {id: "sp", format: "duo", beta: false, titleKey: "party.game.sp", howKey: "party.how.sp", sport: "sport-sp"},
   {id: "bx", format: "duo", beta: false, titleKey: "party.game.bx", howKey: "party.how.bx", sport: "sport-bx"},
+  {id: "dc", format: "duo", beta: false, titleKey: "dc.title", howKey: "dc.how", sport: "sport-dc"},
   {id: "lj", format: "solo", beta: false, titleKey: "party.game.lj", howKey: "party.how.lj", sport: "sport-lj"},
   {id: "sk", format: "duo", beta: false, titleKey: "party.game.sk", howKey: "party.how.sk", sport: "sport-sk"},
   {id: "wl", format: "solo", beta: false, titleKey: "party.game.wl", howKey: "party.how.wl", sport: "sport-wl"},
   {id: "hd", format: "duo", beta: true, titleKey: "party.game.hd", howKey: "party.how.hd", sport: "sport-hd"},
   {id: "bw", format: "solo", beta: true, titleKey: "party.game.bw", howKey: "party.how.bw", sport: "sport-bw"},
-  {id: "bd", format: "duo", beta: true, titleKey: "party.game.bd", howKey: "party.how.bd", sport: "sport-bd"},
-  {id: "jv", format: "solo", beta: true, titleKey: "party.game.jv", howKey: "party.how.jv", sport: "sport-jv"},
 ];
 export const CORE_GAMES = PARTY_GAMES.filter(g => !g.beta).map(g => g.id);
 export const BETA_GAMES = PARTY_GAMES.filter(g => g.beta).map(g => g.id);
@@ -204,6 +204,7 @@ function gameValue(row: Game, gameId: string, p: 0 | 1): number | null {
   switch (gameId) {
     case "rr": return Number(row.score?.[p]) || 0;
     case "bx": return Number(row.pts?.[p]) || 0;
+    case "dc": return Number(row.pts?.[p]) || 0;
     case "bd": return Number(row.bdScore?.[p]) || 0;
     case "sp":
     case "hd":

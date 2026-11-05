@@ -10,8 +10,7 @@ import {HURDLES_MODE} from "../hurdles/hurdles.ts";
 import {BOWLING} from "../bowling/bowling.ts";
 import {SKI} from "../ski/ski.ts";
 import {WALL} from "../wall/wall.ts";
-import {BADMINTON} from "../badminton/badminton.ts";
-import {JAVELIN} from "../javelin/javelin.ts";
+import {DANCE} from "../dance/dance.ts";
 import {EX} from "../detect/exercises.ts";
 import {loadHist, saveHist} from "../history/history.ts";
 import {onView, go, home} from "../ui/router.ts";
@@ -79,8 +78,7 @@ const MIRROR: Record<string, {base: string; overlay?: string}> = {
   bw: {base: "bwCv"},
   sk: {base: "skCv"},
   wl: {base: "cv", overlay: "wlCv"},
-  bd: {base: "bdCv"},
-  jv: {base: "jvCv"},
+  dc: {base: "cv"},
 };
 
 // ---------- screens ----------
@@ -186,7 +184,7 @@ function renderSetup() {
         <div class="set-txt"><b>${t("party.beta")}</b><small>${t("party.betaHint")}</small></div>
         <button class="switch" type="button" role="switch" aria-checked="${setup.beta}" data-beta-toggle aria-label="${t("party.beta")}"><i></i></button>
       </div>
-      <div class="party-pool">${visible.map(g => `<button class="chip-btn party-pool-chip" type="button" data-pool="${g.id}" data-tone="${g.id}" style="--gc:${gameColor(g.id)}" aria-pressed="${setup.pool.has(g.id)}">${icon(g.sport)}<span>${t(g.titleKey as Key)}</span>${g.beta ? `<span class="beta">${t("u.beta")}</span>` : ""}</button>`).join("")}</div>
+      <div class="party-pool">${visible.map(g => `<button class="chip-btn party-pool-chip" type="button" data-pool="${g.id}" data-tone="${g.id}" style="--gc:${gameColor(g.id)}" aria-pressed="${setup.pool.has(g.id)}">${icon(g.sport)}<span>${t(g.titleKey as Key)}</span>${g.beta ? `<span class="beta">${t("u.betaTag")}</span>` : ""}</button>`).join("")}</div>
       <p class="help">${t("party.poolHint")}</p>
     </section>
     <button class="set-row tap-row tap" data-tv type="button" aria-haspopup="dialog" aria-controls="screenSheet">
@@ -275,9 +273,11 @@ function startSetup() {
 function showDisco() {
   clearTimeout(introTimer);
   const gen = ++introGen;
-  const games = PARTY_GAMES.map((g, i) => {
+  const pool = P?.poolAll?.length ? PARTY_GAMES.filter(g => P!.poolAll.includes(g.id)) : PARTY_GAMES;
+  const n = Math.max(1, pool.length);
+  const games = pool.map((g, i) => {
     const d = Math.max(0, i * 0.19 - i * i * 0.008).toFixed(2);
-    return `<span class="disco-game" style="--a:${i * 36}deg;--d:${d}s;--c:${gameColor(g.id)}">${icon(g.sport)}</span>`;
+    return `<span class="disco-game" style="--a:${(360 / n) * i}deg;--d:${d}s;--c:${gameColor(g.id)}">${icon(g.sport)}</span>`;
   }).join("");
   $("#partyIntroCard").innerHTML = `
     <p class="eyebrow">${t("party.modeTitle")}</p>
@@ -649,8 +649,7 @@ function startLeg() {
   else if (leg.game === "bw") { BOWLING.party?.(cfg); startFlow(BOWLING); }
   else if (leg.game === "sk") { SKI.party?.(cfg); startFlow(SKI); }
   else if (leg.game === "wl") { WALL.party?.(cfg); startFlow(WALL); }
-  else if (leg.game === "bd") { BADMINTON.party?.(cfg); startFlow(BADMINTON); }
-  else if (leg.game === "jv") { JAVELIN.party?.(cfg); startFlow(JAVELIN); }
+  else if (leg.game === "dc") { DANCE.party?.(cfg); startFlow(DANCE); }
   else { cleanupGame(); toast(t("party.needPool")); return; }
   if (partyMirror) setCam(true);
   const mirror = MIRROR[leg.game];

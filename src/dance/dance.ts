@@ -22,10 +22,13 @@ import {mascot,avatar} from "../ui/mascots.ts";
 import {startRec,finishClips,openClips} from "../clips/clips.ts";
 import {highlightSegments} from "../clips/highlight.ts";
 import {screenPhase,setScreenMode} from "../cast/cast.ts";
+import {partyActive,partyLegDone} from "../party/bus.ts";
+import type {PartyLegCfg} from "../party/logic.ts";
 import type {ScreenState} from "../cast/room.ts";
 import {newDance,update,winner,pts,HOLD_PTS,POSE_PTS,type Dance,type Ev,type PoseId} from "./logic.ts";
 
 const NAMES=[tr("p.red"),tr("p.blue")];
+const DEF_NAMES=[...NAMES];
 const READY_S=1.2, BEAT_S=0.7, END_S=1.7;
 const face=(i:number,cls="",mood?:"happy"|"sad")=>`<span class="${cls}">${avatar(i?"b":"r",mood)}</span>`;
 // pose stick figures (64×80 box): head, torso, legs + the pose's arms
@@ -237,7 +240,8 @@ function frame(now:number){
 }
 function startRound(now:number){
   phase="play";t0=now;phaseAt=now;
-  startRec();S.lastRecDrawAt=now;hadRec=!!S.rec;S.t0=now;
+  if(!partyActive())startRec(); // party legs do not record clips
+  S.lastRecDrawAt=now;hadRec=!!S.rec;S.t0=now;
   musicOn();
   screenPhase("play");
 }
@@ -279,6 +283,13 @@ function finishRound(){
   const h=loadHist(),n=G.players,P=G.p.slice(0,n), score=[0,1].map(i=>i<n?pts(G.p[i]):0);
   h.unshift({t:Date.now(),players:n,duration:dur,ex:["dance"],score:[0,0],reps:[0,1].map(i=>i<n?G.p[i].held:0),mode:"dance",pts:score});
   saveHist(h);
+  if(partyActive()){
+    runRoot.classList.add("hide");
+    document.body.classList.remove("dance");
+    screenPhase("done");
+    partyLegDone();
+    return;
+  }
   const top=Math.max(...score.slice(0,n)), newPb=top>0&&top>pb, w=winner(G), head=$("#dcResHead");
   $("#dcResWl").textContent=`${tr("dc.title")} · ${dur} s`;
   if(solo){
@@ -333,7 +344,9 @@ function tvState():Partial<ScreenState>{
 export const DANCE:GameMode={
   start:begin,
   tv:true,
-  reset(){cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call bx-call";musicOff();lastPs=null;
+  party(cfg:PartyLegCfg){S.players=2;dur=30;NAMES[0]=cfg.names[0];NAMES[1]=cfg.names[1]}, // two reps, 30 s series rounds
+  partyMusic:false, // Dance Clash has its own synthesized beat (the freeze depends on it)
+  reset(){NAMES[0]=DEF_NAMES[0];NAMES[1]=DEF_NAMES[1];cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call bx-call";musicOff();lastPs=null;
     setScreenMode(null);screenPhase("idle");delete runRoot.dataset.lead;
     runRoot.classList.add("hide");runRoot.classList.remove("freeze");endRoot.classList.add("hide");document.body.classList.remove("dance")},
   shown:()=>!endRoot.classList.contains("hide"),

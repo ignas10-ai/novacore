@@ -30,11 +30,15 @@ function sweep(p: PartyState) {
 }
 
 describe("party logic", () => {
-  it("has all ten party games with formats and beta flags", () => {
-    expect(PARTY_GAMES.map(g => g.id)).toEqual(["rr", "sp", "bx", "lj", "sk", "wl", "hd", "bw", "bd", "jv"]);
+  it("has nine party games: seven stable plus two beta (alpha games excluded)", () => {
+    expect(PARTY_GAMES.map(g => g.id)).toEqual(["rr", "sp", "bx", "dc", "lj", "sk", "wl", "hd", "bw"]);
     expect(PARTY_GAMES.find(g => g.id === "lj")?.format).toBe("solo");
     expect(PARTY_GAMES.find(g => g.id === "sp")?.format).toBe("duo");
+    expect(PARTY_GAMES.find(g => g.id === "dc")?.format).toBe("duo");
     expect(PARTY_GAMES.find(g => g.id === "bw")?.beta).toBe(true);
+    expect(PARTY_GAMES.find(g => g.id === "hd")?.beta).toBe(true);
+    expect(PARTY_GAMES.find(g => g.id === "bd")).toBeUndefined();
+    expect(PARTY_GAMES.find(g => g.id === "jv")).toBeUndefined();
     expect(PARTY_GAMES.find(g => g.id === "sk")?.beta).toBe(false);
   });
 
@@ -43,7 +47,7 @@ describe("party logic", () => {
     expect(p.teams[0].name).toBe("Raudoni");
     expect(p.teams[1].players[0].name).toBe("Banga");
     expect(p.totals).toEqual([0, 0]);
-    expect(p.pool).toEqual(["rr", "sp", "bx", "lj", "sk", "wl", "hd", "bw", "bd", "jv"]);
+    expect(p.pool).toEqual(["rr", "sp", "bx", "dc", "lj", "sk", "wl", "hd", "bw"]);
     expect(p.poolAll).toEqual(p.pool);
     expect(p.phase).toBe("lobby");
     expect(p.v).toBe(2);
@@ -68,13 +72,13 @@ describe("party logic", () => {
   it("draws without repeats and drains the pool", () => {
     const p = party();
     const seen: string[] = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 9; i++) {
       const leg = drawLeg(p, 0);
       expect(leg).not.toBeNull();
       seen.push(leg!.game);
       p.current = null; // simulate a completed leg without touching the pool
     }
-    expect(new Set(seen).size).toBe(10);
+    expect(new Set(seen).size).toBe(9);
     expect(p.pool).toEqual([]);
     expect(drawLeg(p)).toBeNull();
   });
@@ -83,10 +87,10 @@ describe("party logic", () => {
     const p = party();
     expect(drawLeg(p, 0)?.game).toBe("rr");
     p.current = null;
-    expect(drawLeg(p, 0.999)?.game).toBe("jv");
+    expect(drawLeg(p, 0.999)?.game).toBe("bw");
     p.current = null;
     const mid = party();
-    expect(drawLeg(mid, 0.5)?.game).toBe("wl");
+    expect(drawLeg(mid, 0.5)?.game).toBe("lj");
   });
 
   it("draws a solo game with the current starter and a duo game with starter 0", () => {
@@ -134,6 +138,12 @@ describe("party logic", () => {
     expect(legResult(row({pts: [18, 24]}), "bx", 0).winner).toBe(1);
   });
 
+  it("reads Dance Clash points (higher wins)", () => {
+    expect(legResult(row({pts: [320, 280]}), "dc", 0)).toMatchObject({winner: 0, values: [320, 280], kind: "points"});
+    expect(legResult(row({pts: [180, 240]}), "dc", 0).winner).toBe(1);
+    expect(legResult(row({pts: [200, 200]}), "dc", 0).winner).toBe(-1);
+  });
+
   it("reads sprint times (lower wins, null = DNF)", () => {
     expect(legResult(row({times: [12.34, 12.87]}), "sp", 0).winner).toBe(0);
     expect(legResult(row({times: [12.87, 12.34]}), "sp", 0).winner).toBe(1);
@@ -178,22 +188,6 @@ describe("party logic", () => {
   it("reads bowling totals (higher wins)", () => {
     expect(legResult(row({bwTotals: [120, 140]}), "bw", 0)).toMatchObject({winner: 1, values: [120, 140], kind: "pins"});
     expect(legResult(row({bwTotals: [90, 90]}), "bw", 0).winner).toBe(-1);
-  });
-
-  it("reads badminton points", () => {
-    expect(legResult(row({bdScore: [11, 7]}), "bd", 0)).toMatchObject({winner: 0, values: [11, 7], kind: "points"});
-    expect(legResult(row({bdScore: [9, 11]}), "bd", 0).winner).toBe(1);
-  });
-
-  it("reads javelin totals, then the best throw and the solo team mapping", () => {
-    const r = row({throws: [[60, 50, null], [55, 45, null]]});
-    expect(legResult(r, "jv", 0)).toMatchObject({winner: 0, values: [110, 100], kind: "metres"});
-    const tie = row({throws: [[60, 50, null], [55, 55, null]]});
-    expect(legResult(tie, "jv", 0).winner).toBe(0);
-    const mapped = legResult(tie, "jv", 1);
-    expect(mapped.values).toEqual([110, 110]);
-    expect(mapped.winner).toBe(1);
-    expect(legResult(row({throws: [[null, null], [null, null]]}), "jv", 0).winner).toBe(-1);
   });
 
   it("best-of-3: a round win keeps the series alive, two wins take the leg", () => {

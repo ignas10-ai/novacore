@@ -101,13 +101,14 @@ test("Profilis: XP, trophies, settings, history and nickname",async({page},info)
   await expect(page.locator("#profNick")).toContainText("Rūta");
 });
 
-test("Rungtys: unique sport rows, BETA games at the back",async({page})=>{
+test("Rungtys: unique sport rows, BETA then ALPHA at the back",async({page})=>{
   await page.goto("/#/rungtys");
   await screen(page,"rungtys").toBeVisible();
-  const rows=await page.locator("#games .sp-tile").evaluateAll(nodes=>nodes.map(n=>({g:(n as HTMLElement).dataset.g,beta:(n as HTMLElement).dataset.beta,idx:n.querySelector(".game-idx")?.textContent,icon:!!n.querySelector(".game-art svg")})));
+  const rows=await page.locator("#games .sp-tile").evaluateAll(nodes=>nodes.map(n=>({g:(n as HTMLElement).dataset.g,beta:(n as HTMLElement).dataset.beta,alpha:(n as HTMLElement).dataset.alpha,idx:n.querySelector(".game-idx")?.textContent,icon:!!n.querySelector(".game-art svg")})));
   expect(rows).toHaveLength(11);
   expect(rows.every(r=>r.icon&&/^\d{2}$/.test(r.idx||""))).toBe(true);
-  expect(rows.map(r=>r.beta)).toEqual(["false","false","false","false","false","false","false","true","true","true","true"]);
+  expect(rows.map(r=>r.beta)).toEqual([...Array(7).fill("false"),"true","true","false","false"]);
+  expect(rows.map(r=>r.alpha)).toEqual([...Array(9).fill("false"),"true","true"]);
   expect(rows.slice(7).map(r=>r.g)).toEqual(["hd","bw","bd","jv"]);
 });
 test("setup: exercise picker keeps at least one exercise",async({page},info)=>{
