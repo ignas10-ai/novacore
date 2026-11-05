@@ -9,6 +9,9 @@ export const SCREEN_BC="novacore-screen"; // BroadcastChannel between tabs of th
 export const SCREEN_CHANNEL="novacore-screen-"; // Supabase Realtime topic for a room (across devices)
 
 export type ScreenPhase="idle"|"ready"|"play"|"done";
+// Šokių kova (src/dance): the phone sends the movement energy per player and the freeze state, so the TV board can
+// draw the energy bars and the big STOP screen. Missing on every other game (and on older phones) -> undefined/false.
+export type DancePose="up"|"plane"|"hips";
 export interface ScreenState{
   v:1;
   code:string;
@@ -25,6 +28,9 @@ export interface ScreenState{
   cam:boolean; // the phone's camera-per-TV option (the video itself goes over WebRTC)
   sent:number; // Date.now() on the phone (debug only; receivers use their own clock)
   lang:"lt"|"en"; // the phone's language: the TV board follows it (older phones send none -> "lt")
+  energy?:[number,number]; // dance: 0..1 movement energy (the live meter under each score)
+  stop?:boolean; // dance: the music stopped, freeze!
+  pose?:DancePose|null; // dance: the requested pose during this freeze (every 3rd one)
 }
 
 export function makeCode(rand:()=>number=Math.random){
@@ -49,6 +55,10 @@ const int=(v:unknown,min=0,max=99999)=>{
   const n=Math.floor(Number(v));
   return Number.isFinite(n)?Math.min(max,Math.max(min,n)):min;
 };
+const unit=(v:unknown)=>{
+  const n=Number(v);
+  return Number.isFinite(n)?Math.min(1,Math.max(0,n)):0;
+};
 // Never trust a broadcast payload: clamp everything the scoreboard renders.
 export function readState(raw:any):ScreenState|null{
   if(!raw||raw.v!==1||typeof raw.code!=="string")return null;
@@ -57,6 +67,8 @@ export function readState(raw:any):ScreenState|null{
   const players:1|2=raw.players===1?1:2;
   const duration=int(raw.duration,1,1800);
   const score:[number,number]=[int(raw.score?.[0],0,9999),int(raw.score?.[1],0,9999)];
+  const energy: [number,number]|undefined=Array.isArray(raw.energy)?[unit(raw.energy[0]),unit(raw.energy[1])]:undefined;
+  const pose: DancePose|null=raw.pose==="up"||raw.pose==="plane"||raw.pose==="hips"?raw.pose:null;
   // exercise ids end up in a CSS selector (coachSvg): only the app's own a-Z0-9-_ shape is accepted
   const exId=raw.ex&&typeof raw.ex.id==="string"&&/^[a-z0-9_-]{1,24}$/i.test(raw.ex.id)?raw.ex.id:null;
   const ex=exId&&typeof raw.ex.name==="string"?{id:exId,name:raw.ex.name.slice(0,40)}:null;
@@ -76,5 +88,8 @@ export function readState(raw:any):ScreenState|null{
     cam:!!raw.cam,
     sent:Number(raw.sent)||0,
     lang:raw.lang==="en"?"en":"lt",
+    ...(energy?{energy}:{}),
+    stop:raw.stop===true,
+    pose,
   };
 }

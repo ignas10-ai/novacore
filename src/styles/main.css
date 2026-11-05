@@ -1211,7 +1211,7 @@ body[data-view="screen"] .tabbar,body[data-view="screen"] .fs{display:none}
 #screen .bs-waiting{font-size:clamp(14px,2vmin,22px);font-weight:800;color:var(--fg-mute)}
 #screen .bs-waiting b{color:var(--yellow);letter-spacing:.14em}
 
-#screen .bs-game{grid-row:2;display:none;min-height:0;grid-template-rows:minmax(0,1fr) auto auto;align-content:center;gap:clamp(8px,1.6vmin,20px)}
+#screen .bs-game{grid-row:2;position:relative;display:none;min-height:0;grid-template-rows:minmax(0,1fr) auto auto;align-content:center;gap:clamp(8px,1.6vmin,20px)}
 #screen[data-phase="ready"] .bs-wait,#screen[data-phase="play"] .bs-wait,#screen[data-phase="done"] .bs-wait{display:none}
 #screen[data-phase="ready"] .bs-game,#screen[data-phase="play"] .bs-game,#screen[data-phase="done"] .bs-game{display:grid}
 #screen .bs-stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr) minmax(0,1fr);align-items:stretch;gap:clamp(8px,1.8vmin,26px);min-height:0}
@@ -1258,6 +1258,19 @@ body[data-view="screen"] .tabbar,body[data-view="screen"] .fs{display:none}
 #screen .bs-code b{color:var(--yellow);letter-spacing:.2em;font-size:1.3em}
 #screen[data-players="1"] #bsSide2{display:none}
 #screen[data-players="1"] .bs-stage{grid-template-columns:1fr 1.08fr}
+/* Šokių kova (src/dance): live movement energy under each score, and the STOP! overlay while the music is off */
+#screen .bs-energy{display:none;width:min(72%,300px);height:clamp(8px,1.2vmin,16px);border:3px solid #070920;border-radius:var(--r-pill);background:var(--cam-surface-2);overflow:hidden;box-shadow:0 2px 0 #070920}
+#screen[data-dance="1"] .bs-energy{display:block}
+#screen .bs-energy i{display:block;height:100%;width:100%;border-radius:inherit;background:var(--p1);transform-origin:left;transform:scaleX(0);transition:transform 120ms linear}
+#screen .bs-side.p2 .bs-energy i{background:var(--p2);transform-origin:right}
+#screen .bs-stop{position:absolute;inset:0;z-index:6;display:grid;place-items:center;align-content:center;gap:clamp(4px,1.2vmin,16px);padding:4vmin;border-radius:24px;
+  background:color-mix(in srgb,var(--cam-bg) 74%,transparent);backdrop-filter:blur(3px);text-align:center}
+#screen .bs-stop[hidden]{display:none}
+#screen .bs-stop b{font-size:clamp(84px,22vmin,300px);line-height:.9;color:var(--yellow);letter-spacing:.02em;text-shadow:0 8px 0 #070920;animation:bs-stop-in 520ms var(--ease-bounce) both}
+#screen .bs-stop-sub{font:900 clamp(22px,5vmin,64px)/1.1 var(--body);color:#fff;text-transform:uppercase;letter-spacing:.08em}
+#screen .bs-stop-pose{padding:.35em 1em .3em;border:3px solid #fff;border-radius:var(--r-pill);background:var(--yellow);color:var(--ink);font:400 clamp(20px,4vmin,52px)/1.1 var(--disp);text-transform:uppercase}
+#screen .bs-stop-pose[hidden]{display:none}
+@keyframes bs-stop-in{0%{scale:.72;opacity:0}60%{scale:1.08;opacity:1}100%{scale:1}}
 /* camera mode: the phone canvas fills the TV, the HUD moves to the top edge so the players stay visible */
 #screen[data-cam="1"] .bs-stage{align-items:start;align-content:start}
 #screen[data-cam="1"] .bs-side{background:color-mix(in srgb,var(--cam-surface) 82%,transparent);padding-block:clamp(6px,1.2vmin,16px)}

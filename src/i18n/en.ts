@@ -429,7 +429,7 @@ export const en:Record<Key,string>={
   "trophy.week5":"Weekly rhythm",
   "trophy.week5D":"Play 5 games in one week",
   "trophy.allModes":"All-round champion",
-  "trophy.allModesD":"Try all 10 games",
+  "trophy.allModesD":"Try all 11 games",
   "trophy.mode.rr":"Rep Marathon",
   "trophy.mode.sprint":"100 m Sprint",
   "trophy.mode.boxing":"Boxing",
@@ -1204,4 +1204,6 @@ export const en:Record<Key,string>={
   "dc.posesN":"poses: {n}",
   "dc.clipSub":"Best moves",
   "hist.dance":"Dance Clash · {mode} · {n} s",
+  "tv.danceFreeze":"Freezes: {n}",
+  "tv.danceHeld":"Freezes held: {n}",
 };

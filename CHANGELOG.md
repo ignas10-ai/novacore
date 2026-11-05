@@ -1,5 +1,11 @@
 # Pakeitimų žurnalas
 
+## 2026-11-05 — Šokių kova per didelį ekraną (šaka `martynas/69-dance-tv`)
+
+- **TV lenta (`src/cast/`):** `#/sokiai` nustatymų antraštėje atsirado didelio ekrano mygtukas (`[data-tv]`); `DANCE` dabar `GameMode.tv` ir publikuoja `ScreenState.energy` / `stop` / `pose` (nauji neprivalomi laukai – senesni telefonai jų nesiunčia, TV juos atspindi tik gavęs). TV rodo judėjimo energijos juostas po rezultatais ir didelį **„STOP!“** ekraną su sustingimo poza, o rezultatuose – „Išlaikyta sustingimų: n“. `readState()` riboja energiją 0..1 ir leidžia tik `up|plane|hips` pozas.
+- **Trofėjų tekstas:** „Visų rungčių čempionas“ dabar prašo išbandyti **11** rungčių (atsirado Šokių kova; buvo 10).
+- **Testai:** `test-cast.cjs` (energijos/STOP/pozų ribos) + `test/e2e/dance-tv.spec.ts` (telefonas → TV per BroadcastChannel: ready → gyva energija → STOP → rezultatai). `AGENTS.md` TV skyrius papildytas.
+
 ## 2026-11-05 — Šokių kova: šok ir sustink (šaka `claude/dance-freeze`)
 
 - **Nauja rungtis `#/sokiai`** (`src/dance/`): groja ritmas – šok, taškai už judesio kiekį (riešų, alkūnių, klubų, kelių, kulkšnių greitis kūno vienetais, išlygintas ir apribotas iki 20 tšk./s); muzika netikėtai nutyla kas 4–8 s – **SUSTINK** 2,5 s: pajudėjai po 0,8 s = −20, išlaikei = +30, kas 3-ias sustingimas su poza (Rankos aukštyn / Lėktuvas / Rankos ant klubų) = +50. 1–2 žaidėjai (kairė/dešinė pusė kaip bokse), 60 s / 30 s, pasiruošimo vartai, istorija (`mode:"dance"`), trofėjai, klipas, „Žaisti dar kartą".
