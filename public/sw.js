@@ -1,8 +1,8 @@
 // NovaCore service worker. Bump VERSION whenever the icons or this file's logic change in a way that must reach
 // installed phones immediately; old caches are deleted on activate.
-const VERSION="novacore-v9"; // v9: cache the party-mode background music too
+const VERSION="novacore-v10"; // v10: new MoveClash logo icons
 const PRECACHE=`${VERSION}-pre`, RUNTIME=`${VERSION}-rt`;
-const APP=["./","./index.html","./manifest.webmanifest","./pose-samples.json","./icons/icon-192.png","./icons/icon-512.png","./icons/maskable-512.png"];
+const APP=["./","./index.html","./manifest.webmanifest","./pose-samples.json","./icons/icon-192.png","./icons/icon-512.png","./icons/maskable-512.png","./icons/favicon-48.png"];
 // MediaPipe wasm/model + fonts: network first, fall back to the last good copy so the game still loads offline
 const RUNTIME_HOSTS=["cdn.jsdelivr.net","storage.googleapis.com","fonts.googleapis.com","fonts.gstatic.com"];
 // Vite build output: content-hashed names under /assets/ never change, so cache-first is safe.
