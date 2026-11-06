@@ -38,6 +38,17 @@ describe("dance points",()=>{
     expect(pts(g.p[1])).toBeGreaterThan(20);
     expect(pts(g.p[1])).toBeLessThanOrEqual(4*20);
   });
+  it("still counts movement when detections arrive at ~2 fps (slow software WebGL)",()=>{
+    // The CI runner's main-thread detector can take >0.3 s per pose; that used to zero the energy (MAX_DT 0.3) and
+    // left the Dance Clash TV bar empty. MAX_DT is now 0.5 s, still below LOST_S.
+    const g=newDance(1,1,60,rngFrom(7));
+    let t=0;
+    for(let k=0;k<8;k++){
+      update(g,t,[body(0.5,0.3,0.15,{wig:k%2?0.03:-0.03})]);
+      if(k>2)expect(g.p[0].energy).toBeGreaterThan(0.25);
+      t+=0.45;
+    }
+  });
   it("players only score from their own half",()=>{
     const g=newDance(2,1,60,rngFrom(2));
     run(g,0,3,[0.03,0]);

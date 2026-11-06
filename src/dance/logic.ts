@@ -15,7 +15,7 @@ export const JOINTS=[13,14,15,16,23,24,25,26,27,28]; // elbows, wrists, hips, kn
 // ponytail: thresholds are calibration knobs measured on stock clips; tune on a real phone if freezes feel unfair
 export const NOISE=2, FULL=10;          // u/s summed over JOINTS: below NOISE = standing, FULL = dancing hard
 export const STILL=5;                   // u/s: above this during a freeze = "Pajudėjai!"
-export const TAU=0.15, MAX_DT=0.3;      // s: motion smoothing, older samples are not used
+export const TAU=0.15, MAX_DT=0.5;      // s: motion smoothing; 0.5 keeps ~2 fps detections (slow software WebGL) counting, still below LOST_S
 export const DANCE_PPS=20, HOLD_PTS=30, POSE_PTS=50, MOVED_PTS=-20;
 export const FREEZE_S=2.5, GRACE_S=0.8, FREEZE_MIN=4, FREEZE_MAX=8, FIRST_FREEZE=5, POSE_EVERY=3, LOST_S=0.6;
 
