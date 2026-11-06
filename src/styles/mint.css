@@ -778,3 +778,9 @@ body.ingame .charge{display:none}
 @keyframes alpha-pop{0%,100%{scale:1;rotate:1.5deg}50%{scale:1.045;rotate:-1deg}}
 .gal-alpha{flex:none;display:inline-flex;align-items:center;min-height:26px;padding:0 9px;border:1.5px solid var(--ink);border-radius:9px;background:linear-gradient(135deg,#8FD8FF 0%,#B7AEFF 100%);color:var(--ink);font:800 10.5px/1 var(--body);letter-spacing:.1em;box-shadow:0 2px 0 color-mix(in srgb,var(--ink) 34%,transparent);rotate:1.5deg}
 @media (max-width:370px){.sp-alpha{font-size:10px;min-height:24px;padding:0 7px 0 5px;margin-left:5px}}
+
+/* 11-06: MoveClash logo (symbol + wordmark) in the home header and the TV screen */
+.wordmark::before{content:"";width:1.24em;height:1em;margin-right:.3em;background:url(/icons/logo-mark.png) 50% 50%/contain no-repeat;align-self:center}
+.wordmark::after{display:none}
+.wordmark{align-items:center}
+#home .nav .wordmark{display:inline-flex;position:absolute;left:62px;top:50%;transform:translateY(-50%);font-size:19px;pointer-events:none}
