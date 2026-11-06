@@ -366,6 +366,7 @@ function runDraw(leg: PartyLeg, poolBefore: string[], after: () => void) {
   const card = (id: string) => `<span class="draw-card" style="--c:${gameColor(id)}">${icon(partyGame(id)?.sport ?? "")}<b>${gameTitle(id)}</b></span>`;
   const cards = (arr: string[]) => arr.map(card).join("");
   let revealAt = 5600;
+  let animate: (() => void) | null = null;
 
   if (mode === "case") {
     const cycles = 5, cardW = 112, gap = 8;
@@ -378,11 +379,12 @@ function runDraw(leg: PartyLeg, poolBefore: string[], after: () => void) {
     </div>`;
     const reel = $<HTMLElement>("#drawReel");
     const box = stage.querySelector<HTMLElement>(".draw-reel-box")!;
-    reel.style.transitionDuration = "5200ms";
-    requestAnimationFrame(() => {
+    animate = () => {
+      reel.style.transitionDuration = "5200ms";
+      void reel.offsetWidth;
       const x = targetIndex * (cardW + gap) + cardW / 2 - box.clientWidth / 2;
       reel.style.transform = `translateX(${-x}px)`;
-    });
+    };
     revealAt = 5700;
   } else if (mode === "race") {
     stage.innerHTML = `<div class="draw-race">
@@ -391,19 +393,23 @@ function runDraw(leg: PartyLeg, poolBefore: string[], after: () => void) {
       <div class="draw-reveal" id="drawReveal"></div>
     </div>`;
     const lanes = [...stage.querySelectorAll<HTMLElement>(".draw-lane")];
-    requestAnimationFrame(() => {
+    animate = () => {
       lanes.forEach((lane, i) => {
         const ball = lane.querySelector<HTMLElement>(".draw-ball")!;
         const win = i === chosen;
         const delay = win ? 0 : 180 + Math.random() * 500;
         const dur = win ? 5000 : 5300 + Math.random() * 500;
         const end = win ? 100 : 80 + Math.random() * 15;
+        ball.style.transition = "none";
+        ball.style.left = "0%";
+        void ball.offsetWidth;
         ball.style.transition = `left ${dur}ms cubic-bezier(.12,.75,.22,1) ${delay}ms`;
+        void ball.offsetWidth;
         ball.style.left = `${end}%`;
         if (!win) lane.classList.add("loser");
       });
       lanes[chosen]?.classList.add("winner");
-    });
+    };
     revealAt = 5800;
   } else if (mode === "roulette") {
     const wheelGradient = poolBefore.map((id, i) => `${gameColor(id)} ${i * seg}deg ${(i + 1) * seg}deg`).join(",");
@@ -420,8 +426,11 @@ function runDraw(leg: PartyLeg, poolBefore: string[], after: () => void) {
     </div>`;
     const wheel = $<HTMLElement>("#drawWheel");
     const target = chosen * seg + seg / 2;
-    wheel.style.transition = "transform 5200ms cubic-bezier(.08,.8,.2,1)";
-    requestAnimationFrame(() => { wheel.style.transform = `rotate(${360 * 4 - target}deg)`; });
+    animate = () => {
+      wheel.style.transition = "transform 5200ms cubic-bezier(.08,.8,.2,1)";
+      void wheel.offsetWidth;
+      wheel.style.transform = `rotate(${360 * 4 - target}deg)`;
+    };
     revealAt = 5700;
   } else if (mode === "slots") {
     const strip = (col: number) => {
@@ -434,16 +443,19 @@ function runDraw(leg: PartyLeg, poolBefore: string[], after: () => void) {
       <div class="slot-machine">${strip(0)}${strip(1)}${strip(2)}<i class="slot-payline" aria-hidden="true"></i><i class="slot-jackpot" aria-hidden="true">${icon("sparkle")}</i></div>
       <div class="draw-reveal" id="drawReveal"></div>
     </div>`;
-    [0, 1, 2].forEach((col) => {
-      const el = $<HTMLElement>(`#slotStrip${col}`);
-      const target = Number(el.dataset.target);
-      const start = Math.floor(Math.random() * Math.max(1, n - 1));
-      el.style.transition = "none";
-      el.style.transform = `translateY(${-start * 66}px)`;
-      void el.offsetHeight;
-      el.style.transition = `transform ${4300 + col * 450}ms cubic-bezier(.08,.8,.2,1)`;
-      requestAnimationFrame(() => { el.style.transform = `translateY(${-(target - 1) * 66}px)`; });
-    });
+    animate = () => {
+      [0, 1, 2].forEach((col) => {
+        const el = $<HTMLElement>(`#slotStrip${col}`);
+        const target = Number(el.dataset.target);
+        const start = Math.floor(Math.random() * Math.max(1, n - 1));
+        el.style.transition = "none";
+        el.style.transform = `translateY(${-start * 66}px)`;
+        void el.offsetHeight;
+        el.style.transition = `transform ${4300 + col * 450}ms cubic-bezier(.08,.8,.2,1)`;
+        void el.offsetHeight;
+        el.style.transform = `translateY(${-(target - 1) * 66}px)`;
+      });
+    };
     revealAt = 5800;
   } else if (mode === "dart") {
     const angle = chosen * seg + seg / 2 - 90;
@@ -464,19 +476,23 @@ function runDraw(leg: PartyLeg, poolBefore: string[], after: () => void) {
       <div class="draw-reveal" id="drawReveal"></div>
     </div>`;
     const dart = $<HTMLElement>("#dartNeedle");
-    dart.style.left = "50%";
-    dart.style.top = "96%";
-    requestAnimationFrame(() => {
+    animate = () => {
+      dart.style.transition = "none";
+      dart.style.left = "50%";
+      dart.style.top = "96%";
+      dart.style.rotate = "0deg";
+      void dart.offsetWidth;
       dart.style.transition = "left 5100ms cubic-bezier(.2,.8,.2,1),top 5100ms cubic-bezier(.2,.8,.2,1),rotate 5100ms ease-in";
+      void dart.offsetWidth;
       dart.style.left = `${tx}%`;
       dart.style.top = `${ty}%`;
       dart.style.rotate = `${angle + 180}deg`;
-    });
+    };
     window.setTimeout(() => {
       if (gen !== drawGen) return;
       stage.querySelector(`.dart-spot[data-i="${chosen}"]`)?.classList.add("hit");
       $("#dartHit")?.classList.add("on");
-    }, 5000);
+    }, 5300);
     revealAt = 5700;
   } else {
     const spread = 9;
@@ -488,13 +504,17 @@ function runDraw(leg: PartyLeg, poolBefore: string[], after: () => void) {
       <div class="draw-reveal" id="drawReveal"></div>
     </div>`;
     const fanCards = [...stage.querySelectorAll<HTMLElement>(".fan-card")];
-    fanCards.forEach((c, i) => {
-      const rot = (i - (n - 1) / 2) * spread;
-      c.style.transition = `transform 5200ms cubic-bezier(.12,.75,.22,1), opacity 600ms`;
-      requestAnimationFrame(() => {
+    animate = () => {
+      fanCards.forEach((c, i) => {
+        const rot = (i - (n - 1) / 2) * spread;
+        c.style.transition = "none";
+        c.style.transform = "rotate(0deg)";
+        void c.offsetWidth;
+        c.style.transition = `transform 5200ms cubic-bezier(.12,.75,.22,1), opacity 600ms`;
+        void c.offsetWidth;
         c.style.transform = `rotate(${rot}deg) translateY(${Math.abs(i - (n - 1) / 2) * 5}px)`;
       });
-    });
+    };
     window.setTimeout(() => {
       if (gen !== drawGen) return;
       fanCards.forEach((c, i) => {
@@ -508,6 +528,11 @@ function runDraw(leg: PartyLeg, poolBefore: string[], after: () => void) {
   const el = $("#partyDraw");
   el.classList.remove("hide");
   fillIcons(el);
+  // Start the mode's animation only after the overlay is visible and its initial styles are computed.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (gen !== drawGen) return;
+    animate?.();
+  }));
   window.setTimeout(() => {
     if (gen !== drawGen) return;
     const r = $("#drawReveal");
