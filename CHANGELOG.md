@@ -1,5 +1,10 @@
 # Pakeitimų žurnalas
 
+## 2026-11-06 — Vakarėlio traukimo animacijų pataisymas
+
+- **Visos 6 traukimo animacijos juda:** animacijos dabar paleidžiamos **po to**, kai `#partyDraw` overlay jau matomas ir pradiniai stiliai apskaičiuoti (`requestAnimationFrame` × 2 + forced reflow). Anksčiau tik CS:GO karuselė riedėjo, o marmuro lenktynės, ruletė, slotai, smiginys ir kortų fanas tiesiog šokdavo į galinę būseną, nes inline `transition` ir tikslinis `transform` būdavo nustatomi tame pačiame kadre, dar esant paslėptam overlay'ui.
+- Patikrinta realiame Chromium: visi 6 režimai `MOVING` (transform/left/rotate keičiasi tarp 0,3 s ir 1,5 s). `npm test` 536/536.
+
 ## 2026-11-06 — Našumas: MediaPipe pozų atpažinimas į Web Worker (#73, šaka `claude/73-perf-workers`)
 
 - **Pozų atpažinimas nebe blokuoja pagrindinio thread'o.** `PoseLandmarker.detectForVideo()` perkeltas į atskirą Web Worker'į (`src/camera/pose-worker.ts`) su savo core'u: į jį siunčiamas tik 640 px `ImageBitmap` (OffscreenCanvas), atgal grįžta landmark'ai. Anksčiau sinchroninis 30–100 ms `detectForVideo()` vykdavo žaidimo `requestAnimationFrame` cikle, todėl telefone krisdavo fps (ypač 2 žaidėjams). Headless testas: worker ~47 fps vs senas kelias ~29 fps tame pačiame 3 s lange (detektorius abiem atvejais 70–90 ms, swiftshader).
