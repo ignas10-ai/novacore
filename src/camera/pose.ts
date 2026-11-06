@@ -38,14 +38,36 @@ const pendingRpc=new Map<number,{ok:(engine:string)=>void;fail:(e:Error)=>void}>
 
 const errText=(e:unknown)=>String((e as Error)?.message??e);
 
-// ---------- worker lifecycle ----------
-// ?posemode=main forces the old main-thread path (e2e fallback test / a phone with a broken worker); it never
-// forces the worker on a device that cannot run one.
-function forcedMain(){
-  try{return new URLSearchParams(location.search).get("posemode")==="main"}catch(e){return false}
+// ?posemode=main|worker: main forces the old path (fallback test), worker forces the off-thread path even on a
+// software GL renderer (the perf spec). Real games on a software renderer (headless CI, llvmpipe) use the main
+// thread automatically: there a worker GPU context is slower per frame than the old path, while phones' hardware
+// GPUs benefit from the worker.
+function forcedMode(): "main"|"worker"|null{
+  try{
+    const v=new URLSearchParams(location.search).get("posemode");
+    return v==="main"||v==="worker"?v:null;
+  }catch(e){
+    return null;
+  }
 }
+let software:boolean|null=null;
+function isSoftwareRenderer(){
+  if(software!=null)return software;
+  try{
+    const c=document.createElement("canvas");
+    const gl=c.getContext("webgl2")||c.getContext("webgl");
+    if(!gl)return software=false;
+    const ext=gl.getExtension("WEBGL_debug_renderer_info");
+    const renderer=ext?String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)):"";
+    return software=/swiftshader|llvmpipe|software|basic render/i.test(renderer);
+  }catch(e){
+    return software=false;
+  }
+}
+
+// ---------- worker lifecycle ----------
 function canWorker(){
-  if(forcedMain()||typeof Worker==="undefined"||typeof OffscreenCanvas==="undefined")return false;
+  if(typeof Worker==="undefined"||typeof OffscreenCanvas==="undefined")return false;
   try{
     const c=new OffscreenCanvas(2,2);
     return !!c.getContext("2d")&&typeof c.transferToImageBitmap==="function";
@@ -206,7 +228,8 @@ export async function ensureModel(numPoses:number){
 }
 
 async function start(n:number){
-  if(canWorker()){
+  const forced=forcedMode();
+  if(forced!=="main"&&(forced==="worker"||!isSoftwareRenderer())&&canWorker()){
     starting=true;
     try{
       worker=makeWorker();
@@ -226,7 +249,7 @@ async function start(n:number){
     }
   }
   await initMainAndUse(n);
-  console.info("MoveClash pose: main thread fallback");
+  console.info(`MoveClash pose: main thread fallback${isSoftwareRenderer()?" (software GL)":""}`);
 }
 
 /** Hand the newest camera frame to the engine. Throttled and non-blocking in worker mode. */
@@ -303,7 +326,7 @@ export function resetTracking(){
 }
 
 export function poseStats(){
-  return {mode:poseMode,engine:poseEngine,detectMs:Math.round(cost*10)/10,results,errors,sent,pending,detectGap:Math.round(gap)};
+  return {mode:poseMode,engine:poseEngine,software:isSoftwareRenderer(),detectMs:Math.round(cost*10)/10,results,errors,sent,pending,detectGap:Math.round(gap)};
 }
 
 // Diagnostics hook for the e2e perf spec and real-phone checks: window.__pose.stats()
