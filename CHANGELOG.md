@@ -1,5 +1,14 @@
 # Pakeitimų žurnalas
 
+## 2026-11-06 — Našumas: MediaPipe pozų atpažinimas į Web Worker (#73, šaka `claude/73-perf-workers`)
+
+- **Pozų atpažinimas nebe blokuoja pagrindinio thread'o.** `PoseLandmarker.detectForVideo()` perkeltas į atskirą Web Worker'į (`src/camera/pose-worker.ts`) su savo core'u: į jį siunčiamas tik 640 px `ImageBitmap` (OffscreenCanvas), atgal grįžta landmark'ai. Anksčiau sinchroninis 30–100 ms `detectForVideo()` vykdavo žaidimo `requestAnimationFrame` cikle, todėl telefone krisdavo fps (ypač 2 žaidėjams). Headless testas: worker ~47 fps vs senas kelias ~29 fps tame pačiame 3 s lange (detektorius abiem atvejais 70–90 ms, swiftshader).
+- **Fallback išsaugotas:** jei worker'is neįsikuria (senas iOS/Safari/WebView be OffscreenCanvas WebGL, GPU/CPU klaida), automatiškai naudojamas senas main-thread kelias; jei worker'is miršta žaidimo metu, jis tyliai perjungiamas atgal. `?posemode=main` – priverstinis fallback testams.
+- **Pigesnis kameros kelias:** matomas `#cv` canvas apribotas iki **1280 px** ilgosios kraštinės (buvo visas 1920×1080), detekcijos kopija – iki **640 px** (buvo 1280; MediaPipe modelio įėjimas vis tiek 256×256). Įrašymo canvas (`recCv`) lieka kameros raiškoje, todėl klipai nepasikeitė. Bokso / Sienos overlay'ų dydis išlieka toks pat (405×720 portrete, 1280×720 gulsčiai).
+- **Modelis lieka šiltas** tarp žaidimų (`setOptions({numPoses})` vietoj `close()`), po 2 min be žaidimo atlaisvinamas. `@mediapipe/tasks-vision` nebepatenka į pagrindinį bundle'ą – įkeliamas worker'yje arba atskirame fallback chunk'e (`vision_bundle`).
+- **Diagnostika telefone:** `window.__pose.stats()` (mode, engine, detectMs, results, errors, detectGap) ir `window.__cam.stats()` (display/video dydžiai + pose stats).
+- **Testai:** `test/unit/camera-sizes.test.ts` (7), `test/e2e/perf.spec.ts` (worker mode + landmarkai + priverstinis main fallback). `npm test` 536/536, `npx tsc --noEmit`, abu perf testai žali.
+
 ## 2026-11-06 — Alfa žymos + Dance Clash vakarėlyje
 
 - **Badmintonas ir Ietis: BETA → ALPHA.** Rungtyse ir galerijose jos turi atskirą **mėlynai alyvinį ALPHA lipduką** (`.sp-alpha` / `.gal-alpha`), o sporto lentynoje rikiuojamos **žemiau BETA**: stabilūs → BETA → ALPHA. `GAME.bd/jv` dabar `alpha:true` (ne beta), `home.ts` ir `gallery.ts` palaiko abi būsenas.

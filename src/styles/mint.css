@@ -29,7 +29,10 @@
 html,body{background:var(--bg)}
 /* ---------- zen ambient: slow blurred colour spots behind every app screen ---------- */
 .zen-bg{position:fixed;inset:0;z-index:1;background:var(--bg);overflow:hidden;pointer-events:none;contain:strict}
-.zen-bg i{position:absolute;display:block;width:74vmax;height:74vmax;border-radius:50%;opacity:.32;filter:blur(46px);mix-blend-mode:multiply;will-change:transform;animation:zen-blob 30s var(--ease-ui) infinite alternate}
+/* The radial gradient is already soft: the old 46 px blur on four 74vmax layers plus mix-blend-mode forced a
+   full-screen re-raster/off-screen pass on every frame (idle lag on phones even outside a game). Plain gradients
+   look the same, cost one raster. */
+.zen-bg i{position:absolute;display:block;width:74vmax;height:74vmax;border-radius:50%;opacity:.26;will-change:transform;animation:zen-blob 30s var(--ease-ui) infinite alternate}
 .zen-bg i:nth-child(1){left:-34vmax;top:-25vmax;background:radial-gradient(circle at 50% 50%,#8DE8CA 0,transparent 68%);animation-duration:27s}
 .zen-bg i:nth-child(2){right:-38vmax;top:14vmax;background:radial-gradient(circle at 50% 50%,#8FD8FF 0,transparent 66%);animation-duration:36s;animation-delay:-9s}
 .zen-bg i:nth-child(3){left:-12vmax;bottom:-45vmax;background:radial-gradient(circle at 50% 50%,#FFD66B 0,transparent 64%);animation-duration:41s;animation-delay:-17s}
@@ -778,3 +781,13 @@ body.ingame .charge{display:none}
 @keyframes alpha-pop{0%,100%{scale:1;rotate:1.5deg}50%{scale:1.045;rotate:-1deg}}
 .gal-alpha{flex:none;display:inline-flex;align-items:center;min-height:26px;padding:0 9px;border:1.5px solid var(--ink);border-radius:9px;background:linear-gradient(135deg,#8FD8FF 0%,#B7AEFF 100%);color:var(--ink);font:800 10.5px/1 var(--body);letter-spacing:.1em;box-shadow:0 2px 0 color-mix(in srgb,var(--ink) 34%,transparent);rotate:1.5deg}
 @media (max-width:370px){.sp-alpha{font-size:10px;min-height:24px;padding:0 7px 0 5px;margin-left:5px}}
+
+/* Phones: the ambient layer stays still and the glass surfaces drop backdrop-filter. A fixed blurred/animated
+   backdrop under a backdrop-filtered tab bar made the compositor re-blur the whole bar every frame (idle lag).
+   Placed last: these rules must win over the base .tabbar / .nav / .prof-hero definitions above. */
+@media (pointer:coarse),(max-width:760px){
+  .zen-bg i{animation:none}
+  .tabbar{background:linear-gradient(180deg,rgba(255,255,255,.94),rgba(255,255,255,.86));backdrop-filter:none;-webkit-backdrop-filter:none}
+  .scrolled>.wrap>.nav,.nav.inline{background:color-mix(in srgb,var(--bg) 96%,transparent);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .prof-hero{background:linear-gradient(160deg,rgba(255,255,255,.97),rgba(255,255,255,.86));backdrop-filter:none;-webkit-backdrop-filter:none}
+}

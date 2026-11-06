@@ -1,22 +1,18 @@
-// Camera + pose inference + drawing. MediaPipe JS is bundled from npm (@mediapipe/tasks-vision, pinned);
-// the wasm and the model still load from the CDN at runtime.
-import {PoseLandmarker, FilesetResolver} from "@mediapipe/tasks-vision";
+// Camera preview + skeleton drawing on the main thread. Pose inference itself lives in pose.ts/pose-worker.ts
+// (its own core); this module only draws the current camera frame at preview resolution and hands a small copy to
+// the engine. The recording canvas stays at the camera's own resolution (clips are unchanged).
 import type {Lm} from "../detect/classifier.ts";
 import {S} from "../game/state.ts";
 import {$} from "../ui/dom.ts";
+import {ensureModel,submit,latestPoses,resetTracking as resetPose,poseStats,type Pose} from "./pose.ts";
+import {displaySize} from "./sizes.ts";
 
-const MP_VERSION="0.10.14"; // keep equal to package.json
-// lite on purpose: on the real-person fixtures `full` was not better overall (tools/README.md, 2026-10-25) and is a 1.6x larger download (9.4 vs 5.8 MB)
-const POSE_MODEL="https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+export {detCv,type Pose} from "./pose.ts";
 
 export const cam=$<HTMLVideoElement>("#cam"), cv=$<HTMLCanvasElement>("#cv"), ctx=cv.getContext("2d",{alpha:false})!;
 // offscreen canvas -> clips contain the raw camera only, no skeleton overlay
 export const recCv=document.createElement("canvas"), recCtx=recCv.getContext("2d",{alpha:false})!;
-// pose inference runs on a smaller copy; the visible canvas keeps the full camera resolution
-export const detCv=document.createElement("canvas"), detCtx=detCv.getContext("2d",{alpha:false})!;
-let landmarker:PoseLandmarker|null=null;
 
-export interface Pose{lm:Lm[];x:number}
 export const camStream=()=>cam.srcObject as MediaStream|null;
 export function stopCamera(){camStream()?.getTracks().forEach(t=>t.stop())}
 
@@ -24,16 +20,13 @@ export function stopCamera(){camStream()?.getTracks().forEach(t=>t.stop())}
 export async function openCamera(){
   const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:60}},audio:false});
   cam.srcObject=stream; await new Promise(r=>cam.onloadedmetadata=r); await cam.play();
-  cv.width=cam.videoWidth; cv.height=cam.videoHeight;
+  sizePreview();
   const track=stream.getVideoTracks()[0],settings=track?.getSettings?.()||{};
   S.camFps=Math.max(1,+(settings.frameRate||0)||30);
   const shortSide=Math.min(cam.videoWidth,cam.videoHeight);
   return shortSide>=1080?"1080p":shortSide>=720?"720p":`${shortSide}p`;
 }
-export async function loadModel(numPoses:number){
-  const fs=await FilesetResolver.forVisionTasks(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/wasm`);
-  landmarker=await PoseLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:POSE_MODEL,delegate:"GPU"},runningMode:"VIDEO",numPoses});
-}
+export async function loadModel(numPoses:number){await ensureModel(numPoses)}
 
 export function readCameraInfo(){
   const track=camStream()?.getVideoTracks?.()[0];
@@ -44,8 +37,19 @@ export function readCameraInfo(){
     fps:Math.max(1,+(settings.frameRate||0)||S.camFps||30)
   };
 }
+
+// The preview canvas never needs the full 1080p/2MP frame: it is letterboxed to the phone screen and the TV stream
+// is capped at 720x1280 anyway. Capping the longest side cuts the per-frame drawImage cost ~3x on a 1080p camera.
+let previewW=0,previewH=0;
+function sizePreview(){
+  const vw=cam.videoWidth,vh=cam.videoHeight;
+  if(vw===previewW&&vh===previewH)return;
+  previewW=vw;previewH=vh;
+  const [w,h]=displaySize(vw,vh);
+  if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h}
+}
 function drawMirrored(target:CanvasRenderingContext2D,targetCanvas:HTMLCanvasElement){
-  target.save();target.translate(targetCanvas.width,0);target.scale(-1,1);target.drawImage(cam,0,0);target.restore();
+  target.save();target.translate(targetCanvas.width,0);target.scale(-1,1);target.drawImage(cam,0,0,targetCanvas.width,targetCanvas.height);target.restore();
 }
 function drawCamera(){drawMirrored(ctx,cv)}
 export function drawRecordFrame(){
@@ -58,46 +62,29 @@ export function drawRecordFrame(){
   recCtx.drawImage(cam,(recCv.width-dw)/2,(recCv.height-dh)/2,dw,dh);
   recCtx.restore();
 }
-function detectFrame(){
-  const sw=cam.videoWidth,sh=cam.videoHeight;
-  const scale=Math.min(1,1280/Math.max(sw,sh));
-  const w=Math.max(2,Math.round(sw*scale)),h=Math.max(2,Math.round(sh*scale));
-  if(detCv.width!==w||detCv.height!==h){detCv.width=w;detCv.height=h}
-  detCtx.drawImage(cam,0,0,w,h);
-  return detCv;
-}
+
 // The camera can deliver up to ~60 new frames/s while a phone screen refreshes at 60-120 Hz.
-// Only work on fresh camera frames, let inference follow the camera rate, and back off on slow devices.
-const DETECT_TARGET=16, DETECT_MAX_GAP=120;
-let lastVideoTime=-1, lastDetectAt=0, detectGap=0, detectCost=0;
-export let lastPoses:Pose[]=[];
+// Draw only fresh camera frames; the pose engine does its own throttling and runs off the main thread.
+let lastVideoTime=-1;
+export let lastPoses:Pose[]=latestPoses;
 export function sampleCamera(now:number):Pose[]|null{
   if(!cam.videoWidth)return null;
   const vt=cam.currentTime;
   if(vt===lastVideoTime)return null; // same frame as last refresh: nothing new to draw or infer
   lastVideoTime=vt;
-  if(cv.width!==cam.videoWidth||cv.height!==cam.videoHeight){cv.width=cam.videoWidth;cv.height=cam.videoHeight}
+  sizePreview();
   drawCamera();
   // record before inference so a slow detection cannot delay the recorder frame
   if(S.rec&&now-S.lastRecDrawAt>=S.recFrameMs){S.lastRecDrawAt=now;drawRecordFrame()}
-  if(now-lastDetectAt<detectGap)return lastPoses;
-  lastDetectAt=now;
-  const started=performance.now();
-  const res=landmarker!.detectForVideo(detectFrame(),now);
-  const cost=performance.now()-started;
-  detectCost=detectCost?detectCost*0.5+cost*0.5:cost;
-  // aim for ~60 fps inference; detection cost widens the gap on slower phones
-  detectGap=Math.max(DETECT_TARGET,Math.min(DETECT_MAX_GAP,detectCost*1.25));
-  const poses=(res.landmarks||[]).map(lm=>({lm,x:1-lm[0].x})).sort((a,b)=>a.x-b.x);
-  if(poses.length>S.players)poses.length=S.players;
-  lastPoses=poses;
-  return poses;
+  submit(cam,now);
+  lastPoses=latestPoses;
+  return lastPoses;
 }
-// back to settings: forget tracking state and free the model
+// back to settings: forget tracking state and (after an idle period) free the model
 export function resetTracking(){
-  lastVideoTime=-1;lastPoses=[];lastDetectAt=0;detectGap=0;detectCost=0;
-  try{landmarker?.close?.()}catch(e){}
-  landmarker=null;
+  lastVideoTime=-1;
+  lastPoses=[];
+  resetPose();
 }
 
 // player colours come from the CSS tokens (--skel-p1/--skel-p2 in src/styles/main.css), read once on the first frame
@@ -114,3 +101,6 @@ export function draw(lm:Lm[],i:number){
   ctx.font=`900 ${Math.round(32*scale)}px Inter,system-ui,sans-serif`;
   ctx.fillText(`P${i+1}`,(1-lm[0].x)*W-18*scale,lm[0].y*H-30*scale);
 }
+
+// diagnostics for the e2e perf spec / a real phone: window.__cam.stats()
+(window as any).__cam={stats:()=>({display:[cv.width,cv.height],video:[cam.videoWidth,cam.videoHeight],...poseStats()})};
