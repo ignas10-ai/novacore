@@ -1182,6 +1182,8 @@ export const lt={
   "party.roundN":"Raundas {n}",
   "party.roundWins":"Raundai {a} : {b}",
   "party.roundWinTitle":"{team} laimi raundą!",
+  "party.seriesWin":"{team} laimi seriją!",
+  "party.bestOf":"Iki 2 pergalių",
   "party.roundTie":"Raundas lygus",
   "party.nextRound":"Kitas raundas",
   "party.teamHint":"Kas nori, tas stos prie kameros",

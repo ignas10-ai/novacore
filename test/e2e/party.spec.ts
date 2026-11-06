@@ -48,6 +48,19 @@ test("party MVP: setup -> VS -> auto draw -> sprint series -> final",async({page
   const firstMode=await page.locator("#partyResult").getAttribute("data-mode");
   expect(["round","series"]).toContain(firstMode);
   await expect(page.locator("#partyResTitle")).toContainText(/Raudoni|Mėlyni|Lygiosios|Raundas lygus/);
+
+  // The big score is the series round wins (1:0, 1:1, 2:1), never the party totals.
+  const roundWins=await page.evaluate(()=>JSON.parse(localStorage.getItem("novacore.history")||"[]")[0]?.party?.roundWins as [number,number]);
+  expect(await page.locator("#partyResScore b").allTextContents(),"round wins, not totals").toEqual(roundWins.map(String));
+  const roundWin=Number(await page.locator("#partyResult").getAttribute("data-win"));
+  expect(roundWin).toBe(roundWins[0]>roundWins[1]?0:roundWins[1]>roundWins[0]?1:-1);
+  if(roundWin>=0){
+    await expect(page.locator("#partyResPlayers .won")).toHaveCount(1);
+    await expect(page.locator("#partyResPlayers .won .party-res-crown"),"winner gets a crown").toHaveCount(1);
+  }else{
+    await expect(page.locator("#partyResPlayers .party-res-crown"),"a tie stays neutral").toHaveCount(0);
+  }
+
   // The music stops at the end of the round (the result overlay is silent).
   await expect.poll(async()=>{const s=await audioState(page);return s?.paused??true},{timeout:5_000}).toBe(true);
 
@@ -75,6 +88,13 @@ test("party MVP: setup -> VS -> auto draw -> sprint series -> final",async({page
   expect(party.legs[0].results).toHaveLength(rounds);
   expect(party.legs[0].points,"only game = the 2x comeback leg").toBe(2);
   expect(party.totals[0]+party.totals[1],"the double leg awards 2 points").toBe(2);
+
+  // The series card shows the final round wins (2:0 / 2:1 / 1:1) and colours the series winner.
+  expect(await page.locator("#partyResScore b").allTextContents(),"series round wins").toEqual(party.legs[0].values.map(String));
+  if(party.legs[0].winner>=0){
+    await expect(page.locator("#partyResult")).toHaveAttribute("data-win",String(party.legs[0].winner));
+    await expect(page.locator("#partyResPlayers .won .party-res-crown")).toHaveCount(1);
+  }
 
   await tap(page,"#partyResBtn","back to the party");
   await screen(page,"partyFinal").toBeVisible({timeout:10_000});

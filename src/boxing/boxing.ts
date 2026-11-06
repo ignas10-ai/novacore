@@ -137,6 +137,7 @@ const bestPts=(h:Row[],dur:number)=>h.reduce((m,g)=>g.mode==="boxing"&&g.duratio
 // ---------- setup ----------
 let dur=60;
 try{dur=localStorage.getItem("novacore.bxDur")==="30"?30:60}catch(e){}
+let prePartyDur:number|null=null; // the party forces 60 s, the standalone setting is restored after
 const pBtns=[...document.querySelectorAll<HTMLElement>("[data-bx]")], dBtns=[...document.querySelectorAll<HTMLElement>("[data-bxd]")];
 function syncSeg(){
   pBtns.forEach(b=>{const on=Number(b.dataset.bx)===S.players;b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on))});
@@ -476,9 +477,10 @@ $("#bxClip").onclick=()=>{endRoot.classList.add("hide");openClips()};
 export const BOXING:GameMode={
   start:begin,
   tv:true,
-  party(cfg){S.players=2;dur=30;NAMES[0]=cfg.names[0];NAMES[1]=cfg.names[1]}, // the party uses a 30 s round
+  party(cfg){S.players=2;prePartyDur=dur;dur=60;NAMES[0]=cfg.names[0];NAMES[1]=cfg.names[1]}, // the party uses a 60 s round
   reset(){NAMES[0]=DEF_NAMES[0];NAMES[1]=DEF_NAMES[1];setAvatarPair(null);cancelAnimationFrame(raf);phase="off";S.running=false;clearTimeout(callTimer);callRoot.className="sp-call bx-call";
     setScreenMode(null);fx=[];part.fill(0);oc.clearRect(0,0,ov.width,ov.height);curLm=[null,null];lastPs=null;
+    if(prePartyDur!=null){dur=prePartyDur;prePartyDur=null;syncSeg()}
     runRoot.classList.add("hide");endRoot.classList.add("hide");document.body.classList.remove("boxing")},
   shown:()=>!endRoot.classList.contains("hide"),
 };

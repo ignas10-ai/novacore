@@ -1182,6 +1182,8 @@ export const en:Record<Key,string>={
   "party.roundN":"Round {n}",
   "party.roundWins":"Rounds {a} : {b}",
   "party.roundWinTitle":"{team} wins the round!",
+  "party.seriesWin":"{team} wins the series!",
+  "party.bestOf":"First to 2 wins",
   "party.roundTie":"Round tied",
   "party.nextRound":"Next round",
   "party.teamHint":"Whoever wants stands in front of the camera",

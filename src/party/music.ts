@@ -1,4 +1,4 @@
-// Party Mode background music (two NCS tracks). It starts when the round actually begins (after the arms-up gate)
+// Party Mode background music (eight NCS tracks). It starts when the round actually begins (after the arms-up gate)
 // and stops at the round end; the lobby/intro/draw/results stay silent. Volume stays well under the game SFX.
 // The global sound switch and the party music switch both gate it.
 import {soundEnabled} from "../audio/sound.ts";
@@ -6,6 +6,12 @@ import {soundEnabled} from "../audio/sound.ts";
 const TRACKS = [
   "audio/party/cartoon-why-we-lose.mp3",
   "audio/party/youth-snake-eyes.mp3",
+  "audio/party/aero-chord-time-leap.mp3",
+  "audio/party/ash-oconnor-curbi-steeper.mp3",
+  "audio/party/codeko-crest.mp3",
+  "audio/party/kasger-reflections.mp3",
+  "audio/party/verm-explode.mp3",
+  "audio/party/yv-lune.mp3",
 ];
 const BASE = import.meta.env.BASE_URL || "/";
 const srcOf = (i: number) => `${BASE.endsWith("/") ? BASE : BASE + "/"}${TRACKS[i]}`;

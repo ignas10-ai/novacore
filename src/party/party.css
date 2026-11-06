@@ -507,6 +507,31 @@ body:has(#partyIntro:not(.hide),#partyVs:not(.hide),#partyDraw:not(.hide)) #part
 .party-res-auto i{display:block;height:100%;width:100%;transform-origin:left;background:linear-gradient(90deg,#FF3B3B,#FFC61A,#2F6BFF);animation:party-result-auto 5s linear forwards}
 .party-result[data-mode="series"] .party-res-auto i{animation-duration:6s}
 
+/* result winner: team colour, crown and a glow pulse (tie = neutral) */
+.party-result[data-win="0"]{--win:#FF3B3B;--win-ink:#FF7373;--win-soft:#FF3B3B66}
+.party-result[data-win="1"]{--win:#2F6BFF;--win-ink:#7FA9FF;--win-soft:#2F6BFF66}
+.party-result[data-win="0"] .party-result-card,
+.party-result[data-win="1"] .party-result-card{border-color:color-mix(in srgb,var(--win) 60%,#ffffff2e);box-shadow:0 24px 70px #000a,0 0 0 2px color-mix(in srgb,var(--win) 30%,transparent),0 0 46px var(--win-soft);animation:party-pop var(--duration-medium) var(--ease-bounce),party-win-glow 2.4s ease-in-out .5s infinite}
+.party-result[data-win="0"] .party-result-card h2,
+.party-result[data-win="1"] .party-result-card h2{color:var(--win-ink);text-shadow:0 0 22px var(--win-soft),0 2px 0 #0007}
+.party-res-players span{position:relative}
+.party-res-players .won b{color:var(--yellow)}
+.party-res-players .won .party-res-av{border-color:var(--yellow);box-shadow:0 0 0 3px #FFC61A55,0 0 20px #FFC61Aaa}
+.party-res-crown{position:absolute;left:-6px;top:-15px;display:grid;place-items:center;width:20px;height:20px;color:var(--yellow);font-size:0;filter:drop-shadow(0 2px 0 #0009);animation:party-crown-pop .55s var(--ease-bounce) both}
+.party-res-crown svg{width:18px;height:18px;display:block}
+.party-result[data-win="0"] .party-res-score .t0 b,
+.party-result[data-win="1"] .party-res-score .t1 b{color:var(--win-ink);font-size:54px;text-shadow:0 0 22px var(--win-soft)}
+.party-result[data-win="0"] .party-res-score .t1 b,
+.party-result[data-win="1"] .party-res-score .t0 b,
+.party-result[data-win="0"] .party-res-players .t1,
+.party-result[data-win="1"] .party-res-players .t0{opacity:.55}
+
+@keyframes party-win-glow{
+  0%,100%{box-shadow:0 24px 70px #000a,0 0 0 2px color-mix(in srgb,var(--win) 26%,transparent),0 0 34px color-mix(in srgb,var(--win) 32%,transparent)}
+  50%{box-shadow:0 24px 70px #000a,0 0 0 3px color-mix(in srgb,var(--win) 40%,transparent),0 0 64px var(--win-soft)}
+}
+@keyframes party-crown-pop{from{opacity:0;scale:.2;rotate:-30deg}to{opacity:1;scale:1;rotate:0deg}}
+
 @keyframes party-disco-fly{
   0%{opacity:0;transform:translate(-50%,-50%) scale(.15) rotate(0)}
   35%{opacity:1}
@@ -522,7 +547,7 @@ body:has(#partyIntro:not(.hide),#partyVs:not(.hide),#partyDraw:not(.hide)) #part
 @keyframes party-result-auto{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 
 @media (prefers-reduced-motion:reduce){
-  .party-intro-card::before,.disco-ball,.disco-ball i,.disco-game,.disco-beam,.disco-spark,.vs-stamp,.vs-mid i,.vs-bar i,.club-ball,.club-ball i,.club-float,.club-progress i,.club-final-icons span,.party-res-auto i{animation:none!important}
+  .party-intro-card::before,.disco-ball,.disco-ball i,.disco-game,.disco-beam,.disco-spark,.vs-stamp,.vs-mid i,.vs-bar i,.club-ball,.club-ball i,.club-float,.club-progress i,.club-final-icons span,.party-res-auto i,.party-res-crown,.party-result[data-win="0"] .party-result-card,.party-result[data-win="1"] .party-result-card{animation:none!important}
   .disco-game{opacity:1;transform:rotate(var(--a)) translateY(min(-29vw,-112px)) rotate(calc(-1 * var(--a)))}
 }
 
