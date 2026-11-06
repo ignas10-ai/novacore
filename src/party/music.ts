@@ -95,7 +95,13 @@ export function setPartyMusicOn(on: boolean) {
 }
 
 export function startPartyMusic() {
+  // Each round starts on the next track (the previous one faded out at the round end), so the playlist rotates.
+  const freshRound = !active && !!audio;
   active = true;
+  if (freshRound && allowed && soundEnabled()) {
+    playNext();
+    return;
+  }
   sync(700);
 }
 

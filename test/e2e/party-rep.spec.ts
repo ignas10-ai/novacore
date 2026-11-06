@@ -7,6 +7,11 @@ test.setTimeout(8*60_000);
 test.use({trace:"off",launchOptions:{args:camArgs(CAM2)}});
 
 test("party rep leg: 30 s rounds -> series -> final",async({page},info)=>{
+  await page.addInitScript(()=>{
+    const Orig=window.Audio;
+    (window as any).__audios=[];
+    (window as any).Audio=class extends Orig{constructor(src?:string){super(src);(window as any).__audios.push(this)}};
+  });
   await page.goto("/#/vakarelis");
   await screen(page,"party").toBeVisible();
   for(const id of ["sp","bx","lj","sk","wl","dc"])await tap(page,`[data-pool="${id}"]`,`pool ${id} off`);
@@ -17,9 +22,14 @@ test("party rep leg: 30 s rounds -> series -> final",async({page},info)=>{
   await screen(page,"ready").toBeVisible({timeout:120_000});
 
   let rounds=0;
+  let lastTrack="";
   for(;;){
     await screen(page,"partyResult").toBeVisible({timeout:120_000});
     rounds++;
+    const track=await page.evaluate(()=>((window as any).__audios?.[0]?.src||"").split("/").pop()||"");
+    expect(track,"each round plays a track from the playlist").toMatch(/\.mp3$/);
+    expect(track,"the playlist moves to the next track every round").not.toBe(lastTrack);
+    lastTrack=track;
     if(await page.locator("#partyResult").getAttribute("data-mode")==="series") break;
     if(rounds>=3) throw new Error("the rep series did not end after 3 rounds");
     await tap(page,"#partyResBtn","next round");

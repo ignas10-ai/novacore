@@ -3,7 +3,7 @@
 ## 2026-11-06 — Vakarėlio muzika: 8 NCS takeliai
 
 - **Prie dviejų jau buvusių vakarėlio takelių pridėti 6 nauji** (viso 8): Aero Chord – *Time Leap*, Ash O'Connor & Curbi – *Steeper*, Codeko – *Crest*, Kasger – *Reflections*, Verm – *Explode*, Y&V – *Lune*. Visi iš NCS, tinka su priskyrimu.
-- Failai iš `.opus` konvertuoti į **MP3 160 kbps / 44,1 kHz** ir suvienodinti pagal garsumą (`loudnorm`, ~-13 LUFS). `src/party/music.ts` groja juos iš eilės per tą patį `HTMLAudio` (tik raundo metu); `public/audio/party/README.txt` papildytas visais autoriais.
+- Failai iš `.opus` konvertuoti į **MP3 160 kbps / 44,1 kHz** ir suvienodinti pagal garsumą (`loudnorm`, ~-13 LUFS). `src/party/music.ts` groja juos iš eilės per tą patį `HTMLAudio` (tik raundo metu), o **kiekvieną naują raundą paleidžia kitą takelį**, todėl per vakarą playlist'as apsuka kelis kūrinius; `public/audio/party/README.txt` papildytas visais autoriais.
 - Patikrinta: `npm test` 536/536; `party.spec` + `party-rep.spec` 2/2; `npm run build`.
 
 ## 2026-11-06 — Vakarėlis: boksas 60 s + serijos rezultato kortelė

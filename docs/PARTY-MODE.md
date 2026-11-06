@@ -214,7 +214,7 @@ Tai pagrindinis vakarėlio ekranas; dabar tamsus neoninis disco klubas su kamuol
 
 - Žaidimas veikia įprastai, su savo HUD, garsais ir TV lenta.
 - `startLeg()` nustato komandų pavadinimus žaidimo tvarka; HUD/pasiruošimo ekranas rodo „Raudoni / Mėlyni“, ne P1/P2. Visi žaidimai gauna tuos pačius vardus.
-- Vakarėlio muzika groja **tik žaidimo metu**: `startGame()` paleidžia ją po rankų gate, `onLegDone()` sustabdo raundo pabaigoje. Lobby, intro, VS, traukimas ir rezultatai – tyloje.
+- **Vakarėlio muzika groja tik žaidimo metu**: `startGame()` paleidžia ją po rankų gate, `onLegDone()` sustabdo raundo pabaigoje. **Kiekvieną naują raundą groja kitas takelis** (8 takelių playlist'as sukasi), o tarp raundų – tyla. Lobby, intro, VS, traukimas ir rezultatai – tyloje.
 - Jokio papildomo party overlay žaidimo metu; neapkraunamas ekranas.
 
 ### 3.8 Rungties / serijos rezultatas

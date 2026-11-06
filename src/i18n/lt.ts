@@ -1251,7 +1251,7 @@ export const lt={
   "party.skip":"Praleisti",
   "party.music":"Muzika",
   "party.musicHint":"Tylus fonas po žaidimo garsų",
-  "party.musicCredit":"Muzika: NCS · Cartoon, youth®",
+  "party.musicCredit":"Muzika: NCS · Cartoon, youth®, Aero Chord, Ash O'Connor & Curbi, Codeko, Kasger, Verm, Y&V",
   "party.pointsRule":"1 tšk. už seriją · 0,5 lygiosios · iki 2 pergalių · viena 2× comeback rungtis.",
   "party.result":"Rungties rezultatas",
   "party.score":"Bendras rezultatas",
