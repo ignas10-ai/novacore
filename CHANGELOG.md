@@ -1,5 +1,17 @@
 # Pakeitimų žurnalas
 
+## 2026-11-06 — Vakarėlio muzika: 8 NCS takeliai
+
+- **Prie dviejų jau buvusių vakarėlio takelių pridėti 6 nauji** (viso 8): Aero Chord – *Time Leap*, Ash O'Connor & Curbi – *Steeper*, Codeko – *Crest*, Kasger – *Reflections*, Verm – *Explode*, Y&V – *Lune*. Visi iš NCS, tinka su priskyrimu.
+- Failai iš `.opus` konvertuoti į **MP3 160 kbps / 44,1 kHz** ir suvienodinti pagal garsumą (`loudnorm`, ~-13 LUFS). `src/party/music.ts` groja juos iš eilės per tą patį `HTMLAudio` (tik raundo metu), o **kiekvieną naują raundą paleidžia kitą takelį**, todėl per vakarą playlist'as apsuka kelis kūrinius; `public/audio/party/README.txt` papildytas visais autoriais.
+- Patikrinta: `npm test` 536/536; `party.spec` + `party-rep.spec` 2/2; `npm run build`.
+
+## 2026-11-06 — Vakarėlis: boksas 60 s + serijos rezultato kortelė
+
+- **Boksas vakarėlyje – 60 s** (buvo 30 s): `BOXING.party()` nustato `dur=60`, todėl best-of-3 serija trunka 2–3 minutes. Kitose rungtyse trukmės nekeistos.
+- **Rezultato overlay rodo serijos raundų pergales, o ne bendrus taškus:** po 1 raundo – 1:0, po 2 – 1:1, po 3 – 2:1; bendras vakaro rezultatas lieka disco lobby. Laimėtojo komanda pažymima `#partyResult[data-win]`: kortelė ir pavadinimas nudažomi komandos spalva, atsiranda pulsuojantis švytėjimas, laimėtojo avatarui – geltonas žiedas ir karūna, jo taškų stulpelis padidinamas, pralaimėjęs pritemdomas. Lygiosios lieka neutralios. Serijos kortelė rodo „{komanda} laimi seriją!“ ir „Iki 2 pergalių · +N tšk.“.
+- Patikrinta: `npm test` 536/536; `party.spec` papildytas raundų pergalių / karūnos / `data-win` patikrinimais.
+
 ## 2026-11-06 — Vakarėlio traukimo animacijų pataisymas
 
 - **Visos 6 traukimo animacijos juda:** animacijos dabar paleidžiamos **po to**, kai `#partyDraw` overlay jau matomas ir pradiniai stiliai apskaičiuoti (`requestAnimationFrame` × 2 + forced reflow). Anksčiau tik CS:GO karuselė riedėjo, o marmuro lenktynės, ruletė, slotai, smiginys ir kortų fanas tiesiog šokdavo į galinę būseną, nes inline `transition` ir tikslinis `transform` būdavo nustatomi tame pačiame kadre, dar esant paslėptam overlay'ui.

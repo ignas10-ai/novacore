@@ -703,6 +703,16 @@ function restartResultBar() {
   bar.style.animation = "";
 }
 
+function resultPlayers(winner: Team | -1) {
+  return [0, 1].map(i => {
+    const won = winner === i;
+    return `<span class="t${i}${won ? " won" : ""}"><span class="party-res-av" aria-hidden="true">${avatarOf(i as Team)}</span><b>${A(P!.teams[i].name)}</b>${won ? `<i class="party-res-crown" aria-hidden="true">${icon("crown")}</i>` : ""}</span>`;
+  }).join("<i>vs</i>");
+}
+function resultScore(wins: [number, number]) {
+  return `<span class="t0"><small>${A(P!.teams[0].name)}</small><b class="d">${fmtPts(wins[0])}</b></span><i>:</i><span class="t1"><small>${A(P!.teams[1].name)}</small><b class="d">${fmtPts(wins[1])}</b></span>`;
+}
+
 function showRoundResult(leg: PartyLeg, round: RoundResult) {
   resultOpen = true;
   resultMode = "round";
@@ -710,11 +720,12 @@ function showRoundResult(leg: PartyLeg, round: RoundResult) {
   const w = round.winner;
   $("#partyResGame").textContent = `${gameTitle(leg.game)} · ${t("party.roundN", {n: leg.results.length})}`;
   $("#partyResTitle").textContent = w === -1 ? t("party.roundTie") : t("party.roundWinTitle", {team: P!.teams[w].name});
-  $("#partyResSub").textContent = `${t("party.seriesInProgress", {a: leg.wins[0], b: leg.wins[1]})} · ${t("party.autoDraw", {n: 5})}`;
-  $("#partyResPlayers").innerHTML = [0, 1].map(i => `<span class="t${i}"><span class="party-res-av" aria-hidden="true">${avatarOf(i as Team)}</span><b>${A(P!.teams[i].name)}</b></span>`).join("<i>vs</i>");
-  $("#partyResScore").innerHTML = `<span class="t0"><small>${A(P!.teams[0].name)}</small><b class="d">${fmtPts(P!.totals[0])}</b></span><i>:</i><span class="t1"><small>${A(P!.teams[1].name)}</small><b class="d">${fmtPts(P!.totals[1])}</b></span>`;
+  $("#partyResSub").textContent = `${t("party.roundN", {n: leg.results.length})} · ${t("party.autoDraw", {n: 5})}`;
+  $("#partyResPlayers").innerHTML = resultPlayers(w);
+  $("#partyResScore").innerHTML = resultScore(leg.wins);
   $("#partyResBtn").textContent = t("party.nextRound");
   resultEl.dataset.mode = "round";
+  resultEl.dataset.win = String(w);
   resultEl.classList.remove("hide");
   fillIcons(resultEl);
   restartResultBar();
@@ -727,12 +738,13 @@ function showSeriesResult(leg: PartyLeg) {
   clearTimeout(resultTimer);
   const w = leg.winner ?? -1;
   $("#partyResGame").textContent = `${gameTitle(leg.game)} · ${t("party.series")}`;
-  $("#partyResTitle").textContent = w === -1 ? t("party.tie") : t("party.take", {team: P!.teams[w].name, n: fmtPts(leg.points)});
-  $("#partyResSub").textContent = t("party.roundWins", {a: leg.wins[0], b: leg.wins[1]});
-  $("#partyResPlayers").innerHTML = [0, 1].map(i => `<span class="t${i}"><span class="party-res-av" aria-hidden="true">${avatarOf(i as Team)}</span><b>${A(P!.teams[i].name)}</b></span>`).join("<i>vs</i>");
-  $("#partyResScore").innerHTML = `<span class="t0"><small>${A(P!.teams[0].name)}</small><b class="d">${fmtPts(P!.totals[0])}</b></span><i>:</i><span class="t1"><small>${A(P!.teams[1].name)}</small><b class="d">${fmtPts(P!.totals[1])}</b></span>`;
+  $("#partyResTitle").textContent = w === -1 ? t("party.tie") : t("party.seriesWin", {team: P!.teams[w].name});
+  $("#partyResSub").textContent = `${t("party.bestOf")} · ${pointsLabel(leg.points)}`;
+  $("#partyResPlayers").innerHTML = resultPlayers(w);
+  $("#partyResScore").innerHTML = resultScore(leg.wins);
   $("#partyResBtn").textContent = P!.phase === "done" ? t("party.toFinal") : t("party.backToParty");
   resultEl.dataset.mode = "series";
+  resultEl.dataset.win = String(w);
   resultEl.classList.remove("hide");
   fillIcons(resultEl);
   restartResultBar();
